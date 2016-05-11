@@ -4,9 +4,15 @@ import sys
 import os
 reload(sys)
 sys.setdefaultencoding('utf8')
-class Tbao(BaseData):
+from rules.models import BaseRule
+class Tbao(BaseRule):
 	def __init__(self):
-		pass
+		self.min_rule_map={
+            40001:None,#淘宝授权
+            40002:None,#淘宝消费金额
+            40003:None,#淘宝消费次数
+            40004:None,#淘宝登陆频次
+        }
 	'''实名认证'''
 	def is_valid_name(self,basedata):
 		pass

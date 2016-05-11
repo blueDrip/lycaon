@@ -4,19 +4,19 @@ import sys
 import os
 reload(sys)
 sys.setdefaultencoding('utf8')
-from rules.baserule import BaseRule
+from rules.models import BaseRule
 from rules.raw_data import minRule
 class PersonInfo(BaseRule):
     def __init__(self,basedata):
         self.min_rule_map={
-            20001:self.get_age(basedata),
-            20002:self.get_sex(basedata),
-            20003:self.get_edu(basedata),
-            20004:self.get_residenza(), 
-            20005:self.get_marry_status(),
-            20006:self.is_black(),
-            20007:self.get_profession(),
-            20008:self.is_samephoto_with_idcard()
+            10001:self.get_age(basedata),
+            10002:self.get_sex(basedata),
+            10003:self.get_edu(basedata),
+            10004:self.get_residenza(), 
+            10005:self.get_marry_status(),
+            10006:self.is_black(),
+            10007:self.get_profession(),
+            10008:self.is_samephoto_with_idcard()
         }    
 
     def get_age(self,basedata):
