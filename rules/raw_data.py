@@ -8,10 +8,8 @@ from mongoengine import (
     StringField, IntField, Document, DateTimeField, BooleanField,
     ObjectIdField,ListField,ListField,ReferenceField,FloatField,NotUniqueError,
 )
-# from corelib.storage import Storage
 import traceback
 from django.db import models
-# from corelib.utils.strings import underscoreize
 from django.conf import settings
 # from raven.contrib.django.raven_compat.models import client
  
@@ -68,19 +66,104 @@ class UserCallPhone(Document):
         #    if settings.DEBUG:
         #        traceback.print_exc()
         #    else:
-        #        client.captureException()
+        #       client.captureException()
 
-
-
-
-
-class UserShortMessage:
+class UserShortMessage(Document):
     username = StringField(default = str)
     owner_id = StringField(default = str)
-    order_id = StringField(default = str)
-    create_time =DateTimeField()
-    send_time = DateTimeField()
-    content = StringField(default = str)
+    send_time= DateTimeField()
+    create_time = DateTimeField()
+    source =StringField(default=str)
+    location=StringField(default=str)
+    phone_location = StringField(default=str)
+    phone=StringField(default=str)
+    sms_type=StringField(default=str)
+
+    @classmethod
+    def create_sms(cls,data):
+        sms = cls()
+        sms.owner_id = data.owner_id
+        sms.username = data.username
+        sms.phone = data.phone
+        sms.send_time = data.send_time
+        sms.created_time = datetime.datetime.now()
+        sms.source = data.source
+        sms.location=data.location
+        sms.phone_location=data.phone_location
+        sms.sms_type=data.sms_type
+        try:
+            return sms.save()
+        except:
+            return None
+
+    @classmethod
+    def create_smses(cls,contacts):
+        smss_filter = filter(
+        None,
+        [cls.create_sms(c) for c in contacts])
+        print smss_filter
+        
+        if not smss_filter:
+            return None
+        #try:
+            cls.objects.insert(
+                smss_filter,
+                write_concern={'continue_on_error': True})
+        #except NotUniqueError:
+        #    return None
+        #except:
+        #    if settings.DEBUG:
+        #        traceback.print_exc()
+        #    else:
+        #       client.captureException()
+
+#上网
+class UserNetInfo(Document):
+    username = StringField(default = str)
+    owner_id = StringField(default = str)
+    start_time= DateTimeField()
+    sum_flow = StringField(default = str)
+    create_time = DateTimeField()
+    comm_time = IntField(0)
+    net_type = StringField(default = str)
+    net_location=StringField(default=str)
+    net_source = StringField(default = str)
+    @classmethod
+    def create_net(cls,data):
+        n=cls()
+        n.username = data.username
+        n.owner_id = data.owner_id
+        n.start_time = data.start_time
+        n.sum_flow = data.sum_flow
+        n.create_time = data.create_time
+        n.comm_time = data.comm_time
+        n.net_type = data.net_type
+        n.net_location = data.net_location
+        n.net_source = data.net_source
+        try:
+            return n.save()
+        except:
+            return None
+
+    @classmethod
+    def create_nets(cls,nets):
+        n_filter = filter(
+        None,
+        [cls.create_net(n) for n in nets])
+        if not n_filter:
+            return None
+        #try:
+            cls.objects.insert(
+                n_filter,
+                write_concern={'continue_on_error': True})
+        #except NotUniqueError:
+        #    return None
+        #except:
+        #    if settings.DEBUG:
+        #        traceback.print_exc()
+        #    else:
+        #       client.captureException()
+
     
 #京东
 class jingdong(Document):

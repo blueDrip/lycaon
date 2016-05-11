@@ -5,7 +5,6 @@ import traceback
 import socket
 import time
 import urllib
-import datetime
 
 from mongoengine import (
     StringField, ListField, IntField, Document, EmbeddedDocumentField,
@@ -16,8 +15,9 @@ from mongoengine import (
 import  json
 import re
 import logging
+from datetime import datetime
 from rules.util.utils import get_tb_info
-from rules.raw_data import jingdong,liantong,yidong,UserCallPhone
+from rules.raw_data import jingdong,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo
 from rules.ext_api import EXT_API
 
 
@@ -28,16 +28,16 @@ def get_right_datetime(string):
 
     dd_start_time = None
     try:
-        dd_start_time = datetime.datetime.strptime(string,'%Y-%m-%d %H:%M:%S')
+        dd_start_time = datetime.strptime(string,'%Y-%m-%d %H:%M:%S')
     except:
         try:
             aa = string[5:]
-            dd_start_time = datetime.datetime.strptime(aa,'%Y/%m/%d %H:%M:%S')
+            dd_start_time = datetime.strptime(aa,'%Y/%m/%d %H:%M:%S')
         except:
             try:
                 
                 aa = string[5:]
-                dd_start_time = datetime.datetime.strptime(aa,'%Y-%m-%d %H:%M:%S')
+                dd_start_time = datetime.strptime(aa,'%Y-%m-%d %H:%M:%S')
             except:
                 base_logger.error(get_tb_info()+"SP_ERROR ")
                 print get_tb_info()
@@ -56,14 +56,22 @@ class BaseData(object):
     def __init__(self,oid,ext=None):
         #try:
             '''user info'''
-            self.user=None            
+            self.user=None
+            self.user_plocation='北京'
+            self.home_location = '江西南昌市'
+            self.user_phone=u'15600300721'
+
+            
+            self.create_time=datetime.now()          
             self.ext_api = ext or EXT_API()
             '''sp info'''
             self.sp=yidong.objects.filter()[20]
-            self.calls=[]
+            self.sp_calls=[]
             self.good_calls=[]
-            self.sp_sms_detail=self.init_sp_smsdetail()
-            self.sp_net_detail=self.init_sp_netdetail()
+            self.sp_sms=[]
+            #self.init_sp_smsdetail()
+            self.sp_net=[]
+            #self.init_sp_netdetail()
             '''JD info'''
             self.jd=jingdong.objects.filter(jd_login_name=str("lcswr@126.com")).first()
             '''contact info'''
@@ -71,37 +79,82 @@ class BaseData(object):
             self.good_contacts = []
             self.calls = []
             self.good_calls = []
-            self.sp_calls = []
             self.sp_good_calls = []
             self.sms = []
             self.good_sms = []
+            
+
+            self.init_sp_calldetail()
+            self.init_sp_smsdetail()
+            self.init_sp_netdetail()
         #except:
         #    print get_tb_info()
         #    base_logger.error(get_tb_info())
-
     def init_sp_calldetail(self):
         mp = self.load_sp_datadetail(self.sp.phonedetail)
         for k,v in mp.items():
             for itt in v:
                 stime=k[:-2]+'-'+itt['startTime']      
-                st=dd_start_time = datetime.datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
+                st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
                 uc.phone=itt['anotherNm']
-                uc.create_time = datetime.datetime.now()
+                uc.create_time = datetime.now()
                 uc.location=itt['commPlac']
-                g=self.ext_api.get_phone_location(itt['anotherNm'])
+                phone=itt['anotherNm'][:2]==u'86' and itt['anotherNm'][2:] or itt['anotherNm']
+                phone=phone[:4]==u'0086' and phone[4:] or phone    
+                g=self.ext_api.get_phone_location(phone.replace(' ',''))
                 uc.phone_location = g['province']+'-'+g['city']+'-'+g['supplier']
                 uc.call_duration=get_duration(itt['commTime'])
                 uc.source=u'sp'
                 uc.call_type=itt['commMode']
-                self.calls.append(uc)
+                self.sp_calls.append(uc)
         #存库
-        UserCallPhone.create_calls(self.calls)
+        UserCallPhone.objects.filter().delete()
+        UserCallPhone.create_calls(self.sp_calls)
     def init_sp_smsdetail(self):
-        return self.load_sp_datadetail(self.sp.phonedetail)
+        mp = self.load_sp_datadetail(self.sp.smsdetail)
+        for k,v in mp.items():
+            for itt in v:
+                stime=k[:-2]+'-'+itt['startTime']
+                st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
+                s=UserShortMessage()
+                s.send_time = st
+                s.phone=itt['anotherNm']
+                s.create_time = datetime.now()
+                s.location=itt['commPlac']
+                phone=itt['anotherNm'][:2]==u'86' and itt['anotherNm'][2:] or itt['anotherNm']
+                phone=phone[:4]==u'0086' and phone[4:] or phone
+                g=self.ext_api.get_phone_location(phone.replace(' ',''))
+                s.phone_location = g['province']+'-'+g['city']+'-'+g['supplier']
+                s.source=u'sp'
+                s.sms_type=itt['commMode']
+                self.sp_sms.append(s)
+        #存库
+        UserShortMessage.objects.filter().delete()
+        UserShortMessage.create_smses(self.sp_sms)
+
     def init_sp_netdetail(self):
-        return self.load_sp_datadetail(self.sp.netdetail)
+        mp = self.load_sp_datadetail(self.sp.netdetail)
+        for k,v in mp.items():
+            for itt in v:
+                stime=k[:-2]+'-'+itt['startTime']
+                st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
+                n=UserNetInfo()
+                n.owner_id=''
+                n.username=''
+                n.start_time=st
+                n.comm_time = get_duration(itt['commTime'])
+                n.sum_flow=itt['sumFlow']
+                n.create_time = datetime.now()
+                n.net_location=itt['commPlac']
+                n.source=u'sp'
+                n.net_type=itt['netType']
+                self.sp_net.append(n)
+        #存库
+        UserNetInfo.objects.filter().delete()
+        UserNetInfo.create_nets(self.sp_net)
+
     def load_sp_datadetail(self,sp_map):
         mp={}
         for k,v in sp_map.items():

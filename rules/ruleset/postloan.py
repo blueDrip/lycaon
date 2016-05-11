@@ -19,6 +19,7 @@ import re
 from rules.util.langconv import Converter
 from rules.ext_api import EXT_API
 from rules.raw_data import minRule
+from rules.models import BaseRule
 #logger = logging.getLogger('django.rules')
 #logger.setLevel(logging.INFO)
 
@@ -245,6 +246,19 @@ class PostLoanNewRule(BaseRule):
         self.spouse_list=self.init_post_loan_list(spouse_noun_file)
         self.spouse_adj_list=self.init_post_loan_list(spouse_adj_file)
         self.f_m_list=self.init_f_m_list(parent_dict_new)
+
+        self.min_rule_map={
+            50001:None,#通讯录长度
+            50002:None,#父母个数
+            50003:None,#.父母在老家的个数比例
+            50004:None,#父母通话时长
+            50005:None,#父母通话次数
+            50006:None,#父母在三个月内平均通话次数
+            50007:None,#亲属个数
+            50008:None,#亲属在老家的个数比例
+            50009:None,#亲属的通话时长
+            50010:None,亲属通话次数
+        }
 
     def init_post_loan_list(self,conf_file):
         post_loan_list=[]
@@ -523,6 +537,34 @@ class PostLoanNewRule(BaseRule):
         r.score=0.3*score;
         r.name=u'亲属通话时间'
         return r
+    #父母长度在老家比例
     def parents_location_same_with_idCard(self):
+        idcard=''
+        pmap=self.father_mp
+        pmap.update(self.father_mp)
+        pmap.update(self.mahter_mp)
+        pmap.update(self.home_mp)
+        count=0
+        for k,v in pmap.items():
+            if idcard['city'] in v:
+               count+=1
+        radio=count*1.0/(len(self.contacts) or 1)
 
-        pass
+    def relative_location_same_with_idcard(self):
+        idcard=''
+        count=0
+        for k,v in self.r_relative_map.items():
+            if idcard['city'] in v:
+                count+=1
+        radio=count*1.0/(len(self.contacts) or 1)
+    def parents_len_in_contact(self):
+        pmap=self.father_mp
+        pmap.update(self.father_mp)
+        pmap.update(self.mahter_mp)
+        pmap.update(self.home_mp)
+        plen=len(pmap.keys())
+    def relative_len_in_contact(self):
+        rlen = len(self.r_relative_map.keys())
+        clen = len(self.contacts)
+        radio = rlen*1.0/clen
+
