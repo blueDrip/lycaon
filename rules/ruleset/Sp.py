@@ -7,6 +7,7 @@ import json
 import re
 from datetime import datetime,timedelta
 sys.setdefaultencoding('utf8')
+from django.conf import settings
 from rules.raw_data import minRule
 from rules.models import BaseRule
 from rules.base import get_right_datetime
@@ -17,7 +18,8 @@ class Sp(BaseRule):
         self.recharge_map = self.init_recharge_map(basedata)
         self.call_record_map = self.init_phone_record_mp(basedata)
         self.sms_record_map = self.init_sms_record_mp(basedata)
-        self.dunning_map={}
+        #催收
+        self.dunning_map=self.init_cuishou_map()
        
         self.min_rule_map={
             20001:None,#半年内充值金额
@@ -38,6 +40,19 @@ class Sp(BaseRule):
             20016:None,#与021,0755通话次数
             20017:None,#申请号与本机有通话
         }
+
+    def init_cuishou_map(self):
+        ppmap = {}
+        f1 = settings.CUISHOU_GUHUA_FILE
+        f2 = settings.CUISHOU_SHOUJI_FILE
+        for line in open(f1,'r'):
+            l = line.strip().split('\t')
+            ppmap[l[0]]= l[1]
+        for line in open(f2,'r'):
+            l = line.strip().split('\t')
+            ppmap[l[0]]= l[1]
+        return ppmap
+
     def init_recharge_map(self,basedata):
         mp=json.loads(basedata.sp.recharge)['data']
         charge_mp={}
