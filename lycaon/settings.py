@@ -74,6 +74,8 @@ ID_FILE = BASE_DIR +"/data/id.txt"
 TEL_NUM_FILE = BASE_DIR +"/data/tel_num.txt"
 PHONE_FILE = BASE_DIR +"/data/phone.txt"
 
+CUISHOU_GUHUA_FILE= BASE_DIR + "/rules/conf/cuishou_guhua.txt"
+CUISHOU_SHOUJI_FILE= BASE_DIR + "/rules/conf/cuishou_shouji.txt"
 SMS_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sms_badword.txt"
 SENSE_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sense_word.txt"
 # Database
