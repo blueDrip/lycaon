@@ -1,6 +1,6 @@
 # lycaon
 rules
-django==1.8.2
+django==1.9.2
 python 2.7
 mongoengine
 MySQLdb

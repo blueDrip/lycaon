@@ -4,7 +4,6 @@
 import sys
 import os
 from django.conf import settings
-from rules.baserule import BaseRule
 import traceback
 import socket
 import time
@@ -28,9 +27,10 @@ def pre_contacts(oinfo,parent_l,parent_l_ch,spouse_l):
     parent_list_ch=parent_l_ch
     spouse_list=spouse_l 
     #city_list=oinfo.exp.phone_map.values()
-    tmp_contacts_l=[]
-    for u in oinfo.good_contacts:
-        tmp_contacts_l.extend(u)
+    tmp_contacts_l=oinfo.contacts
+    #for u in oinfo.good_contacts:
+    #    tmp_contacts_l.extend(u)
+
 
     for c in tmp_contacts_l:
         try:
@@ -257,7 +257,7 @@ class PostLoanNewRule(BaseRule):
             50007:None,#亲属个数
             50008:None,#亲属在老家的个数比例
             50009:None,#亲属的通话时长
-            50010:None,亲属通话次数
+            50010:None,#亲属通话次数
         }
 
     def init_post_loan_list(self,conf_file):
@@ -366,7 +366,7 @@ class PostLoanNewRule(BaseRule):
         r=minRule()
         r.score=0
         r.value=''
-        call_list=bd.calls
+        call_list=bd.sp_calls
         duration=0
         fvalue_mp,mvalue_mp,hvalue_mp={},{},{}
         fd,md,hd=0,0,0
@@ -404,7 +404,7 @@ class PostLoanNewRule(BaseRule):
             r.value+="Home:\n"+hvalue
         fscore=self.get_score_by_duration(fd)*0.4;
         mscore=self.get_score_by_duration(md)*0.4;
-        hscore=this.get_score_by_duration(hd)*0.4;
+        hscore=self.get_score_by_duration(hd)*0.4;
         r.score=0.4*fscore+mscore*0.3+hscore*0.3;
         r.name=u'父母通话时间'
         return r
@@ -430,9 +430,10 @@ class PostLoanNewRule(BaseRule):
             return 40
 
     def get_parent_call_times(self,bd):
+        r = minRule()
         r.score=0
         r.value=''
-        call_list=bd.calls
+        call_list=bd.sp_calls
         duration=0
         fvalue_mp,mvalue_mp,hvalue_mp={},{},{}
         ft,mt,ht=0,0,0
@@ -462,16 +463,16 @@ class PostLoanNewRule(BaseRule):
             mvalue+=self.mather_mp[k]+';通话次数:'+str(v)+'\n'
         for k,v in hvalue_mp.items():
             hvalue+=self.hather_mp[k]+';通话次数:'+str(v)+'\n'
-        if fd:
+        if ft:
             r.value='Father:\n'+fvalue
-        if md:
+        if mt:
             r.value+="Mather:\n"+mvalue
-        if hd:
+        if ht:
             r.value+="Home:\n"+hvalue
 
         fscore=self.get_score_by_times(ft)*0.4;
         mscore=self.get_score_by_times(mt)*0.4;
-        hscore=this.get_score_by_times(ht)*0.4;
+        hscore=self.get_score_by_times(ht)*0.4;
         r.score=0.4*fscore+mscore*0.3+hscore*0.3;
         r.name=u'父母通话次数'
         return r
@@ -480,9 +481,10 @@ class PostLoanNewRule(BaseRule):
         pass
 
     def get_relative_call_times(self,bd):
+        r = minRule()
         r.score=0
         r.value=''
-        call_list=bd.calls
+        call_list=bd.sp_calls
         duration=0
         rt=0
         rvalue_mp={}
@@ -510,9 +512,10 @@ class PostLoanNewRule(BaseRule):
         return r
 
     def get_relative_call_duration(self,bd):
+        r = minRule()
         r.score=0
         r.value=''
-        call_list=bd.calls
+        call_list=bd.sp_calls
         duration=0
         rvalue_mp={}
         for c in call_list:
@@ -525,46 +528,48 @@ class PostLoanNewRule(BaseRule):
         rvalue=''
         for k,v in rvalue_mp.items():
             rvalue+=self.rather_mp[k]+';通话时间:'+str(v)+'\n'
-        if rt:
+        if duration:
             r.value='Relatives:\n'+rvalue
         score=0
-        if rt<100:
+        if duration<100:
             score=10
-        elif rt>=100 and rt<300:
+        elif duration>=100 and duration<300:
             score=20
-        elif rt>=300 and rt<500:
+        elif duration>=300 and duration<500:
             score=40
         r.score=0.3*score;
         r.name=u'亲属通话时间'
         return r
     #父母长度在老家比例
-    def parents_location_same_with_idCard(self):
+    def parents_location_same_with_idCard(self,bd):
         idcard=''
         pmap=self.father_mp
         pmap.update(self.father_mp)
-        pmap.update(self.mahter_mp)
+        pmap.update(self.mather_mp)
         pmap.update(self.home_mp)
         count=0
         for k,v in pmap.items():
             if idcard['city'] in v:
                count+=1
-        radio=count*1.0/(len(self.contacts) or 1)
+        radio=count*1.0/(len(bd.contacts) or 1)
 
-    def relative_location_same_with_idcard(self):
+    def relative_location_same_with_idcard(self,bd):
         idcard=''
         count=0
         for k,v in self.r_relative_map.items():
             if idcard['city'] in v:
                 count+=1
-        radio=count*1.0/(len(self.contacts) or 1)
-    def parents_len_in_contact(self):
+        radio=count*1.0/(len(bd.contacts) or 1)
+
+    def parents_len_in_contact(self,bd):
         pmap=self.father_mp
         pmap.update(self.father_mp)
-        pmap.update(self.mahter_mp)
+        pmap.update(self.mather_mp)
         pmap.update(self.home_mp)
         plen=len(pmap.keys())
-    def relative_len_in_contact(self):
+        clen=len(bd.contacts)
+    def relative_len_in_contact(self,bd):
         rlen = len(self.r_relative_map.keys())
-        clen = len(self.contacts)
+        clen = len(bd.contacts)
         radio = rlen*1.0/clen
 

@@ -17,7 +17,7 @@ import re
 import logging
 from datetime import datetime
 from rules.util.utils import get_tb_info
-from rules.raw_data import jingdong,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo
+from rules.raw_data import jingdong,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
 from rules.ext_api import EXT_API
 
 
@@ -57,10 +57,10 @@ class BaseData(object):
         #try:
             '''user info'''
             self.user=None
-            self.user_plocation='北京'
-            self.home_location = '江西南昌市'
+            self.user_plocation=u'北京'
+            self.home_location = u'江西南昌市'
             self.user_phone=u'15600300721'
-
+            self.username=u'李超'
             
             self.create_time=datetime.now()          
             self.ext_api = ext or EXT_API()
@@ -69,24 +69,19 @@ class BaseData(object):
             self.sp_calls=[]
             self.good_calls=[]
             self.sp_sms=[]
-            #self.init_sp_smsdetail()
             self.sp_net=[]
-            #self.init_sp_netdetail()
             '''JD info'''
             self.jd=jingdong.objects.filter(jd_login_name=str("lcswr@126.com")).first()
             '''contact info'''
             self.contacts = []
             self.good_contacts = []
             self.calls = []
-            self.good_calls = []
-            self.sp_good_calls = []
             self.sms = []
-            self.good_sms = []
-            
 
             self.init_sp_calldetail()
             self.init_sp_smsdetail()
             self.init_sp_netdetail()
+            self.init_contact()
         #except:
         #    print get_tb_info()
         #    base_logger.error(get_tb_info())
@@ -167,84 +162,24 @@ class BaseData(object):
                     mp[k].append(itt)
         return mp
 
-
             
-    '''def init_sp_info(self):
-           
-        try:
-            szro = get_sp_info(self.order_id) 
-            call_map = {}
-            save_list = []
-            
-            for c in self.calls:
-                if c.phone + c.source + str(c.calling_time) not in call_map:
-                    call_map[c.phone + c.source + str(c.calling_time)] =1
-            if szro:
-                dd = json.loads(szro.data)
-                
-                if 'operator_protype_data' in dd :
-                    #print dd['operator_protype_data']['base_info']['userinfo']
-                    self.sp_id=dd['operator_protype_data']['_id']
-                    self.sp_update_time = dd['operator_protype_data']['update_time']
-                    self.sp_userinfo_dict = dd['operator_protype_data']['base_info']['userinfo']
-                
-                dl = dd['operator_protype_data']['call_info']
-                for month in dl:
-                    for k,v in month.items():
-                        for record in v['detail']:
-                            try:
-                                ucl = UserPhoneCall()
-                                ucl.owner_id = self.user_id
-                                ucl.phone = get_only_num(record['another_nm'])
-                                #uc.phone = record['another_nm']
-                                if 'comm_plac' in record:
-                                    ucl.location = record['comm_plac'] 
-                                else:
-                                    ucl.location = 'ERROR'
-
-                                ucl.type = 1 if '主叫' in record['comm_mode'] else 0
-                                ucl.calling_duration = int(float(record['comm_time'])*60)
-
-                                #print record['start_time']
-                                #dd = time.strptime(record['start_time'],'%Y-%m-%d %H:%M:%S').date()
-                            
-                                dd_start_time = get_right_datetime(record['start_time'])
-                                #dd_start_time = datetime.datetime.strptime(record['start_time'],'%Y-%m-%d %H:%M:%S')
-                                #uc.calling_time = time.mktime(dd)*1000
-                                ucl.calling_time = dd_start_time
-                                #print type(uc.calling_time)
-                                ucl.source = 'sp'
-                                ucl.created_time = datetime.datetime.now()
-                                if dd_start_time > ucl.created_time:
-                                    y = int(record['start_time'].split('-')[0])
-                                    y = y -1
-                                    real_time_str = str(y) + '-'+'-'.join(record['start_time'].split('-')[1:])
-                                    dd_start_time = datetime.datetime.strptime(real_time_str,'%Y-%m-%d %H:%M:%S')
-                                    ucl.calling_time = dd_start_time
-
-                                self.sp_calls.append(ucl)
-
-                            except:
-                                base_logger.error("SP_ERROR" +',id='+self.order_id)
-                                print get_tb_info()
-                                continue 
-                #UserPhoneCall.create_calls(self.user_id,save_list,source='sp')
-            return True
-        except:
-            self.error += "sp get error,"
-            base_logger.error('SP_ERROR: '+get_tb_info())
-            print get_tb_info()
-            return False
-    '''
+   
     def init_contact(self):
-
-        ucl = UserContact.objects.filter(owner_id=self.user_id)
+        ucl = UserContact.objects.filter(owner_phone=u'18204315019')
         self.contacts =  [c for c in ucl]
-
         #更新手机归属地
         for c in self.contacts:
             # c.phone = normalize_num(c.phone)
-            l = self.ext_api.get_phone_location(c.phone)
+            phone = c.phone.replace('-','')
+            print phone
+            if "+86" == phone[:3]:
+                phone = phone[3:]
+            elif '86' == phone[:2]:
+                phone = phone[2:]
+            elif '+0086'== phone[:4]:
+                phone = phone[4:]
+            c.name=c.name.replace(' ','')
+            l = self.ext_api.get_phone_location(phone)
             c.phone_location = l['province'] + "-" + l['city'] + "-" + l['supplier']
             try:
                 c.save()
@@ -252,14 +187,11 @@ class BaseData(object):
                 base_logger.error(get_tb_info())
                 base_logger.error("SaveContactError" + c.phone + ",uid=" + self.user_id)
                 continue
-
-
         #得到 含有有意义名字的通信录
         num_map = {}
         for c in self.contacts:
             if c.name.isdigit():
                 continue
-            #if len(c.phone) <=6:
             if not self.ext_api.is_normal_phonenum(c.phone):
                 continue
             if c.name in num_map:
