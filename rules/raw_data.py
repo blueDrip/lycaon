@@ -14,11 +14,60 @@ from django.conf import settings
 # from raven.contrib.django.raven_compat.models import client
  
 #用户通讯录
+
 class UserContact(Document):
-    username = StringField(default = str)
-    owner_id = StringField(default = str)
-    order_id = StringField(default = str)
-    create_time = DateTimeField()
+    phone = StringField(default=str, unique_with=['owner_phone', 'name'])
+    owner_phone = StringField(required=True)
+    created_time = datetime.datetime.now()
+    phone_location = StringField(default=str)
+    source = StringField(default=str) #usercontact来源 1:通讯录，2.sp
+    created_at = DateTimeField()  # 手机内创建时间
+    name = StringField(default=str)
+    call_count = IntField(default=int)
+    device_id = StringField(default=str)
+
+    @classmethod
+    def create_contact(cls,data):
+        c = cls()
+
+        c.phone = data.phone
+        c.owner_phone = data.owner_phone
+        c.created_time = data.created_time
+        c.phone_location = data.phone_location
+        c.source = data.source #usercontact来源 1:通讯录，2.sp
+        c.created_at = data.created_at # 手机内创建时间
+        c.name = data.name
+        c.call_count = data.call_count
+        c.device_id = data.device_id
+        try:
+            return c.save()
+        except:
+            
+            return None
+
+    @classmethod
+    def create_contacts(cls,contacts):
+        contacts_filter = filter(
+        None,
+        [cls.create_contact(c) for c in contacts])
+        if not contacts_filter:
+            return None
+        try:
+            cls.objects.insert(
+                contacts_filter,
+                write_concern={'continue_on_error': True})
+        #except NotUniqueError:
+        #    return None
+        except:
+            print 'err'
+            return none
+        #except:
+        #    if settings.DEBUG:
+        #        traceback.print_exc()
+        #    else:
+        #       client.captureException()        
+        return 'sss'    
+
 class UserCallPhone(Document):
     username = StringField(default = str)
     owner_id = StringField(default = str)
@@ -56,13 +105,14 @@ class UserCallPhone(Document):
         [cls.create_call(c) for c in contacts])
         if not contacts_filter:
             return None
-        #try:
+        try:
             cls.objects.insert(
                 contacts_filter,
                 write_concern={'continue_on_error': True})
         #except NotUniqueError:
         #    return None
-        #except:
+        except:
+            return None
         #    if settings.DEBUG:
         #        traceback.print_exc()
         #    else:
@@ -105,13 +155,14 @@ class UserShortMessage(Document):
         
         if not smss_filter:
             return None
-        #try:
+        try:
             cls.objects.insert(
                 smss_filter,
                 write_concern={'continue_on_error': True})
         #except NotUniqueError:
         #    return None
-        #except:
+        except:
+            return None
         #    if settings.DEBUG:
         #        traceback.print_exc()
         #    else:

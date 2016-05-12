@@ -8,12 +8,14 @@ sys.setdefaultencoding('utf8')
 from rules.base import get_right_datetime
 from rules.models import  BaseRule
 from rules.raw_data import minRule
+from datetime import datetime,timedelta
 class JD(BaseRule):
     def __init__(self,basedata):
         self.address_map={}
         self.consume_before_3mon_list=[]
         self.consume_after_list=[]
         self.login_his_map={}
+        self.address_info_map={}
         self.load_data(basedata)
         self.min_rule_map={
 
@@ -32,14 +34,14 @@ class JD(BaseRule):
             30012:None,#半年内是否出现消费断档
 
         }        
-    def init_consume_map(self,consume_str):
+    def init_consume_map(self,consume_str,basedata):
         cl = consume_str.strip('##\*\*\*##').replace(u'￥','').split('##***##')
         clist=[]
         now=basedata.create_time
         for c in cl:
             cc = c.split('###$$$')
             kk=get_right_datetime(cc[0])
-            if kk>now-days(180) and key<=now:
+            if kk>now-timedelta(180) and kk<=now:
                 clist.append({
                     'time':kk,
                     'orderid':cc[1],
@@ -67,18 +69,19 @@ class JD(BaseRule):
             info = adr.replace('###','').split('$$$')
             key=len(info)>2 and  info[1] or None
             value=len(info)>3 and info[3] or None
+            phone=len(info)>7 and info[7] or None
             if key and key not in infomp:
                 infomp[key]=[]
             infomp[key].append({
                 'value':value,
-                'phone' :'1289009038'
+                'phone' :str(phone)
             })
 
-        return infomap
+        return infomp
 
     def load_data(self,basedata):
-        self.consume_before_3mon_list=self.init_consume_map(basedata.jd.three_month_before_consume)
-        self.consume_after_list = self.init_consume_map(basedata.jd.three_month_consume)
+        self.consume_before_3mon_list=self.init_consume_map(basedata.jd.three_month_before_consume,basedata)
+        self.consume_after_list = self.init_consume_map(basedata.jd.three_month_consume,basedata)
         self.login_his_map= self.init_login_history_list(basedata.jd.loginhistory)
         self.address_info_map = self.init_info_mp(basedata)
 
@@ -156,94 +159,133 @@ class JD(BaseRule):
         avg_days=inter*1.0/(len(login_his) or 1)
         r.name=u'平均登陆时间登陆间隔:'+str(avg_days)
         r.score=100
+        if avg_days>0 and avg_days<=5:
+            r.score=100
+        elif avg_days>5 and avg_days<=15:
+            r.score=80
+        elif avg_days>15 and avg_days<=30:
+            r.score=60
+        elif avg_days>30:
+            r.score=40
         return r
 
     #半年内消费金额
-    def get_consume_amount_harf_year(self,basedata):
+    def get_consume_amount_harf_year(self):
         consume_list=self.consume_after_list
         consume_list.extend(self.consume_before_3mon_list)
-        for it in self.consume_list:
-            amount+=it['money']            
-        print amount
-    #半年内消费次数
-    def get_consume_times_harf_year(self,basedata):
-        consume_list=self.consume_after_list
-        consume_list.extend(self.consume_before_3mon_list)
-        for it in self.consume_list:
-            times+=1
-        print times
-    #收件人中有申请人
-    def owner_name_in_address(self,basedata):
-        
+        amount=0
+        for it in consume_list:
+            amount+=it['money']
 
-    def init_adress_map():
-        
+        r=minRule()
+        r.score=0
+        r.value=str(amount)
+        r.source=str(amount)
+        r.name=u'半年内消费金额'
+        if amount>0 and amount<=500:
+            r.score=20
+        elif amount>500 and amount<=1000:
+            r.score=50
+        elif amount>1000 and amount<=2000:
+            r.score=70
+        elif amount>2000 and amount<=3000:
+            r.score=80
+        elif amount>3000:
+            r.score=100
+        return r
+    #半年内消费次数
+    def get_consume_times_harf_year(self):
+        consume_list=self.consume_after_list
+        consume_list.extend(self.consume_before_3mon_list)
+        times = len(consume_list)
+        r = minRule()
+        r.score = 0
+        r.name = u'半年内消费次数'
+        r.value=str(times)
+        r.source=str(times)
+        if times>0 and times<=10:
+            r.score=50
+        elif times>10 and times<=30:
+            r.score=80
+        elif times>30:
+            r.score=100
+        return r
     #收货地址个数
     def get_address(self):
         r=minRule()
-        #sub_str = re.sub('\t|\n|\r|\s+','',basedata.jd.address)
-        #sub_list = sub_str.strip('#***#').split('#***#')
-        #infomp={}
-        #for adr in sub_list:
-        #    info = adr.replace('###','').split('$$$')
-        #    key=len(info)>2 and  info[1] or None
-        #    value=len(info)>3 and info[3] or None
-        #    if key and key not in infomp:
-        #        infomp[key]=[]
-        #    infomp[key].append({
-        #        'value':value,
-        #        'phone' :'1289009038'
-        #    })
         ss=''
         count_mp={}
-        for k,v in infomp.items():
+        for k,v in self.address_info_map.items():
             ss+='收件人:'+k+'\n'
             for it in v:
-                ss+='\t地址:'+it+'\n'
-                if it not in count_mp:
-                    count_mp[it]=0
+                ss+='\t地址:'+it['value']+'\n'
+                if it['value'] not in count_mp:
+                    count_mp[it['value']]=0
         r.value=ss
         r.score=0
-        count_address=len(count_mp.keys())
-        r.name=u'收货地区个数:'+str(infomp and len(count_mp.keys()))
+        count_address = len(count_mp.keys())
+        r.name=u'收货地区个数:'+str(count_address)
         if count_address<=15:
             r.score=100
         elif count_address>15 and count_address<=30:
             r.score=70
-        r.source=str(infomp and len(count_mp.keys()))
+        r.source=str( len(count_mp.keys()))
         return r
     #收件人电话号码出现在通讯录中
     def address_phone_in_contact(self,basedata):
-        phone_list=[ v['phone'] for k,v in self.infomap.item() ]
-        for c in contact:
+        phone_list=[]
+        for k,v in self.address_info_map.items():
+            for it in v:
+                if it['phone'] not in phone_list:
+                    phone_list.append(it['phone'])
+        for c in basedata.good_contacts:
             if len(c.phone)>=11:
-                str_=c[0:4]+'****'+c[8:]
+                str_=c[0:3]+'****'+c[7:]
                 if str_ in phone_list:
                     print str_
         
     #收件人号码出现下短信中
     def address_phone_in_sms(self,basedata):
-        phone_list=[ v['phone'] for k,v in self.address_info_map.item() ]
-        for sms in self.sms_record_detail:
+        phone_list=[]
+        for k,v in self.address_info_map.items():
+            for it in v:
+                if it['phone'] not in phone_list:
+                    phone_list.append(it['phone'])        
+        for sms in basedata.sp_sms:
             if len(sms.phone)>=11:
-                str_=c[0:4]+'****'+c[8:]
+                str_=sms.phone[0:3]+'****'+sms.phone[7:]
                 if str_ in phone_list:
                     print str_
-    #收件人姓名出现在通话记录中
+    #收件人号码出现在通话记录中
     def address_phone_in_call(self,basedata):
-        phone_list=[ v['phone'] for k,v in self.address_info_map.item() ]
-        for c in self.phone_record_detail:
+        phone_list=[]
+        for k,v in self.address_info_map.items():
+            for it in v:
+                if it['phone'] not in phone_list:
+                    phone_list.append(it['phone'])
+        for c in basedata.sp_calls:
             if len(c.phone)>=11:
-                str_=c[0:4]+'****'+c[8:]
+                str_=c.phone[0:3]+'****'+c.phone[7:]
                 if str_ in phone_list:
                     print str_
     #手机归属地中出现在收货地址中
-    def ower_phone_location_in_address(self,basedata):
-        phone_lv=[ v['value'] for k,v in self.address_info_map.item() ]
-        user_phone_location=''
+    def owner_phone_location_in_address(self,basedata):
+        phone_lv = []
+        for k,v in self.address_info_map.items():
+            for it in v:
+                if it['value'] not in phone_lv:
+                    phone_lv.append(it['value'])
+        user_phone_location=basedata.user_plocation
         for pl in phone_lv:
             if user_phone_location in pl:
                 print pl
+    #收件人中有申请人
+    def owner_name_in_address(self,basedata):
+        owner_name=basedata.username
+        for k,v in self.address_info_map.items():
+            if k == owner_name:
+                print '>>>>>>',k
+            print k
     #半年内出现消费断档的天数
     def grp_consume_in_harf_year(self,basedata):
         pass
