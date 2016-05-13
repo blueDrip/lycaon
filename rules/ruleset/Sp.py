@@ -6,7 +6,6 @@ reload(sys)
 import json
 import re
 from datetime import datetime,timedelta
-sys.setdefaultencoding('utf8')
 from django.conf import settings
 from rules.raw_data import minRule
 from rules.models import BaseRule
@@ -70,20 +69,23 @@ class Sp(BaseRule):
                 })
         return charge_mp
 
-    #通话记录
+    #半年内通话记录
     def init_phone_record_mp(self,basedata):
         cmp={}
+        now=basedata.create_time
         for call in basedata.sp_calls:
-            if call.phone not in cmp:
-                print call.phone_location
-                cmp[call.phone]=call.phone_location
+            if call.call_time>now-timedelta(180) and call.call_time<=now:
+                if call.phone not in cmp:
+                    cmp[call.phone]=call.phone_location
         return cmp
-    #短信记录
+    #半年内短信记录
     def init_sms_record_mp(self,basedata):
         smsmap={}
+        now = basedata.create_time
         for sms in basedata.sp_sms:
-            if sms.phone not in smsmap:
-                smsmap[sms.phone] = sms.phone_location
+            if sms.send_time>now-timedelta(180) and sms.send_time<=now:
+                if sms.phone not in smsmap:
+                    smsmap[sms.phone] = sms.phone_location
         return smsmap
 
     '''半年内充值金额'''
@@ -95,9 +97,9 @@ class Sp(BaseRule):
         amount = 0
         for k,v in re_map.items():
             amount+=float(v)
-            r.value+='\n时间:'+str(k)+'; 金额:'+v+'元'
         r.value = '\t'.join([ '时间:'+str(k)+'; '+str(v) for k,v in re_map.items() ])
-        r.name='半年内充值金额:'+str(amount)
+        r.name='半年内充值金额'
+        r.feature_val = '充值金额:'+str(amount)+'元'
         if amount<=30:
             r.score=10
         elif amount>30 and amount<100:
@@ -115,12 +117,13 @@ class Sp(BaseRule):
         re_map=self.recharge_map
         times=len(re_map.keys())
         r.value='\t'.join([ '时间:'+str(k)+'; '+'1次' for k,v in re_map.items() ])
-        r.name='半年内充值次数:'+str(times)
+        r.name='半年内充值次数'
+        r.feature_val = '充值次数:'+str(times)+'次'
         if times<=30:
             r.score=10
         elif times>30 and times<100:
             r.score=50
-        elif tiems>=100:
+        elif times>=100:
             r.amount=100
         r.source = str(times)
         return r
@@ -139,8 +142,9 @@ class Sp(BaseRule):
             v_next=re_list[i+1]
             days+=(v_next-v).days
         avg=days/(len(re_list) or 1)
-        r.value='\t'.join([ '登陆时间:'+str(it) for it in re_list])
+        r.value='\t'.join(['登陆时间:'+str(it) for it in re_list])
         r.name=u'半年内平均充值间隔'+str(avg)
+        r.feature_val=str(avg)+'天/次'
         if avg>0 and avg<5:
             r.score=100
         elif avg>=5 and avg<10:
@@ -172,8 +176,8 @@ class Sp(BaseRule):
         r.name='主叫次数'
         r.value=str(times)
         r.source = str(times)
+        r.feature_val = str(times)+'次'
         return r
-
    
     '''主叫时长'''
     def get_call_in_duration(self,basedata):
@@ -198,6 +202,7 @@ class Sp(BaseRule):
         elif duration>10000:
             r.score=100
         r.value = str(duration)
+        r.feature_val = str(duration)+'s'
         return r
     '''被叫次数'''
     def get_call_out_times(self,basedata):
@@ -217,6 +222,7 @@ class Sp(BaseRule):
             r.score=40
         r.source=str(times)
         r.value = str(times)
+        r.feature_val = str(times)+'次'
         return r
     '''被叫时长'''
     def get_call_out_duration(self,basedata):
@@ -238,36 +244,44 @@ class Sp(BaseRule):
         elif avg>=4000:
             r.score=100
         r.value = str(avg)
+        r.feature_val = str(duration)+'s'
         return r
 
     '''通话记录电话号码出现在通讯录的比例'''
     def callsame_location_with_contact(self,basedata):
         contact = basedata.contacts
-        count=0
+        value,count=[],0
         conlen = len(contact)
         for it in contact:
             if it.phone in self.call_record_map:
                 count+=1
+                value.append(
+                    it.name+';'+it.phone+';'+it.phone_location
+                )
         radio=count*1.0/(len(contact) or 1)
         r = minRule()
         r.name = '通话记录电话号码出现在通讯录的比例'
-        r.value = str(radio)
+        r.value = '\t'.join(value)
         if radio>0 and radio<=1:
             r.score = radio*100
         elif radio>1:
             r.score = 100
         r.source = '{"count":%s,"conlen":%s}'%(str(count),str(conlen))
+        r.feature_val = "%.2f"%(radio)
         return r
 
 
     '''短信记录电话号码出现在通讯录中的比例'''
     def smssame_location_with_contact(self,basedata):
         contact=basedata.contacts
-        count=0
+        value,count=[],0
         conlen = len(contact)
         for it in contact:
             if it.phone in self.sms_record_map:
                 count+=1
+                value.append(
+                    it.name+';'+it.phone+';'+it.phone_location
+                )
         radio = count*1/(conlen or 1)
         r = minRule()
         r.name = '短信记录电话号码出现在通讯录的比例'
@@ -275,10 +289,10 @@ class Sp(BaseRule):
             r.score = radio*100
         elif radio>1:
             r.score = 100
-        r.value = str(radio)
+        r.value = '\t'.join(value)
+        r.feature_val = "%.2f"%(radio)
         r.source = '{"count":%s,"conlen":%s}'%(str(count),str(conlen))
         return r
-
 
     '''通话记录中电话号码在老家的比例'''
     def callsame_location_with_idcard(self,basedata):
@@ -290,7 +304,6 @@ class Sp(BaseRule):
             '''级别:省,市/县'''
             if location[0] in home_location or location[1] in home_location:
                 count+=1 
-                #print k,v,home_location
                 value+=k+';'+v+'\t'
 
         call_len = len(self.call_record_map.keys())
@@ -306,6 +319,7 @@ class Sp(BaseRule):
         elif radio>1:
             r.score = 50
         r.source = '{"count":%s,"conlen":%s}'%(str(count),str(call_len))
+        r.feature_val = "%.2f"%(radio)
         return r
 
 
@@ -320,7 +334,6 @@ class Sp(BaseRule):
             if location[0] in home_location or location[1] in home_location:
                 count+=1
                 value+=k+';'+v+'\t'
-                #print k,v,home_location
         sms_len = len(self.sms_record_map.keys())
         radio = count*1.0/(sms_len or 1)
         r = minRule()
@@ -333,6 +346,7 @@ class Sp(BaseRule):
         elif radio>1:
             r.score = 50
         r.source = '{"count":%s,"smslen":%s}'%(str(count),str(sms_len))
+        r.feature_val = "%.2f"%(radio)
         return r
 
 
@@ -345,8 +359,7 @@ class Sp(BaseRule):
             location=v.split('-')
             if location[1] in user_plocation or location[0] in user_plocation:
                 count+=1
-                print k,v,user_plocation
-
+                value += k+';'+ v + '\t'
         call_len = len(self.call_record_map.keys())
         radio = count*1.0/(call_len or 1)
         r = minRule()
@@ -361,6 +374,7 @@ class Sp(BaseRule):
         elif radio>1:
             r.score = 20
         r.source = '{"count":%s,"calllen":%s}'%(str(count),str(call_len))
+        r.feature_val = "%.2f"%(radio)
         return r
 
     '''短信记录中电话号码与申请人同一手机归属地的比例'''
@@ -370,7 +384,6 @@ class Sp(BaseRule):
         value=''
         for k,v in self.sms_record_map.items():
             location=v.split('-')
-            print v
             if location[1] in user_plocation or location[0] in user_plocation:
                 count+=1
                 print k,v,user_plocation
@@ -390,6 +403,7 @@ class Sp(BaseRule):
         elif radio>1:
             r.score = 20
         r.source = '{"count":%s,"calllen":%s}'%(str(count),str(sms_len))
+        r.feature_val = "%.2f"%(radio)
         return r
 
     '''是否设置21呼叫转移'''
@@ -397,15 +411,19 @@ class Sp(BaseRule):
         r=minRule()
         r.name='是否设置21呼叫转移'
         r.score=0
-        value = ''
+        value = []
         for c in basedata.contacts:
             if c.phone[0:2] =='21' or c.phone[0:3] =='*21' or c.phone[0:3]=='#21':
-                value += c.phone+'\t'
+                value.append(
+                    c.name+';'+c.phone+';'+c.phone_location
+                )
         if value:
             r.score = 10
-            r.value = value
+            r.value = '\t'.join(value)
+            r.feature_val = str(len(value))+'个号码被设置'
             return r
         r.value = '无'
+        r.feature_val = str('没有号码被设置')
         r.score=100
         return r 
 
@@ -414,34 +432,38 @@ class Sp(BaseRule):
         r=minRule()
         r.name=u'是否被催收'
         r.score=0
-        value = ''
+        value = []
         for k,v in self.call_record_map.items():
             if k in self.dunning_map:
-                value+=k+'\t'
+                value.append(k)
         if value:
             r.score=10
-            r.value=value
+            r.value='\t'.join(value)
+            r.feature_val = '被电话催收过%s次'%(str(len(value)))
             return r
-        r.name = '没有被催收过'
+        r.name = '没有被电话催收过'
+        r.feature_val = '无'
         r.score=100
         return r
 
     '''是否被短信催收'''
     def is_dunning_sms(self):
         r=minRule()
-        r.name=u'是否被催收'
+        r.name=u'是否短信被催收'
         r.score=0
-        value=''
+        value=[]
         for k,v in self.sms_record_map.items():
             if k in self.dunning_map:
-                value+=k+'\t'
+                value.append(k)
         if value:
             r.score=10
             r.value=value
+            r.feature_val = '被短信催收过%s次'%(str(len(value)))
             return r
-
+        
         r.score=100
         r.value='短信不含催收号码'
+        r.feature_val = '无'
         return r
 
     '''手机归属地与上网所在地一致'''
@@ -449,16 +471,22 @@ class Sp(BaseRule):
         net_map={}
         user_plocation=basedata.user_plocation
         r=minRule()
+        r.name = '手机归属地与上网所在地一致'
         user_plocation=basedata.user_plocation
         for net in basedata.sp_net:
             if net.net_location not in net_map:
-                net_map[net.net_location]=''
+                net_map[net.net_location]=0
+            net_map[net.net_location] += 1
+        r.value = '\t'.join([k+';出现次数:'+ str(v) +'次' for k,v in net_map.items()])
         if user_plocation not in net_map:
             r.score=0
+            r.feature_val = '不一致'
+            r.source = str(0) #0：不一致
+            return r
+        r.source = 1
         r.score=100
-        r.name = '手机归属地与上网所在地一致'
-        r.value = str(r.score)
         return r
+
     '''与021,0755通话次数'''
     def call_with_021_0755(self,basedata):
         resmap={}
@@ -467,7 +495,7 @@ class Sp(BaseRule):
                 kk=None
                 phone=call.phone
                 datastr='通话开始时间:'+str(call.calling_time)+';通话时长:'+str(call.calling_duration)+'s;'
-                datastr+='号码:'+phone+';'+phone_type[call.type]+';信息来源:'+call.source
+                datastr+='号码:'+phone+';'+';信息来源:'+call.source
                 if u'021' in phone[0:3]:
                     kk=phone[0:7]+'xxxx'
                 elif u'0755' in phone[0:4]:
@@ -483,10 +511,12 @@ class Sp(BaseRule):
         r = minRule()
         r.name = '与021,0755通话次数'
         if resmap:
-            r.value='\t'.join([ k+''+'\t'.join(v)  for k,v in resmap.items()])            
+            r.value='\t'.join([ k+''+'\t'.join(v)  for k,v in resmap.items()])
+            r.feature_val = '出现%s次'%(len(resmap.keys))   
             r.score=10
             return r
         r.score=100
+        r.feature_val = '未出现'
         r.value = '0'
         return r
 
@@ -497,15 +527,18 @@ class Sp(BaseRule):
         r.score=0
         r.value=''
         r.name = '申请号与本机有通话'
+        r.feature_val = '无'
         if user_phone in self.sms_record_map or user_phone in self.sms_record_map:
             r.score=100
             r.value+=user_phone+'\t'
+            r.feature_val = '有'
         return r
     '''通话记录长度'''
     def call_record_len(self):
         call_len = len(self.call_record_map.keys())
         r = minRule()
         r.name = '通话记录长度'
+        r.feature_val = str(call_len)
         if call_len<30:
             r.score=10
         elif call_len>=30 and call_len<50:
@@ -522,6 +555,7 @@ class Sp(BaseRule):
         sms_len = len(self.sms_record_map.keys())
         r = minRule()
         r.name = '短信记录长度'
+        r.feature_val = str(sms_len)
         if sms_len<30:
             r.score=10
         elif sms_len>=30 and sms_len<50:
@@ -532,7 +566,6 @@ class Sp(BaseRule):
             r.score = 100
         r.value='暂不显示短信记录'
         return r
-
 
 
     def get_score(self):

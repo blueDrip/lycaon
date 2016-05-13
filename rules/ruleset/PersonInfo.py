@@ -31,7 +31,8 @@ class PersonInfo(BaseRule):
             r.score=100
         elif age>40:
             r.score=70
-        r.value=str(age)+'岁'
+        r.value=str(age)+u'岁'
+        r.feature_val=str(age)+u'岁'
         r.name=u'年龄'
         return r
     def get_sex(self,basedata):
@@ -45,6 +46,7 @@ class PersonInfo(BaseRule):
         elif sex==u'女':
             r.score=100
         r.name=u'性别'
+        r.feature_val = sex
         return r
 
     def get_edu(self,basedata):
@@ -62,10 +64,11 @@ class PersonInfo(BaseRule):
             r.score=60
         elif edu==u'初中':
             r.score=40
+        r.feature_val = edu
         return r
     def get_residenza(self):
         r=minRule()
-        r.value=u''
+        r.value=u'临夏县'
         r.name=u'住址'
         r.source=u'县'
         r.score=30
@@ -76,6 +79,7 @@ class PersonInfo(BaseRule):
         r.name=u'是否结婚'
         r.source=u'结婚'
         r.score=0
+        r.feature_val=r.value
         return r
     def is_black(self):
         r=minRule()
@@ -83,6 +87,7 @@ class PersonInfo(BaseRule):
         r.name=u'是否黑名单'
         r.score=100
         r.source=u'是'
+        r.feature_val = r.value
         return r
     def get_profession(self):
         r=minRule()
@@ -90,6 +95,7 @@ class PersonInfo(BaseRule):
         r.name=u'职业'
         r.score=100
         r.source=u'待定'
+        r.feature_val = r.value
         return r
     def is_samephoto_with_idcard(self):
         r=minRule()
@@ -97,6 +103,7 @@ class PersonInfo(BaseRule):
         r.name=u'身份证照片是否一致'
         r.score=100
         r.source=u'相同'
+        r.feature_val = r.value
         return r
     def get_score(self):
         min_rule_map = self.min_rule_map

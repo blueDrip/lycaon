@@ -171,7 +171,6 @@ class BaseData(object):
         for c in self.contacts:
             # c.phone = normalize_num(c.phone)
             phone = c.phone.replace('-','')
-            print phone
             if "+86" == phone[:3]:
                 phone = phone[3:]
             elif '86' == phone[:2]:
@@ -179,6 +178,7 @@ class BaseData(object):
             elif '+0086'== phone[:4]:
                 phone = phone[4:]
             c.name=c.name.replace(' ','')
+            c.phone=phone
             l = self.ext_api.get_phone_location(phone)
             c.phone_location = l['province'] + "-" + l['city'] + "-" + l['supplier']
             try:
@@ -208,157 +208,9 @@ class BaseData(object):
         return 
 
 
-    def init_calls(self):
 
-#        upcl = UserPhoneCall.objects.filter(owner_id=self.user_id)
-#        self.calls = [c for c in upcl]
-
-        #print 'changdu',len(self.calls)
-        if self.profile.wecash_service_provider_authorized:
-            self.init_sp_info()
-            #upcl = UserPhoneCall.objects.filter(owner_id=self.user_id)
-            #self.calls = [c for c in upcl]
-
-
-        namemap = {c.phone:c.name  for c in self.contacts }
-#        for c in self.calls:
-#            if c.phone in namemap:
-#                c.name = namemap[c.phone]
-
-        for c in self.sp_calls:
-            if c.phone in namemap:
-                c.name = namemap[c.phone]
-
-        num_map = {}
-        sp_num_map = {}
-        for c in self.sp_calls:
-            if c.source =='sp':
-                if c.phone in sp_num_map:
-                    sp_num_map[c.phone].append(c)
-                else:
-                    sp_num_map[c.phone] = [c] 
-        for c in self.calls:
-            if c.phone in num_map:
-                num_map[c.phone].append(c)
-            else:
-                num_map[c.phone] = [c] 
-
-
-        self.good_calls = [ v for k,v in num_map.items()]
-        self.sp_good_calls = [ v for k,v in sp_num_map.items()]
-
-        print 'init calls1'
-        for calls in self.good_calls:
-            l = self.ext_api.get_phone_location(calls[0].phone)
-            for c in calls:
-                if c.phone_location =="":
-                    c.phone_location = l['province'] + "-" + l['city'] + "-" + l['supplier']
-#                    try:
-#
-#                        c.save()
-#                    except NotUniqueError:
-#                        continue
-#
-#                    except:
-#                        base_logger.error("SaveCallError " + c.phone + ",uid=" + self.user_id + '  ' +get_tb_info())
-#                        print get_tb_info()
-#                        continue
-
-        for calls in self.sp_good_calls:
-            l = self.ext_api.get_phone_location(calls[0].phone)
-            for c in calls:
-                if c.phone_location =="":
-                    c.phone_location = l['province'] + "-" + l['city'] + "-" + l['supplier']
-#                    try:
-#                        c.save()
-#                    except NotUniqueError:
-#                        continue
-#                    except:
-#                        base_logger.error("SaveCallError " + c.phone + ",uid=" + self.user_id + '  ' +get_tb_info())
-#                        print get_tb_info()
-#                        continue
-
-        #write2redis(self.user_id,self.sp_calls)
-        print 'init calls2'
-        for calls in self.good_calls:
-            calls.sort(key=lambda x:x.calling_time, reverse=True)    
-
-        return 
-
-#    def get_calls(self):
-#        upcl = UserPhoneCall.objects.filter(owner_id=self.user_id)
-#        self.calls = [for c in upcl]
-#        num_map = {}
-#        for c in self.calls:
-#            if c.phone in num_map:
-#                num_map[c.phone].append(c)
-#            else:
-#                num_map[c.phone] = [c] 
-#
-#        self.good_calls = [ v for k,v in num_map.items()]
-#
-#        for calls in self.good_calls:
-#            calls.sort(key=lambda x:x.calling_time, reverse=True)    
-#        return self.good_calls
        
-    def init_sms(self):
-        try:
-            sl = UserShortMessage.objects.filter(owner_id=self.user_id)
-            self.sms = [ s for s in sl ]
-            num_map = {}
-            for c in self.sms:
-                if c.phone in num_map:
-                    num_map[c.phone].append(c)
-                else:
-                    num_map[c.phone] = [c] 
 
-            self.good_sms = [ v for k,v in num_map.items()]
-                
-            for ss in self.good_sms:
-            # c.phone = normalize_num(c.phone)
-                l = self.ext_api.get_phone_location(ss[0].phone)
-     
-                for c in ss:
-                    c.phone_location = l['province'] + "-" + l['city'] + "-" + l['supplier']
-#                    try:
-#                        c.save()
-#                    except:
-#                        base_logger.error(get_tb_info())
-#                        base_logger.error("SaveSmsError" + c.phone + ",uid=" + self.user_id)
-#                        continue
-        except:
-            base_logger.error(get_tb_info())
-            print get_tb_info()
-        return 
-
-    def init_system_info(self):
-        try:
-            #self.system_info_list = self.get_sys_list()
-            self.system_info_list = self.get_sys_list()
-            self.system_info = get_system_info_by_order(self.order)
-            if self.system_info!=None:
-                if is_ios(self.system_info.device_type):
-                    self.device_type =0
-                else:
-                    self.device_type = 1
-                self.gpslocation = self.system_info.gps
-                if self.gpslocation =="":
-                    gps = self.ext_api.get_gps_location_new(self.system_info.latitude,self.system_info.longitude)
-                    self.gpslocation = gps['formatted_address']
-                    self.system_info.gps = gps['formatted_address']
-            #self.iplocation = self.ext_api.get_ip_location(self.system_info.ip)
-                iplocation = self.ext_api.get_ip_location(self.system_info.ip)
-                if iplocation != None:
-                    self.system_info.iplocation = iplocation['country']+"-"+ iplocation['province'] +"-"+ iplocation['city']
-
-                self.system_info.save()
-
-        except:
-            cu = Customer.objects.get(user=self.order.user)
-            self.device_type = cu.device_type
-            base_logger.error(get_tb_info()+",id="+self.order_id)
-            print get_tb_info()+",id="+self.order_id
-            self.system_info = None
 
 
     #添加短信和电话中的联系人到通讯录中
@@ -422,19 +274,12 @@ class BaseData(object):
 #    def test_init(self):
 #        self.init_contact(self.user_id)
     def init(self):
-        base_logger.info("[ Order Init Begin ] orderid = "+self.order_id+",user_id = " +self.user_id)
+        base_logger.info("[  Init Begin ] orderid = "+self.order_id+",user_id = " +self.user_id)
         #profile
-
         self.sex, self.identity_location, self.identity_birth = self.ext_api.get_info_by_id(self.identity)
-        self.profile_change_log_list = ProfileChangeLog.objects.filter(user=self.user_id)
+        #self.profile_change_log_list = ProfileChangeLog.objects.filter(user=self.user_id)
 
         self.self_phone_location = self.ext_api.get_phone_location(self.phone) 
-#
-
-#        ot = OrderTrace.create_order_trace(self.order)
-#        if ot.sp_user_info !=""
-#            self.sp_userinfo_dict = json.loads(ot.sp_user_info)
-        #contacts,calls ,sms
         print "contacts,calls ,sms1"
         self.init_contact()
         print "contacts,calls ,sms2"
@@ -449,56 +294,3 @@ class BaseData(object):
         self.sos_user_list = self.get_sos_user()
 
         return 
-
-    def get_sys_list(self):
-        smap = {} 
-        ot = self.order.created_time + datetime.timedelta(hours=8)
-        ot = ot.replace(tzinfo=None)
-        ot = ot - datetime.timedelta(days=30)
-
-        try:
-            cu = Customer.objects.get(user=self.order.user)
-            sl = []
-            if len(cu.device_id) > 5:
-                sl = SystemInfo.objects.filter(device_id=cu.device_id,created_time__gt=ot)
-            for s in sl:
-                if str(s.id) not in smap:
-                    smap[str(s.id)]= s
-            
-            sl = SystemInfo.objects.filter(user_id=str(self.order.user.id),device_id__ne='',created_time__gt=ot)
-            for s in sl:
-                if str(s.id) not in smap:
-                    smap[str(s.id)]=s
-            return [ v for k,v in smap.items() ]
-
-        except:
-            base_logger.error(get_tb_info())
-            print get_tb_info()
-            return []
-
-    def get_sos_user(self):
-        json_str = self.profile.urgent_contacts
-        try:
-            info = json.loads(json_str)
-            sos_list = []
-            for i in info:
-                name_key = 'Name'
-                phone_key = 'Phone'
-                
-                if 'name' in i:
-                    name_key = 'name'
-                    phone_key = 'phone'
-
-                g = {}
-                g['name'] = i[name_key]
-                g['phone'] = i[phone_key].replace(' ','')
-                g['relationship'] = i['Relationship']
-                location = self.ext_api.get_phone_location(g['phone'])
-
-                g['province'] =  location['province']
-                g['city'] = location['city']
-                sos_list.append(g)
-            return sos_list
-        except:
-            base_logger.error(get_tb_info())
-
