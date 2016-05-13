@@ -1,7 +1,6 @@
 # coding=utf8
 import sys
 reload(sys)
-sys.setdefaultencoding('utf-8')
 # Create your models here.
 import datetime
 from mongoengine import (
@@ -61,7 +60,7 @@ class UserContact(Document):
         #    return None
         except:
             print 'err'
-            return none
+            return None
         #except:
         #    if settings.DEBUG:
         #        traceback.print_exc()
@@ -333,8 +332,6 @@ class minRule(Document):
     name = StringField(default = str)
     source = StringField(default = str)
 
-    def get_items(self):
-        return self.value.split('\t')
 
 class DetailRule(Document):
     rule_id = IntField(required=True)
