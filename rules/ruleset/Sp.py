@@ -22,24 +22,27 @@ class Sp(BaseRule):
         self.dunning_map=self.init_cuishou_map()
        
         self.min_rule_map={
-            20001:None,#半年内充值金额
-            20002:None,#半年内充值次数
-            20003:None,#半年内平均充值间隔(天/次)
-            20004:None,#半年内主叫次数
-            20005:None,#半年内被叫次数
-            20006:None,#通话记录电话号码出现在通讯录的比例
-            20007:None,#短信记录电话号码出现在通讯录中的比例
-            20008:None,#通话记录电话号码在老家的比例
-            20009:None,#短信记录电话号码在老家的比例
-            20010:None,#通话记录中电话号码与申请人同一手机归属地的比例
-            20011:None,#短信记录中电话号码与申请人同一手机归属地的比例
-            20012:None,#是否设置21呼叫转移
-            20013:None,#是否电话被催收
-            20014:None,#是否被短信催收
-            20015:None,#手机所在地在上网地点出现次数
-            20016:None,#与021,0755通话次数
-            20017:None,#申请号与本机有通话
-            20018:None,#是否停机过
+            20001:self.call_record_len(),#通话记录长度是否合理
+            20002:self.sms_record_len(),#短信记录长度是否合理            
+            20003:self.get_incharge_amount_harf_year(),#半年内充值金额
+            20004:self.get_incharge_times_harf_year(),#半年内充值次数
+            20005:self.get_incharge_inter_days(),#半年内平均充值间隔(天/次)
+            20006:self.get_call_in_times(basedata),#半年内主叫次数
+            20007:self.get_call_in_duration(basedata),#半年内主叫时长
+            20008:self.get_call_out_times(basedata),#半年内被叫次数
+            20009:self.get_call_out_duration(basedata),#半年内被叫时长
+            20010:self.callsame_location_with_contact(basedata),#通话记录电话号码出现在通讯录的比例
+            20011:self.smssame_location_with_contact(basedata),#短信记录电话号码出现在通讯录中的比例
+            20012:self.callsame_location_with_idcard(basedata),#通话记录电话号码在老家的比例
+            20013:self.smssame_location_with_idcard(basedata),#短信记录电话号码在老家的比例
+            20014:self.callsame_location_with_userphone(basedata),#通话记录中电话号码与申请人同一手机归属地的比例
+            20015:self.smssame_location_with_userphone(basedata),#短信记录中电话号码与申请人同一手机归属地的比例
+            20016:self.set_21(basedata),#是否设置21呼叫转移
+            20017:self.is_dunning_call(),#是否电话被催收
+            20018:self.is_dunning_sms(),#是否被短信催收
+            20019:self.phone_location_int_net_location(basedata),#手机所在地在上网地点出现次数
+            20020:self.call_with_021_0755(basedata),#与021,0755通话次数
+            20021:self.userphone_in_calls_or_sms(basedata),#申请号与本机有通话
         }
 
     def init_cuishou_map(self):
@@ -156,8 +159,18 @@ class Sp(BaseRule):
             if call.call_type == u'主叫':
                 times+=1
         r = minRule()
+        if times>=0 and times<10:
+            r.score=10
+        elif times>10 and times<=20:
+            r.score = 20
+        elif times>20 and times<=30:
+            r.score = 30
+        elif times>30 and times<=50:
+            r.score = 50
+        elif times>50:
+            r.score=100
         r.name='主叫次数'
-        r.score=0
+        r.value=str(times)
         r.source = str(times)
         return r
 
@@ -172,6 +185,19 @@ class Sp(BaseRule):
         r.name='主叫时长'
         r.score=0
         r.source=str(duration)
+        if duration>0 and duration<=500:
+            r.score=20
+        elif duration>500 and duration<=1000:
+            r.score=30
+        elif duration>1000 and duration<=2000:
+            r.score=40
+        elif duration>2000 and duration<=5000:
+            r.score=60
+        elif duration>5000 and duration<=10000:
+            r.score=80
+        elif duration>10000:
+            r.score=100
+        r.value = str(duration)
         return r
     '''被叫次数'''
     def get_call_out_times(self,basedata):
@@ -189,6 +215,8 @@ class Sp(BaseRule):
             r.score=30
         elif times>=3000 and times<4000:
             r.score=40
+        r.source=str(times)
+        r.value = str(times)
         return r
     '''被叫时长'''
     def get_call_out_duration(self,basedata):
@@ -196,7 +224,6 @@ class Sp(BaseRule):
         for call in basedata.sp_calls:
             if call.call_type == u'被叫':
                 duration+=call.call_duration
-
         r = minRule()
         avg=duration
         r.name='被叫时长'
@@ -207,99 +234,214 @@ class Sp(BaseRule):
         elif avg>=1000 and avg<3000:
             r.score=30
         elif avg>=3000 and avg<4000:
-            r.score=40    
+            r.score=40
+        elif avg>=4000:
+            r.score=100
+        r.value = str(avg)
         return r
-
 
     '''通话记录电话号码出现在通讯录的比例'''
     def callsame_location_with_contact(self,basedata):
-        contact = basedata.good_contacts
+        contact = basedata.contacts
         count=0
+        conlen = len(contact)
         for it in contact:
             if it.phone in self.call_record_map:
                 count+=1
+        radio=count*1.0/(len(contact) or 1)
+        r = minRule()
+        r.name = '通话记录电话号码出现在通讯录的比例'
+        r.value = str(radio)
+        if radio>0 and radio<=1:
+            r.score = radio*100
+        elif radio>1:
+            r.score = 100
+        r.source = '{"count":%s,"conlen":%s}'%(str(count),str(conlen))
+        return r
+
+
     '''短信记录电话号码出现在通讯录中的比例'''
     def smssame_location_with_contact(self,basedata):
-        contact=basedata.good_contacts
+        contact=basedata.contacts
         count=0
+        conlen = len(contact)
         for it in contact:
             if it.phone in self.sms_record_map:
                 count+=1
+        radio = count*1/(conlen or 1)
+        r = minRule()
+        r.name = '短信记录电话号码出现在通讯录的比例'
+        if radio>0 and radio<=1:
+            r.score = radio*100
+        elif radio>1:
+            r.score = 100
+        r.value = str(radio)
+        r.source = '{"count":%s,"conlen":%s}'%(str(count),str(conlen))
+        return r
+
 
     '''通话记录中电话号码在老家的比例'''
     def callsame_location_with_idcard(self,basedata):
         home_location = basedata.home_location
         count=0
+        value = ''
         for k,v in self.call_record_map.items():
             location=v.split('-')
             '''级别:省,市/县'''
             if location[0] in home_location or location[1] in home_location:
                 count+=1 
-                print k,v,home_location
+                #print k,v,home_location
+                value+=k+';'+v+'\t'
+
+        call_len = len(self.call_record_map.keys())
+        radio = count*1.0/(call_len or 1)
+        r = minRule()
+        r.name = '通话记录中电话号码在老家的比例'
+        r.value = value
+
+        if radio>0 and radio<=0.1:
+            r.score = 100
+        elif radio>0.1 and radio<=1:
+            r.score = radio*100
+        elif radio>1:
+            r.score = 50
+        r.source = '{"count":%s,"conlen":%s}'%(str(count),str(call_len))
+        return r
+
 
     '''短信记录电话号码在老家的比例'''
     def smssame_location_with_idcard(self,basedata):
         home_location = basedata.home_location
         count=0
+        value = ''
         for k,v in self.sms_record_map.items():
             location=v.split('-')
             '''级别:省,市/县'''
             if location[0] in home_location or location[1] in home_location:
                 count+=1
-                print k,v,home_location
+                value+=k+';'+v+'\t'
+                #print k,v,home_location
+        sms_len = len(self.sms_record_map.keys())
+        radio = count*1.0/(sms_len or 1)
+        r = minRule()
+        r.name = '通话记录中电话号码在老家的比例'
+        r.value = value
+        if radio>0 and radio<=0.1:
+            r.score = 100
+        elif radio>0.1 and radio<=1:
+            r.score = radio*100
+        elif radio>1:
+            r.score = 50
+        r.source = '{"count":%s,"smslen":%s}'%(str(count),str(sms_len))
+        return r
+
 
     '''通话记录中电话号码与申请人同一手机归属地的比例'''
     def callsame_location_with_userphone(self,basedata):
         user_plocation = basedata.user_plocation
         count=0
+        value = ''
         for k,v in self.call_record_map.items():
             location=v.split('-')
             if location[1] in user_plocation or location[0] in user_plocation:
                 count+=1
                 print k,v,user_plocation
 
+        call_len = len(self.call_record_map.keys())
+        radio = count*1.0/(call_len or 1)
+        r = minRule()
+        r.name = '通话记录中电话号码与申请人同一手机归属地的比例'
+        r.value = value
+        if radio>0 and radio<=0.3:
+            r.score = 30
+        elif radio>0.3 and radio<=0.5:
+            r.score = 100
+        elif radio>0.5 and radio<=1:
+            r.score = 70
+        elif radio>1:
+            r.score = 20
+        r.source = '{"count":%s,"calllen":%s}'%(str(count),str(call_len))
+        return r
+
     '''短信记录中电话号码与申请人同一手机归属地的比例'''
     def smssame_location_with_userphone(self,basedata):
         user_plocation = basedata.user_plocation
         count=0
+        value=''
         for k,v in self.sms_record_map.items():
             location=v.split('-')
             print v
             if location[1] in user_plocation or location[0] in user_plocation:
                 count+=1
                 print k,v,user_plocation
+                value+=k+';'+v+'\t'
+
+        sms_len = len(self.sms_record_map.keys())
+        radio = count*1.0/(sms_len or 1)
+        r = minRule()
+        r.name = '短信记录中电话号码与申请人同一手机归属地的比例'
+        r.value = value
+        if radio>0 and radio<=0.3:
+            r.score = 30
+        elif radio>0.3 and radio<=0.5:
+            r.score = 100
+        elif radio>0.5 and radio<=1:
+            r.score = 70
+        elif radio>1:
+            r.score = 20
+        r.source = '{"count":%s,"calllen":%s}'%(str(count),str(sms_len))
+        return r
 
     '''是否设置21呼叫转移'''
     def set_21(self,basedata):
         r=minRule()
         r.name='是否设置21呼叫转移'
         r.score=0
+        value = ''
         for c in basedata.contacts:
             if c.phone[0:2] =='21' or c.phone[0:3] =='*21' or c.phone[0:3]=='#21':
-                return r
-        r.score=1
+                value += c.phone+'\t'
+        if value:
+            r.score = 10
+            r.value = value
+            return r
+        r.value = '无'
+        r.score=100
         return r 
 
     '''是否电话被催收'''
-    def is_dunning_call(self,basedata):
+    def is_dunning_call(self):
         r=minRule()
         r.name=u'是否被催收'
         r.score=0
+        value = ''
         for k,v in self.call_record_map.items():
             if k in self.dunning_map:
-                return r
-        r.score=1
+                value+=k+'\t'
+        if value:
+            r.score=10
+            r.value=value
+            return r
+        r.name = '没有被催收过'
+        r.score=100
         return r
 
     '''是否被短信催收'''
-    def is_dunning_sms(self,basedata):
+    def is_dunning_sms(self):
         r=minRule()
         r.name=u'是否被催收'
         r.score=0
+        value=''
         for k,v in self.sms_record_map.items():
             if k in self.dunning_map:
-                return r
-        r.score=1
+                value+=k+'\t'
+        if value:
+            r.score=10
+            r.value=value
+            return r
+
+        r.score=100
+        r.value='短信不含催收号码'
         return r
 
     '''手机归属地与上网所在地一致'''
@@ -313,7 +455,9 @@ class Sp(BaseRule):
                 net_map[net.net_location]=''
         if user_plocation not in net_map:
             r.score=0
-        r.score=1
+        r.score=100
+        r.name = '手机归属地与上网所在地一致'
+        r.value = str(r.score)
         return r
     '''与021,0755通话次数'''
     def call_with_021_0755(self,basedata):
@@ -335,123 +479,107 @@ class Sp(BaseRule):
                         resmap[kk].append(datastr)
             except:
                 continue
+
+        r = minRule()
+        r.name = '与021,0755通话次数'
         if resmap:
-            print 'hava'
+            r.value='\t'.join([ k+''+'\t'.join(v)  for k,v in resmap.items()])            
+            r.score=10
+            return r
+        r.score=100
+        r.value = '0'
+        return r
+
     '''申请号与本机有通话'''
     def userphone_in_calls_or_sms(self,basedata):
         user_phone=basedata.user_phone
+        r = minRule()
+        r.score=0
+        r.value=''
+        r.name = '申请号与本机有通话'
         if user_phone in self.sms_record_map or user_phone in self.sms_record_map:
-            return 100
-        return 0        
-
-    '''
-    def incharge_money_in_month(self):
-        r=minRule()
-        r.value=''
-        r.score =0
-        re_map=self.recharge_map
-        amount,times=0,0
-        for k,v in re_map.items():
-            amount+=float(v)
-            times+=1
-            r.value+='\n时间:'+str(k)+'; 金额:'+v+'元'
-        avg=amount*1.0/(times or times+1)
-        r.name='历史平均充值金额(充值金额/充值次数):次数：'+str(times)+';金额:'+str(amount) 
-        if avg<=30:
-            r.score=10
-        elif avg>30 and avg<100:
-            r.score=50
-        elif avg>=100:
             r.score=100
-        r.source='{"times":%s,"money":%s}'%(str(times),str(amount))
+            r.value+=user_phone+'\t'
         return r
-
-    def call_times_out_his(self):
-        r=minRule()
-        r.value=''
-        r.name='历史通话主叫次数'
-        r.score=0
-        phone_map=self.phone_map
-        count=0
-        duration=0
-        for k,v in phone_map.items():
-            for vv in v:
-                if vv['commMode']==u'主叫':
-                    count+=1
-                    d = vv['commTime'].replace('分',' ').replace('秒','').split(' ')
-                    minu = len(d)>1 and int(d[0])*60 or 0
-                    sec = len(d)>1 and int(d[1]) or int(d[0])
-                    duration+=(minu+sec)
-        avg=duration/(count or 1)
-        if avg<1000:
+    '''通话记录长度'''
+    def call_record_len(self):
+        call_len = len(self.call_record_map.keys())
+        r = minRule()
+        r.name = '通话记录长度'
+        if call_len<30:
+            r.score=10
+        elif call_len>=30 and call_len<50:
             r.score=20
-        elif avg>=1000 and avg<3000:
-            r.score=30
-        elif avg>=3000 and avg<4000:
+        elif call_len>=50 and call_len<100:
             r.score=40
-        r.value=str(avg)
-        r.name='历史通话主叫时长/次数:'+str(count)+';时间:'+str(duration)+'s'
-        r.source='{"times":%s,"duration":%s}'%(str(count),str(duration))        
+        elif call_len>=100:
+            r.score = 100
+        r.value='暂不显示通话记录'
         return r
 
-    def call_times_in_his(self):
-        r=minRule()
-        r.score=30
-        r.name='历史通话被叫次数'
-        phone_map=self.phone_map
-        count=0
-        duration=0
-        for k,v in phone_map.items():
-            for vv in v:
-                if vv['commMode']==u'被叫':
-                    count+=1
-                    d = vv['commTime'].replace('分',' ').replace('秒','').split(' ')
-                    minu = len(d)>1 and int(d[0])*60 or 0
-                    sec = len(d)>1 and int(d[1]) or int(d[0])
-                    duration+=(minu+sec)
-        avg=duration/(count or 1)
-        if avg<1000:
+    '''短信记录长度'''
+    def sms_record_len(self):
+        sms_len = len(self.sms_record_map.keys())
+        r = minRule()
+        r.name = '短信记录长度'
+        if sms_len<30:
+            r.score=10
+        elif sms_len>=30 and sms_len<50:
             r.score=20
-        elif avg>=1000 and avg<3000:
-            r.score=30
-        elif avg>=3000 and avg<4000:
+        elif sms_len>=50 and sms_len<100:
             r.score=40
-        r.value=str(avg)
-        r.name='历史通话被叫时长/次数:'+str(count)+';时间:'+str(duration)+'s'
-        r.source='{"times":%s,"duration":%s}'%(str(count),str(duration))      
+        elif sms_len>=100:
+            r.score = 100
+        r.value='暂不显示短信记录'
         return r
 
-    def incharge_interdays(self):
-        r=minRule()
-        r.value=u'30'
-        r.name=u'充值话费的平均时间间隔'
-        r.score=0
-        re_list=self.recharge_map.keys()
-        re_list.sort()
-        days=0
-        for i in range(0,len(re_list)-1):
-            v=re_list[i]
-            v_next=re_list[i+1]
-            days+=(v_next-v).days
-        avg=days/(len(re_list) or 1)
-        r.name=u'充值话费的平均时间间隔:'+str(avg)
-        r.source = '{"days":%s,"times":%s}'%(str(days),str(len(re_list)))
-        return r
-    def name_in_contact(self):
-        r=minRule()
-        r.value='30'
-        r.name=u'运营商联系人与通讯录联系人匹配个数'
-        r.value=u'30'
-        r.source = str(30)
-        return r
-    '''
+
 
     def get_score(self):
-        min_rule_map = self.min_rule_map
-        incharge_money_score=min_rule_map[30001].score*0.2
-        call_time_money_score=min_rule_map[30002].score*0.2
-        call_time__in_score=min_rule_map[30003].score*0.2
-        name_in_contact_score=min_rule_map[30005].score*0.2
-        incharge_interdays=min_rule_map[30004].score*0.2
-        score=incharge_money_score+call_time_money_score+call_time__in_score+name_in_contact_score+incharge_interdays
+        min_rmap = self.min_rule_map
+        
+        call_record_len_s=min_rmap[20001].score*0.1  #通话记录长度是否合理
+        sms_record_len_s = min_rmap[20002].score*0.1 #短信记录长度是否合理            
+        incharge_amount = min_rmap[20003].score*0.1 #半年内充值金额
+        incharge_times = min_rmap[20004].score*0.05 #半年内充值次数
+        incharge_inter_days = min_rmap[20005].score*0.05 #半年内平均充值间隔(天/次)
+        call_in_times_s = min_rmap[20006].score*0.025 #半年内主叫次数
+        call_in_duration = min_rmap[20007].score*0.025  #半年内主叫时长
+        call_out_times = min_rmap[20008].score*0.025 #半年内被叫次数
+        call_out_duration = min_rmap[20009].score*0.025 #半年内被叫时长
+        call_in_contact = min_rmap[20010].score*0.05 #通话记录电话号码出现在通讯录的比例
+        smssame_in_contact = min_rmap[20011].score*0.05 #短信记录电话号码出现在通讯录中的比例
+        callsame_with_idcard = min_rmap[20012].score*0.25 #通话记录电话号码在老家的比例
+        smssame_with_idcard = min_rmap[20013].score*0.25 #短信记录电话号码在老家的比例
+        callsame_with_userphone = min_rmap[20014].score*0.25 #通话记录中电话号码与申请人同一手机归属地的比例
+        smssame_with_userphone = min_rmap[20015].score*0.25 #短信记录中电话号码与申请人同一手机归属地的比例
+        set_21 = min_rmap[20016].score*0.1 #是否设置21呼叫转移
+        dunning_call = min_rmap[20017].score*0.05  #是否电话被催收
+        dunning_sms = min_rmap[20018].score*0.05  #是否被短信催收
+        phone_in_netlocation = min_rmap[20019].score*0.05 #手机所在地在上网地点出现次数
+        call_with_021_0755 = min_rmap[20020].score*0.05  #与021,0755通话次数
+        userphone_in_calls_or_sms = min_rmap[20021].score*0.1 #申请号与本机有通话
+
+        score = call_record_len_s+sms_record_len_s+incharge_amount+incharge_times+incharge_inter_days
+        score+=call_in_times_s+call_in_duration+call_out_times+call_out_duration+call_in_contact
+        score+=smssame_in_contact+callsame_with_idcard+smssame_with_idcard+callsame_with_userphone
+        score+=smssame_with_userphone+set_21+dunning_call+dunning_sms+phone_in_netlocation
+        score+=call_with_021_0755+userphone_in_calls_or_sms
         return score
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

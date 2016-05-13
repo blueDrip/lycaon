@@ -225,7 +225,7 @@ def is_uncle_aunt(name):
 
 class PostLoanNewRule(BaseRule):
     
-    def __init__(self):
+    def __init__(self,basedata):
         self.ext_api = EXT_API()
         self.m_f_list = []
         self.relative_list =[]
@@ -247,17 +247,19 @@ class PostLoanNewRule(BaseRule):
         self.spouse_adj_list=self.init_post_loan_list(spouse_adj_file)
         self.f_m_list=self.init_f_m_list(parent_dict_new)
 
+
+        self.load_data(basedata)
+
         self.min_rule_map={
-            50001:None,#通讯录长度
-            50002:None,#父母个数
-            50003:None,#.父母在老家的个数比例
-            50004:None,#父母通话时长
-            50005:None,#父母通话次数
-            50006:None,#父母在三个月内平均通话次数
-            50007:None,#亲属个数
-            50008:None,#亲属在老家的个数比例
-            50009:None,#亲属的通话时长
-            50010:None,#亲属通话次数
+            50001:self.get_contact_len(),#通讯录长度
+            50002:self.parents_len_in_contact(basedata),#父母个数
+            50003:self.parents_location_same_with_idCard(basedata),#.父母在老家的个数比例
+            50004:self.get_parent_call_duration(basedata),#父母通话时长
+            50005:self.get_parent_call_times(basedata),#父母通话次数
+            50006:self.relative_len_in_contact(basedata),#亲属个数
+            50007:self.relative_location_same_with_idcard(basedata),#亲属在老家的个数比例
+            50008:self.get_relative_call_duration(basedata),#亲属的通话时长
+            50009:self.get_relative_call_times(basedata),#亲属通话次数
         }
 
     def init_post_loan_list(self,conf_file):
@@ -542,25 +544,49 @@ class PostLoanNewRule(BaseRule):
         return r
     #父母长度在老家比例
     def parents_location_same_with_idCard(self,bd):
-        idcard=''
+        idcard={'city':''}
         pmap=self.father_mp
         pmap.update(self.father_mp)
         pmap.update(self.mather_mp)
         pmap.update(self.home_mp)
         count=0
+        value = ''
         for k,v in pmap.items():
             if idcard['city'] in v:
-               count+=1
+                count+=1
+                value+=k+';'+v+'\t'
         radio=count*1.0/(len(bd.contacts) or 1)
+        r = minRule()
+        r.name='父母在老家'
+        r.value = value
+        r.score=0
+        if count>0 and count<=2:
+            r.score=60
+        elif count>2 and count<=3:
+            r.score = 80
+        elif count>3:
+            r.score = 100
+        return r
 
     def relative_location_same_with_idcard(self,bd):
-        idcard=''
+        idcard={'city':''}
         count=0
+        value=''
+        r=minRule()
+        r.name='亲属在老家'
+        
         for k,v in self.r_relative_map.items():
             if idcard['city'] in v:
                 count+=1
-        radio=count*1.0/(len(bd.contacts) or 1)
-
+                value+=k+';'+v+'\t'
+        r.value=value
+        if count>0 and count<=3:
+            r.score=60
+        elif count>3 and count<=5:
+            r.score=80
+        elif count>5:
+            r.score = 100
+        return r
     def parents_len_in_contact(self,bd):
         pmap=self.father_mp
         pmap.update(self.father_mp)
@@ -568,8 +594,47 @@ class PostLoanNewRule(BaseRule):
         pmap.update(self.home_mp)
         plen=len(pmap.keys())
         clen=len(bd.contacts)
+        r = minRule()
+        r.name ='父母长度'
+        r.value = str(plen)
+        if plen>0 and plen<=1:
+            r.score=40
+        elif plen>1 and plen<=3:
+            r.score=80
+        elif plen>3:
+            r.score=100
+        return r
     def relative_len_in_contact(self,bd):
         rlen = len(self.r_relative_map.keys())
         clen = len(bd.contacts)
-        radio = rlen*1.0/clen
+        r = minRule()
+        r.name ='亲属长度'
+        r.value = str(rlen)
+        if rlen>0 and rlen<=3:
+            r.score=40
+        elif rlen>3 and rlen<=6:
+            r.score=80
+        elif rlen>6:
+            r.score=100
+        return r
+    def get_score(self):
+        min_rmap = self.min_rule_map
+        contact_len = min_rmap[50001].score*0.1 #通讯录长度
+        parents_len_in_contact = min_rmap[50002].score*0.2 #父母个数
+        parents_with_idCard = min_rmap[50003].score*0.1 #父母在老家
+        parents_call_duration = min_rmap[50004].score*0.1 #父母通话时长
+        parents_call_times = min_rmap[50005].score*0.1 #父母通话次数
+
+        relative_len_in_contact = min_rmap[50006].score*0.1 #亲属个数
+        relative_with_idcard = min_rmap[50007].score*0.1 #亲属在老家
+        relative_call_duration = min_rmap[50008].score*0.1 #亲属通话时长
+        relative_call_times = min_rmap[50009].score*0.1 #亲属通话次数
+       
+        score = contact_len+parents_len_in_contact+parents_with_idCard
+        score += parents_call_duration+parents_call_times
+        score += relative_len_in_contact+relative_with_idcard
+        score += relative_call_duration+relative_call_times
+        return score
+ 
+
 
