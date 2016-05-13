@@ -327,6 +327,7 @@ class chinaTelecom(Document):
 class minRule(Document):
     ruleid=StringField(default = str)
     value = StringField(default = str)
+    real_val = StringField(defalt = str)
     score = FloatField(default = 0)
     name = StringField(default = str)
     source = StringField(default = str)

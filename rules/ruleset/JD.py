@@ -19,19 +19,19 @@ class JD(BaseRule):
         self.load_data(basedata)
         self.min_rule_map={
 
-            30001:None,#京东实名验证
-            30002:None,#京东手机验证
-            30003:None,#京东会员等级
-            30004:None,#京东半年内平均登陆时间间隔(登陆时间/次数)
-            30005:None,#京东半年内消费金额
-            30006:None,#半年内消费次数
-            30007:None,#收件人中有申请人
-            30008:None,#收货地址个数
-            30009:None,#收件人电话号码出现在通讯录中
-            30010:None,#收件人出现下短信中
-            30011:None,#收件人出现在通话记录中
-            30011:None,#申请人手机归属地出现在收货地址中
-            30012:None,#半年内是否出现消费断档
+            30001:self.is_valid_name(basedata),#京东实名验证
+            30002:self.is_valid_phone(basedata),#京东手机验证
+            30003:self.get_huiyuanjibie(basedata),#京东会员等级
+            30004:self.get_avg_login_integer_days(basedata),#京东半年内平均登陆时间间隔(登陆时间/次数)
+            30005:self.get_consume_amount_harf_year(),#京东半年内消费金额
+            30006:self.get_consume_times_harf_year(),#半年内消费次数
+            30007:self.owner_name_in_address(basedata),#收件人中有申请人
+            30008:self.get_address(),#收货地址个数
+            30009:self.address_phone_in_contact(basedata),#收件人电话号码出现在通讯录中
+            30010:self.address_phone_in_sms(basedata),#收件人出现下短信中
+            30011:self.address_phone_in_call(basedata),#收件人出现在通话记录中
+            30012:self.owner_phone_location_in_address(basedata),#申请人手机归属地出现在收货地址中
+            #30012:None,#半年内是否出现消费断档
 
         }        
     def init_consume_map(self,consume_str,basedata):
@@ -234,19 +234,27 @@ class JD(BaseRule):
     #收件人电话号码出现在通讯录中
     def address_phone_in_contact(self,basedata):
         phone_list=[]
+        value=[]
         for k,v in self.address_info_map.items():
             for it in v:
                 if it['phone'] not in phone_list:
                     phone_list.append(it['phone'])
-        for c in basedata.good_contacts:
+        for c in basedata.contacts:
             if len(c.phone)>=11:
                 str_=c[0:3]+'****'+c[7:]
                 if str_ in phone_list:
-                    print str_
-        
+                    value.append(str_)
+        r = minRule()
+        r.name='收件人在通讯录中'
+        r.score = 0
+        if value:
+            r.value = '\t'.join(value)
+            r.score=100
+        return r
     #收件人号码出现下短信中
     def address_phone_in_sms(self,basedata):
         phone_list=[]
+        value=[]
         for k,v in self.address_info_map.items():
             for it in v:
                 if it['phone'] not in phone_list:
@@ -255,10 +263,18 @@ class JD(BaseRule):
             if len(sms.phone)>=11:
                 str_=sms.phone[0:3]+'****'+sms.phone[7:]
                 if str_ in phone_list:
-                    print str_
+                    value.append(str_)
+        r = minRule()
+        r.name='与收件人有电话联系'
+        r.score = 0
+        if value:
+            r.value = '\t'.join(value)
+            r.score=100
+        return r
     #收件人号码出现在通话记录中
     def address_phone_in_call(self,basedata):
         phone_list=[]
+        value=[]
         for k,v in self.address_info_map.items():
             for it in v:
                 if it['phone'] not in phone_list:
@@ -267,148 +283,67 @@ class JD(BaseRule):
             if len(c.phone)>=11:
                 str_=c.phone[0:3]+'****'+c.phone[7:]
                 if str_ in phone_list:
-                    print str_
+                    value.append(str_)
+        r = minRule()
+        r.name= '与收件人有短信联系'
+        r.score=0
+        if value:
+            r.score=100
+            r.value='\t'.join(value) 
+        return r
+
     #手机归属地中出现在收货地址中
     def owner_phone_location_in_address(self,basedata):
-        phone_lv = []
+        value=''
+        user_phone_location=basedata.user_plocation
         for k,v in self.address_info_map.items():
             for it in v:
-                if it['value'] not in phone_lv:
-                    phone_lv.append(it['value'])
-        user_phone_location=basedata.user_plocation
-        for pl in phone_lv:
-            if user_phone_location in pl:
-                print pl
+                if it['value'] in user_phone_location:
+                    #phone_lv.append(it['value'])
+                    value+=k+';'+it['phone']+';'+it['value']+'\t'
+        r = minRule()
+        r.name='手机归属地中出现在收货地址中'
+        r.value = value
+        r.score = 0
+        if value:
+            r.score=100
+        return r 
     #收件人中有申请人
     def owner_name_in_address(self,basedata):
         owner_name=basedata.username
+        value=''
         for k,v in self.address_info_map.items():
             if k == owner_name:
-                print '>>>>>>',k
-            print k
+                value+=k+';'+'\t'.join([ it['phone']+';'+it['value'] for it in v])
+        r = minRule()
+        r.name='收件人中有申请人'
+        r.value= value
+        r.score=0
+        if value:
+            r.score=100
+        return r
     #半年内出现消费断档的天数
     def grp_consume_in_harf_year(self,basedata):
         pass
 
     def get_score(self):
-        #min_rule_map = self.min_rule_map
-        #is_valid_name_score=min_rule_map[10001].score*0.2
-        #is_vphone_score=min_rule_map[10002].score*0.2
-        #grade_score=min_rule_map[10003].score*0.2
-        #month_3_score=min_rule_map[10004].score*0.2
-        #month__score=min_rule_map[10005].score*0.1
-        #address_score=min_rule_map[10006].score*0.1
-        #score=is_valid_name_score+is_vphone_score+grade_score+month_3_score+month__score+address_score
-        return 0
-                         
-    '''
-    def get_three_month_before_consume(self):
-        r=minRule()
-        clist=self.consume_before_3mon_list
-        money=0
-        r.value=u''
-        r.score=0
-        for v in clist:
-            r.value+= u'\n订单号:%s；时间:%s；金额:%s'%(v['orderid'],str(v['time']),str(v['money']))
-            money+=v['money']
-        avgm=money/(3.0 or 1)
-        if avgm<100:
-            r.score=10
-        elif avgm>=100 and avgm<300:
-            r.score=30
-        elif avgm>=300 and avgm<500:
-            r.score=80
-        elif avgm>=500:
-            r.score=100
-        r.source='{"times":%s,"money":%s}'%(str(len(clist)),str(money))
-        r.name=u'三个月平均消费金额(金额／次数):'+str(avgm)
-        return r
-    '''
-    '''
-    def get_three_month_after_consume(self):
-        r=minRule()
-        r.value=''
-        r.score=0
-        clist=self.consume_before_3mon_list
-        money=0
-        for v in clist:
-            #print v['time'],v['orderid'],v['money']
-            r.value+= u'\n订单号:%s；时间:%s；金额:%s'%(v['orderid'],str(v['time']),str(v['money']))
-            money+=v['money']
+        min_rmap = self.min_rule_map
+        valid_name = min_rmap[30001].score*0.1 #京东实名验证
+        valid_phone = min_rmap[30002].score*0.1  #京东手机验证
+        grade = min_rmap[30003].score*0.1 #京东会员等级
+        avg_login_days = min_rmap[30004].score*0.1 #京东半年内平均登陆时间间隔(登陆时间/次数)
+        consume_amount = min_rmap[30005].score*0.05 #京东半年内消费金额
+        consume_times = min_rmap[30006].score*0.05 #半年内消费次数
+        owner_name_in_address = min_rmap[30007].score*0.1 #收件人中有申请人
+        address = min_rmap[30008].score*0.03 #收货地址个数
+        address_phone_in_contact = min_rmap[30009].score*0.1 #收件人电话号码出现在通讯录中
+        address_phone_in_sms = min_rmap[30010].score*0.1 #收件人出现下短信中
+        address_phone_in_call = min_rmap[30011].score*0.1 #收件人出现在通话记录中
+        owner_phone_location_in_address = min_rmap[30012].score*0.07 #申请人手机归属地出现在收货地址中
 
-        avgm=money/(len(clist) or 1)
-        if avgm<100:
-            r.score=10
-        elif avgm>=100 and avgm<300:
-            r.score=30
-        elif avgm>=300 and avgm<500:
-            r.score=80
-        elif avgm>=500:
-            r.score=100
-        r.source='{"times":%s,"money":%s}'%(str(len(clist)),str(money))
-        r.name=u'历史平均消费金额(金额／次数)'+str(avgm)
-        return r
-    '''
-    '''
-    def get_laster_login_time_inter(self):
-        r=minRule()
-        inter=0
-        login_his=self.login_his_map.keys()
-        login_his.sort()
-        #排序
-        r.value=u'\n登陆时间:\n'
-        for i in range(0,len(login_his)-1):
-            v=login_his[i]
-            v_next=login_his[i+1]
-            r.value+=str(v)+'\n'
-            inter+=(v_next-v).days
-        r.value+=str(v_next)+'\n'
-        avg_days=inter*1.0/(len(login_his) or 1)
-        r.name=u'平均登陆时间登陆间隔:'+str(avg_days)
-        r.score=100
-        return r
-    '''
-    '''
-    def get_address(self,basedata):
-        r=minRule()
-        sub_str = re.sub('\t|\n|\r|\s+','',basedata.jd.address)
-        sub_list = sub_str.strip('#***#').split('#***#')
-        infomp={}
-        for adr in sub_list:
-            info = adr.replace('###','').split('$$$')
-            key=len(info)>2 and  info[1] or None
-            value=len(info)>3 and info[3] or None
-            if key and key not in infomp:
-                infomp[key]=[]
-            infomp[key].append(value)
-        ss=''
-        count_mp={}
-        for k,v in infomp.items():
-            ss+='收件人:'+k+'\n'
-            for it in v:
-                ss+='\t地址:'+it+'\n'
-                if it not in count_mp:
-                    count_mp[it]=0
-        r.value=ss
-        r.score=0
-        count_address=len(count_mp.keys())
-        r.name=u'收货地区个数:'+str(infomp and len(count_mp.keys()))
-        if count_address<=15:
-            r.score=100
-        elif count_address>15 and count_address<=30:
-            r.score=70
-        r.source=str(infomp and len(count_mp.keys()))
-        return r
-    '''
-    '''
-    def get_score(self):
-        min_rule_map = self.min_rule_map
-        is_valid_name_score=min_rule_map[10001].score*0.2
-        is_vphone_score=min_rule_map[10002].score*0.2
-        grade_score=min_rule_map[10003].score*0.2
-        month_3_score=min_rule_map[10004].score*0.2
-        month__score=min_rule_map[10005].score*0.1
-        address_score=min_rule_map[10006].score*0.1
-        score=is_valid_name_score+is_vphone_score+grade_score+month_3_score+month__score+address_score
-        return score
-    '''
+        score=valid_name+valid_phone+grade+avg_login_days
+        score+=consume_amount+consume_times+owner_name_in_address
+        score+=address+address_phone_in_contact+address_phone_in_sms
+        score+=address_phone_in_call+owner_phone_location_in_address
+        return score  
+

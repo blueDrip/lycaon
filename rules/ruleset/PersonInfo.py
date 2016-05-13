@@ -100,12 +100,12 @@ class PersonInfo(BaseRule):
         return r
     def get_score(self):
         min_rule_map = self.min_rule_map
-        age_score=min_rule_map[20001].score*0.2
-        sex_score=min_rule_map[20002].score*0.2
-        edu_score=min_rule_map[20003].score*0.1
-        residenza_score=min_rule_map[20004].score*0.2
-        profession_score=min_rule_map[20007].score*0.2
-        phone_score=min_rule_map[20008].score*0.1
+        age_score=min_rule_map[10001].score*0.2
+        sex_score=min_rule_map[10002].score*0.2
+        edu_score=min_rule_map[10003].score*0.1
+        residenza_score=min_rule_map[10004].score*0.2
+        profession_score=min_rule_map[10007].score*0.2
+        phone_score=min_rule_map[10008].score*0.1
         score=age_score+sex_score+edu_score+profession_score+phone_score+residenza_score
         return score
     
