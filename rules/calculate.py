@@ -9,11 +9,12 @@ import datetime
 
 import logging
 from rules.raw_data import jingdong
-from rules.baserule import BaseRule
 from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
-from rules.base import BaseData
 from rules.ruleset.Sp import Sp
+from rules.ruleset.postloan import PostLoanNewRule
+from rules.models import BaseRule
+from rules.base import BaseData
 
 '''调用之前进行黑名单验证'''
 def is_black():
@@ -34,14 +35,23 @@ def cal():
     bd=BaseData('')
     b=JD(bd)
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.value,'\t',v.score,'\t',v.source
+        print k,v.name,'\t',v.feature_val
+        print '>>>>>>>>>>>>',v.value.replace('\t','\n')
     print '>>>>>>>>>>>>>>>>得分:',b.get_score()
     b=PersonInfo(bd)    
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.value,'\t',v.score,'\t',v.source
+        print k,v.name,'\t',v.feature_val
+        print '>>>>>>>>>>>>>>>',v.value.replace('\t','\n')
     print '>>>>>>>>>>>>>>>>得分:',b.get_score()
     b=Sp(bd)
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.value,'\t',v.score,'\t',v.source
+        print k,v.name,'\t',v.feature_val
+        print '>>>>>>>>>>>>>>>>',v.value.replace('\t','\n')
     print '>>>>>>>>>>>>>>>得分:',b.get_score()
-    return b.min_rule_map 
+    b=PostLoanNewRule(bd)
+    for k,v in b.min_rule_map.items():
+        print k,v.name,'\t',v.feature_val
+        print '>>>>>>>>>>>>>>>>',v.value.replace('\t','\n')
+    print '>>>>>>>>>>>>>>>得分:',b.get_score()
+
+

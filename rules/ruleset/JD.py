@@ -2,9 +2,7 @@
 # encoding: utf-8
 import sys
 import os
-reload(sys)
 import re
-sys.setdefaultencoding('utf8')
 from rules.base import get_right_datetime
 from rules.models import  BaseRule
 from rules.raw_data import minRule
@@ -89,10 +87,8 @@ class JD(BaseRule):
     def is_valid_name(self,basedata):
         r=minRule()
         ispass=basedata.jd.isrealname
-        r.value=-1
         r.score=0
         r.source=ispass
-
         r.name=u'实名认证'
         if u'验证通过' in ispass:
             r.value=u'验证通过'
@@ -105,12 +101,12 @@ class JD(BaseRule):
             r.score=20
         else:
             r.value=u'结果未知'
+        r.feature_val = r.value
         return r
     '''手机验证'''
     def is_valid_phone(self,basedata):
         r=minRule()
         ispass=basedata.jd.isvalidphone
-        r.value=-1
         r.score=0
         r.name=u'手机验证'        
         r.source=ispass
@@ -125,6 +121,7 @@ class JD(BaseRule):
             r.score=20
         else:
             r.value=u'结果未知'
+        r.feature_val = r.value
         return r
     '''会员级别'''
     def get_huiyuanjibie(self,basedata):
@@ -133,7 +130,6 @@ class JD(BaseRule):
         r.value=grade
         r.score=0
         r.source=grade
-
         r.name=u'会员级别'
         if u'钻石会员'==grade:
             r.score=100
@@ -141,6 +137,7 @@ class JD(BaseRule):
             r.score=80
         elif u'银牌会员'==grade:
             r.score=60
+        r.feature_val = grade
         return  r
     #京东平均登陆时间间隔(登陆时间/次数)
     def get_avg_login_integer_days(self,basedata):
@@ -149,15 +146,15 @@ class JD(BaseRule):
         login_his=self.login_his_map.keys()
         login_his.sort()
         '''排序'''
-        r.value=u'\n登陆时间:\n'
         for i in range(0,len(login_his)-1):
             v=login_his[i]
             v_next=login_his[i+1]
-            r.value+=str(v)+'\n'
             inter+=(v_next-v).days
-        r.value+=str(v_next)+'\n'
+
+        r.value = u'登陆时间:'+ '\t' +'\t'.join([ str(it) for it in login_his ])
         avg_days=inter*1.0/(len(login_his) or 1)
-        r.name=u'平均登陆时间登陆间隔:'+str(avg_days)
+        r.name=u'平均登陆时间登陆间隔'
+        r.feature_val = str(int(avg_days))+u'天/次'
         r.score=100
         if avg_days>0 and avg_days<=5:
             r.score=100
@@ -174,14 +171,18 @@ class JD(BaseRule):
         consume_list=self.consume_after_list
         consume_list.extend(self.consume_before_3mon_list)
         amount=0
+        value = []
         for it in consume_list:
             amount+=it['money']
-
+            value.append(
+                'order:'+it['orderid']+'; money:'+str(it['money'])+'; time:'+str(it['time'])
+            )
         r=minRule()
         r.score=0
-        r.value=str(amount)
+        r.value='\t'.join(value)
         r.source=str(amount)
         r.name=u'半年内消费金额'
+        r.feature_val = str(amount)+u'元'
         if amount>0 and amount<=500:
             r.score=20
         elif amount>500 and amount<=1000:
@@ -201,8 +202,10 @@ class JD(BaseRule):
         r = minRule()
         r.score = 0
         r.name = u'半年内消费次数'
-        r.value=str(times)
+        value=[ 'order:'+it['orderid']+ '; time:'+str(it['time']) +u'; 1次' for it in consume_list]
+        r.value = '\t'.join(value)
         r.source=str(times)
+        r.feature_val = str(times)
         if times>0 and times<=10:
             r.score=50
         elif times>10 and times<=30:
@@ -210,27 +213,29 @@ class JD(BaseRule):
         elif times>30:
             r.score=100
         return r
-    #收货地址个数
+    #不同的收货地址个数
     def get_address(self):
         r=minRule()
         ss=''
         count_mp={}
         for k,v in self.address_info_map.items():
-            ss+='收件人:'+k+'\n'
+            ss+=u'收件人:'+k+'\t'
             for it in v:
-                ss+='\t地址:'+it['value']+'\n'
+                ss+=u'地址:'+it['value']+'\t'
                 if it['value'] not in count_mp:
                     count_mp[it['value']]=0
         r.value=ss
         r.score=0
         count_address = len(count_mp.keys())
-        r.name=u'收货地区个数:'+str(count_address)
+        r.name=u'不同的收货个数'
         if count_address<=15:
             r.score=100
         elif count_address>15 and count_address<=30:
             r.score=70
         r.source=str( len(count_mp.keys()))
+        r.feature_val = str(count_address)+u'个'
         return r
+
     #收件人电话号码出现在通讯录中
     def address_phone_in_contact(self,basedata):
         phone_list=[]
@@ -245,11 +250,13 @@ class JD(BaseRule):
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()
-        r.name='收件人在通讯录中'
+        r.name=u'收件人在通讯录中'
         r.score = 0
         if value:
             r.value = '\t'.join(value)
             r.score=100
+            r.feature_val = u'出现个数:%s'%(str(len(value)))
+        r.feature_val = u'无'
         return r
     #收件人号码出现下短信中
     def address_phone_in_sms(self,basedata):
@@ -265,11 +272,13 @@ class JD(BaseRule):
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()
-        r.name='与收件人有电话联系'
+        r.name=u'与收件人有电话联系'
         r.score = 0
         if value:
             r.value = '\t'.join(value)
             r.score=100
+            r.feature_val = u'出现个数:%s'%(str(len(value)))
+        r.feature_val = u'无'
         return r
     #收件人号码出现在通话记录中
     def address_phone_in_call(self,basedata):
@@ -285,40 +294,48 @@ class JD(BaseRule):
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()
-        r.name= '与收件人有短信联系'
+        r.name= u'与收件人有短信联系'
         r.score=0
         if value:
             r.score=100
             r.value='\t'.join(value) 
+            r.feature_val = u'有%s联系'%(str(len(value)))
+        r.feature_val = u'无'
         return r
 
     #手机归属地中出现在收货地址中
     def owner_phone_location_in_address(self,basedata):
-        value=''
+        value=[]
         user_phone_location=basedata.user_plocation
         for k,v in self.address_info_map.items():
             for it in v:
                 if it['value'] in user_phone_location:
-                    #phone_lv.append(it['value'])
-                    value+=k+';'+it['phone']+';'+it['value']+'\t'
+                    value.append(
+                        k+';'+it['phone']+';'+it['value']
+                    )
         r = minRule()
-        r.name='手机归属地中出现在收货地址中'
-        r.value = value
+        r.name=u'手机归属地中出现在收货地址中'
+        r.value = '\t'.join(value)
         r.score = 0
+        r.feature_val = u'无'
         if value:
             r.score=100
+            r.feature_val = u'出现%s个'%(str(len(value)))
         return r 
     #收件人中有申请人
     def owner_name_in_address(self,basedata):
         owner_name=basedata.username
-        value=''
+        value=[]
         for k,v in self.address_info_map.items():
             if k == owner_name:
-                value+=k+';'+'\t'.join([ it['phone']+';'+it['value'] for it in v])
+                value.append(
+                    k+';'+'\t'.join([ it['phone']+';'+it['value'] for it in v])
+                )
         r = minRule()
-        r.name='收件人中有申请人'
-        r.value= value
+        r.name=u'收件人中有申请人'
+        r.value= '\t'.join(value)
         r.score=0
+        r.feature_val = str(len(value))+'个'
         if value:
             r.score=100
         return r
