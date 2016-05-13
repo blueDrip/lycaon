@@ -7,6 +7,7 @@ import datetime
 from mongoengine import (
     StringField, IntField, Document, DateTimeField, BooleanField,
     ObjectIdField,ListField,ListField,ReferenceField,FloatField,NotUniqueError,
+    EmbeddedDocument,
 )
 import traceback
 from django.db import models
@@ -331,9 +332,20 @@ class minRule(Document):
     score = FloatField(default = 0)
     name = StringField(default = str)
     source = StringField(default = str)
-class topResutl(Document):
-    user_phone = StringField(default = str)
+
+    def get_items(self):
+        return self.value.split('\t')
+
+class DetailRule(Document):
+    rule_id = IntField(required=True)
+    name = StringField(required=True)
+    score = IntField(default=-1)
+    rules = ListField(ReferenceField(minRule))
+
+class topResult(Document):
+    owner_phone = StringField(default = str)
     score = FloatField(default = 0)
-    rulelist=ListField(ReferenceField(minRule))
+    rulelist=ListField(ReferenceField(DetailRule))
     value=StringField(default = str)
     name = StringField(default = str)
+    
