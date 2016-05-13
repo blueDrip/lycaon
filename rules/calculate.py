@@ -8,7 +8,7 @@ import urllib
 import datetime
 
 import logging
-from rules.raw_data import jingdong
+from rules.raw_data import topResult,DetailRule
 from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
 from rules.ruleset.Sp import Sp
@@ -34,24 +34,64 @@ def cal():
     b=BaseRule()
     bd=BaseData('')
     b=JD(bd)
+    tp_rs = topResult()
+    Dr_jd=DetailRule()
+    dl=[]
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.feature_val
-        print '>>>>>>>>>>>>',v.value.replace('\t','\n')
-    print '>>>>>>>>>>>>>>>>得分:',b.get_score()
+        v.ruleid = str(k)
+        v.save()
+        dl.append(v)
+    Dr_jd.name=u'JD'
+    Dr_jd.score=int(b.get_score())
+    Dr_jd.rules=dl
+    Dr_jd.rule_id=1
+    Dr_jd.save()
+    print '>>>>>>>>>>>>>>>>个人信息'
+    dl=[]
+    Dr_p=DetailRule()
     b=PersonInfo(bd)    
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.feature_val
-        print '>>>>>>>>>>>>>>>',v.value.replace('\t','\n')
-    print '>>>>>>>>>>>>>>>>得分:',b.get_score()
+        v.ruleid = str(k)
+        v.save()
+        dl.append(v)
+    Dr_p.name=u'PerInfo'
+    Dr_p.rule_id=2
+    Dr_p.score=int(b.get_score())
+    Dr_p.rules=dl
+    Dr_p.save()
+    print '>>>>>>>>>>>>>>>>>运营商'
+    dl=[]
     b=Sp(bd)
+    Dr_sp=DetailRule()
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.feature_val
-        print '>>>>>>>>>>>>>>>>',v.value.replace('\t','\n')
-    print '>>>>>>>>>>>>>>>得分:',b.get_score()
+        v.ruleid = str(k)
+        v.save()
+        dl.append(v)
+    Dr_sp.name=u'Sp'
+    Dr_sp.rule_id=3
+    Dr_sp.score=int(b.get_score())
+    Dr_sp.rules=dl
+    Dr_sp.save()
+    print '>>>>>>>>>>>>>>>>>贷后'
     b=PostLoanNewRule(bd)
+    Dr_post=DetailRule()
+    dl=[]
     for k,v in b.min_rule_map.items():
-        print k,v.name,'\t',v.feature_val
-        print '>>>>>>>>>>>>>>>>',v.value.replace('\t','\n')
-    print '>>>>>>>>>>>>>>>得分:',b.get_score()
+        v.ruleid=str(k)        
+        v.ruleid = str(k)
+        v.save()
+        dl.append(v)
+    print 'success'
+    Dr_post.name=u'post_loan'
+    Dr_post.rule_id=4
+    Dr_post.score=int(b.get_score())
+    Dr_post.rules=dl
+    Dr_post.save()
+
+    tp_rs.name = u'credit_score'
+    tp_rs.score=100
+    tp_rs.rulelist=[Dr_jd,Dr_p,Dr_post,Dr_sp]
+    tp_rs.save()
+
 
 

@@ -483,7 +483,7 @@ class Sp(BaseRule):
             r.feature_val = '不一致'
             r.source = str(0) #0：不一致
             return r
-        r.source = 1
+        r.source = u'1'
         r.score=100
         return r
 
