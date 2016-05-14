@@ -39,6 +39,7 @@ def cal():
     dl=[]
     for k,v in b.min_rule_map.items():
         v.ruleid = str(k)
+        v.value = v.value.replace('\t','<br/>')
         v.save()
         dl.append(v)
     Dr_jd.name=u'JD'
@@ -52,6 +53,7 @@ def cal():
     b=PersonInfo(bd)    
     for k,v in b.min_rule_map.items():
         v.ruleid = str(k)
+        v.value = v.value.replace('\t','<br/>')
         v.save()
         dl.append(v)
     Dr_p.name=u'PerInfo'
@@ -65,6 +67,7 @@ def cal():
     Dr_sp=DetailRule()
     for k,v in b.min_rule_map.items():
         v.ruleid = str(k)
+        v.value = v.value.replace('\t','<br/>')
         v.save()
         dl.append(v)
     Dr_sp.name=u'Sp'
@@ -78,6 +81,7 @@ def cal():
     dl=[]
     for k,v in b.min_rule_map.items():
         v.ruleid=str(k)        
+        v.value = v.value.replace('\t','<br/>')
         v.ruleid = str(k)
         v.save()
         dl.append(v)

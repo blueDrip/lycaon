@@ -50,6 +50,18 @@ def get_duration(string):
     m=len(time)>1 and int(time[1])*60  or 0
     s=len(time)==1 and int(time[0]) or 0
     return h+m+s
+def format_phone(phone):
+    phone = phone.replace('-','').replace(' ','')
+    if "+86" == phone[:3]:
+        phone = phone[3:]
+    elif '86' == phone[:2]:
+        phone = phone[2:]
+    elif '+0086'== phone[:5]:
+        phone = phone[5:]
+    elif '0086' == phone[:4]:
+        phone = phone[4:]
+    return phone
+
 class BaseData(object):
 
     """Docstring for OrderInfo. """
@@ -65,7 +77,7 @@ class BaseData(object):
             self.create_time=datetime.now()          
             self.ext_api = ext or EXT_API()
             '''sp info'''
-            self.sp=yidong.objects.filter()[20]
+            self.sp=yidong.objects.filter()[2]
             self.sp_calls=[]
             self.good_calls=[]
             self.sp_sms=[]
@@ -78,37 +90,38 @@ class BaseData(object):
             self.calls = []
             self.sms = []
 
+            self.init_contact()
             self.init_sp_calldetail()
             self.init_sp_smsdetail()
             self.init_sp_netdetail()
-            self.init_contact()
         #except:
         #    print get_tb_info()
         #    base_logger.error(get_tb_info())
     def init_sp_calldetail(self):
         mp = self.load_sp_datadetail(self.sp.phonedetail)
+        cmap={ c.phone:c.name for c in self.contacts }
         for k,v in mp.items():
             for itt in v:
                 stime=k[:-2]+'-'+itt['startTime']      
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
+                uc.owner_phone = self.user_phone
                 uc.phone=itt['anotherNm']
-                uc.create_time = datetime.now()
+                uc.username = uc.phone in cmap and cmap[uc.phone] or u'none'
+                uc.created_time = datetime.now()
                 uc.location=itt['commPlac']
-                phone=itt['anotherNm'][:2]==u'86' and itt['anotherNm'][2:] or itt['anotherNm']
-                phone=phone[:4]==u'0086' and phone[4:] or phone    
-                g=self.ext_api.get_phone_location(phone.replace(' ',''))
+                g=self.ext_api.get_phone_location(format_phone(uc.phone))
                 uc.phone_location = g['province']+'-'+g['city']+'-'+g['supplier']
                 uc.call_duration=get_duration(itt['commTime'])
                 uc.source=u'sp'
                 uc.call_type=itt['commMode']
                 self.sp_calls.append(uc)
         #存库
-        UserCallPhone.objects.filter().delete()
         UserCallPhone.create_calls(self.sp_calls)
     def init_sp_smsdetail(self):
         mp = self.load_sp_datadetail(self.sp.smsdetail)
+        cmap={ c.phone:c.name for c in self.contacts }
         for k,v in mp.items():
             for itt in v:
                 stime=k[:-2]+'-'+itt['startTime']
@@ -116,17 +129,18 @@ class BaseData(object):
                 s=UserShortMessage()
                 s.send_time = st
                 s.phone=itt['anotherNm']
-                s.create_time = datetime.now()
+
+                s.owner_phone = self.user_phone
+                s.username = s.phone in cmap and cmap[s.phone] or u'none'
+
+                s.created_time = datetime.now()
                 s.location=itt['commPlac']
-                phone=itt['anotherNm'][:2]==u'86' and itt['anotherNm'][2:] or itt['anotherNm']
-                phone=phone[:4]==u'0086' and phone[4:] or phone
-                g=self.ext_api.get_phone_location(phone.replace(' ',''))
+                g=self.ext_api.get_phone_location(format_phone(s.phone))
                 s.phone_location = g['province']+'-'+g['city']+'-'+g['supplier']
                 s.source=u'sp'
                 s.sms_type=itt['commMode']
                 self.sp_sms.append(s)
         #存库
-        UserShortMessage.objects.filter().delete()
         UserShortMessage.create_smses(self.sp_sms)
 
     def init_sp_netdetail(self):
@@ -136,18 +150,16 @@ class BaseData(object):
                 stime=k[:-2]+'-'+itt['startTime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 n=UserNetInfo()
-                n.owner_id=''
-                n.username=''
+                n.owner_phone = self.user_phone
                 n.start_time=st
                 n.comm_time = get_duration(itt['commTime'])
                 n.sum_flow=itt['sumFlow']
-                n.create_time = datetime.now()
+                n.created_time = datetime.now()
                 n.net_location=itt['commPlac']
                 n.source=u'sp'
                 n.net_type=itt['netType']
                 self.sp_net.append(n)
         #存库
-        UserNetInfo.objects.filter().delete()
         UserNetInfo.create_nets(self.sp_net)
 
     def load_sp_datadetail(self,sp_map):
@@ -170,17 +182,10 @@ class BaseData(object):
         #更新手机归属地
         for c in self.contacts:
             # c.phone = normalize_num(c.phone)
-            phone = c.phone.replace('-','')
-            if "+86" == phone[:3]:
-                phone = phone[3:]
-            elif '86' == phone[:2]:
-                phone = phone[2:]
-            elif '+0086'== phone[:4]:
-                phone = phone[4:]
             c.name=c.name.replace(' ','')
-            c.phone=phone
-            l = self.ext_api.get_phone_location(phone)
-            c.phone_location = l['province'] + "-" + l['city'] + "-" + l['supplier']
+            c.phone = format_phone(c.phone)
+            g = self.ext_api.get_phone_location(c.phone)
+            c.phone_location = g['province'] + "-" + g['city'] + "-" + g['supplier']
             try:
                 c.save()
             except:
@@ -205,9 +210,7 @@ class BaseData(object):
             else:
                 self.good_contacts.append(v)
 
-        return 
-
-
+        return
 
        
 
