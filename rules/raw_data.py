@@ -16,13 +16,13 @@ from django.conf import settings
 #用户通讯录
 
 class UserContact(Document):
-    phone = StringField(default=str, unique_with=['owner_phone', 'name'])
+    phone = StringField(default=str, unique_with=['owner_phone','name','created_time'])
     owner_phone = StringField(required=True)
-    created_time = datetime.datetime.now()
+    created_time = DateTimeField()
     phone_location = StringField(default=str)
     source = StringField(default=str) #usercontact来源 1:通讯录，2.sp
     created_at = DateTimeField()  # 手机内创建时间
-    name = StringField(default=str)
+    name = StringField()
     call_count = IntField(default=int)
     device_id = StringField(default=str)
 
@@ -70,20 +70,20 @@ class UserContact(Document):
 
 class UserCallPhone(Document):
     username = StringField(default = str)
-    owner_id = StringField(default = str)
+    owner_phone = StringField(default = str)
     call_time= DateTimeField()
-    create_time = DateTimeField()
+    created_time = DateTimeField()
     call_duration = IntField(0)
     source =StringField(default=str)
     location=StringField(default=str)
     phone_location = StringField(default=str)
-    phone=StringField(default=str)
+    phone=StringField(default=str,unique_with=['owner_phone', 'username','created_time'])
     call_type=StringField(default=str)
 
     @classmethod
     def create_call(cls,data):
         call = cls()
-        call.owner_id = data.owner_id
+        call.owner_phone = data.owner_phone
         call.username = data.username
         call.phone = data.phone
         call.call_time = data.call_time
@@ -120,19 +120,19 @@ class UserCallPhone(Document):
 
 class UserShortMessage(Document):
     username = StringField(default = str)
-    owner_id = StringField(default = str)
+    owner_phone = StringField(default = str)
     send_time= DateTimeField()
-    create_time = DateTimeField()
+    created_time = DateTimeField()
     source =StringField(default=str)
     location=StringField(default=str)
     phone_location = StringField(default=str)
-    phone=StringField(default=str)
+    phone=StringField(default=str,unique_with=['owner_phone', 'username','created_time'])
     sms_type=StringField(default=str)
 
     @classmethod
     def create_sms(cls,data):
         sms = cls()
-        sms.owner_id = data.owner_id
+        sms.owner_phone = data.owner_phone
         sms.username = data.username
         sms.phone = data.phone
         sms.send_time = data.send_time
@@ -170,11 +170,10 @@ class UserShortMessage(Document):
 
 #上网
 class UserNetInfo(Document):
-    username = StringField(default = str)
-    owner_id = StringField(default = str)
+    owner_phone = StringField()
     start_time= DateTimeField()
     sum_flow = StringField(default = str)
-    create_time = DateTimeField()
+    created_time = DateTimeField()
     comm_time = IntField(0)
     net_type = StringField(default = str)
     net_location=StringField(default=str)
@@ -182,19 +181,18 @@ class UserNetInfo(Document):
     @classmethod
     def create_net(cls,data):
         n=cls()
-        n.username = data.username
-        n.owner_id = data.owner_id
+        n.owner_phone = data.owner_phone
         n.start_time = data.start_time
         n.sum_flow = data.sum_flow
-        n.create_time = data.create_time
+        n.created_time = datetime.datetime.now()
         n.comm_time = data.comm_time
         n.net_type = data.net_type
         n.net_location = data.net_location
         n.net_source = data.net_source
-        try:
-            return n.save()
-        except:
-            return None
+        #try:
+        return n.save()
+        #except:
+        #   return None
 
     @classmethod
     def create_nets(cls,nets):
@@ -203,12 +201,14 @@ class UserNetInfo(Document):
         [cls.create_net(n) for n in nets])
         if not n_filter:
             return None
-        #try:
+        try:
             cls.objects.insert(
                 n_filter,
                 write_concern={'continue_on_error': True})
         #except NotUniqueError:
         #    return None
+        except:
+            return None
         #except:
         #    if settings.DEBUG:
         #        traceback.print_exc()
