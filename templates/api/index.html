@@ -1,0 +1,15 @@
+<html>
+    <head>
+
+    </head>
+  <body>
+    <ul>
+        {% for it in tp.rulelist %}
+            {% for itt in it.rules %}
+                <li>{{ itt.name }},{{ itt.value}}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+  </body>
+
+</html>
