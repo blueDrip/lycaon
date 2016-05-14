@@ -7,8 +7,9 @@ from rules.ruleset.PersonInfo import PersonInfo
 from rules.base import BaseData
 from rules.ruleset.Sp import Sp
 from api.models import Question
-from rules.raw_data import UserContact
+from rules.raw_data import UserContact,topResult
 from datetime import datetime
+
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
@@ -61,3 +62,7 @@ def get_usercontact(request):
         return HttpResponse('an error happend!')
     if request.method == 'GET':
         return HttpResponse(request.GET['name'])
+
+def credit_detail(request):
+    top_rs = topResult.objects.filter().first()
+    return render(request, 'api/detail.html', {'tp': top_rs})
