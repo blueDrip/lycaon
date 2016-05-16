@@ -345,4 +345,4 @@ class topResult(Document):
     rulelist=ListField(ReferenceField(DetailRule))
     value=StringField(default = str)
     name = StringField(default = str)
-    
+    created_time = datetime.datetime.now()

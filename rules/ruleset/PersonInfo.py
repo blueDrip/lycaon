@@ -2,8 +2,6 @@
 # encoding: utf-8
 import sys
 import os
-reload(sys)
-sys.setdefaultencoding('utf8')
 from rules.models import BaseRule
 from rules.raw_data import minRule
 class PersonInfo(BaseRule):
@@ -14,9 +12,9 @@ class PersonInfo(BaseRule):
             10003:self.get_edu(basedata),
             10004:self.get_residenza(), 
             10005:self.get_marry_status(),
-            10006:self.is_black(),
-            10007:self.get_profession(),
-            10008:self.is_samephoto_with_idcard()
+            #10007:self.is_black(),
+            10006:self.get_profession(),
+            10007:self.is_samephoto_with_idcard()
         }    
 
     def get_age(self,basedata):
@@ -111,8 +109,7 @@ class PersonInfo(BaseRule):
         sex_score=min_rule_map[10002].score*0.2
         edu_score=min_rule_map[10003].score*0.1
         residenza_score=min_rule_map[10004].score*0.2
-        profession_score=min_rule_map[10007].score*0.2
-        phone_score=min_rule_map[10008].score*0.1
+        profession_score=min_rule_map[10006].score*0.2
+        phone_score=min_rule_map[10007].score*0.1
         score=age_score+sex_score+edu_score+profession_score+phone_score+residenza_score
         return score
-    
