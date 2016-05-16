@@ -354,6 +354,7 @@ class PostLoanNewRule(BaseRule):
         elif clen>150 and clen<200:
             r.score=80
         r.name=u'通讯录长度'
+        r.source = str(clen)
         r.feature_val = str(clen)
         return r
 
@@ -402,6 +403,7 @@ class PostLoanNewRule(BaseRule):
         hscore=self.get_score_by_duration(hd)*0.4;
         r.score=0.4*fscore+mscore*0.3+hscore*0.3;
         r.name=u'父母通话时间'
+        r.source = str(fd+md+hd)
         r.feature_val = str(fd+md+hd)+'s'
         return r
 
@@ -471,6 +473,7 @@ class PostLoanNewRule(BaseRule):
         hscore=self.get_score_by_times(ht)*0.4;
         r.score=0.4*fscore+mscore*0.3+hscore*0.3;
         r.name=u'父母通话次数'
+        r.source = str(ft+mt+ht)
         r.feature_val = str(ft+mt+ht)+u'次'
         return r
 
@@ -506,6 +509,7 @@ class PostLoanNewRule(BaseRule):
             score=40
         r.score=0.4*score;
         r.name=u'亲属通话次数'
+        r.source = str(rt)
         r.feature_val = str(rt)+u'次'
         return r
 
@@ -537,6 +541,7 @@ class PostLoanNewRule(BaseRule):
             score=40
         r.score=0.3*score;
         r.name=u'亲属通话时间'
+        r.source = str(duration)
         r.feature_val = str(duration)+'s'
         return r
     #父母长度在老家比例
@@ -554,8 +559,9 @@ class PostLoanNewRule(BaseRule):
                 value+=k+';'+v+'\t'
         radio=count*1.0/(len(bd.contacts) or 1)
         r = minRule()
-        r.name=u'父母在老家'
+        r.name=u'父母在老家的个数'
         r.value = value
+        r.source = str(count)
         r.score=0
         if count>0 and count<=2:
             r.score=60
@@ -563,7 +569,7 @@ class PostLoanNewRule(BaseRule):
             r.score = 80
         elif count>3:
             r.score = 100
-        r.feature_val = str(count)+u'个在老家'
+        r.feature_val = str(count)+u'个'
         return r
 
     def relative_location_same_with_idcard(self,bd):
@@ -571,7 +577,7 @@ class PostLoanNewRule(BaseRule):
         count=0
         value=''
         r=minRule()
-        r.name='亲属在老家'
+        r.name=u'亲属在老家的个数'
         
         for k,v in self.r_relative_map.items():
             if idcard['city'] in v:
@@ -584,7 +590,8 @@ class PostLoanNewRule(BaseRule):
             r.score=80
         elif count>5:
             r.score = 100
-        r.feature_val = str(count)+u'个在老家'
+        r.source = str(count)
+        r.feature_val = str(count)+u'个'
         return r
     def parents_len_in_contact(self,bd):
         pmap=self.father_mp
@@ -596,6 +603,7 @@ class PostLoanNewRule(BaseRule):
         r = minRule()
         r.name =u'父母长度'
         r.value = str(plen)
+        r.source = str(plen)
         if plen>0 and plen<=1:
             r.score=40
         elif plen>1 and plen<=3:
@@ -610,6 +618,7 @@ class PostLoanNewRule(BaseRule):
         r = minRule()
         r.name =u'亲属长度'
         r.value = str(rlen)
+        r.source = str(rlen)
         if rlen>0 and rlen<=3:
             r.score=40
         elif rlen>3 and rlen<=6:

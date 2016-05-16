@@ -30,12 +30,12 @@ class Sp(BaseRule):
             20007:self.get_call_in_duration(basedata),#半年内主叫时长
             20008:self.get_call_out_times(basedata),#半年内被叫次数
             20009:self.get_call_out_duration(basedata),#半年内被叫时长
-            20010:self.callsame_location_with_contact(basedata),#通话记录电话号码出现在通讯录的比例
-            20011:self.smssame_location_with_contact(basedata),#短信记录电话号码出现在通讯录中的比例
-            20012:self.callsame_location_with_idcard(basedata),#通话记录电话号码在老家的比例
-            20013:self.smssame_location_with_idcard(basedata),#短信记录电话号码在老家的比例
-            20014:self.callsame_location_with_userphone(basedata),#通话记录中电话号码与申请人同一手机归属地的比例
-            20015:self.smssame_location_with_userphone(basedata),#短信记录中电话号码与申请人同一手机归属地的比例
+            20010:self.callsame_location_with_contact(basedata),#通话记录电话号码出现在通讯录的个数
+            20011:self.smssame_location_with_contact(basedata),#短信记录电话号码出现在通讯录中的个数
+            20012:self.callsame_location_with_idcard(basedata),#通话记录号码在老家的个数
+            20013:self.smssame_location_with_idcard(basedata),#短信记录号码在老家的个数
+            20014:self.callsame_location_with_userphone(basedata),#通话记录中号码与申请人同一手机归属地的个数
+            20015:self.smssame_location_with_userphone(basedata),#短信记录中号码与申请人同一手机归属地的个数
             20016:self.set_21(basedata),#是否设置21呼叫转移
             20017:self.is_dunning_call(),#是否电话被催收
             20018:self.is_dunning_sms(),#是否被短信催收
@@ -159,9 +159,11 @@ class Sp(BaseRule):
     '''主叫次数'''
     def get_call_in_times(self,basedata):
         times=0
+        now=basedata.create_time
         for call in basedata.sp_calls:
-            if call.call_type == u'主叫':
-                times+=1
+            if call.call_time>now-timedelta(180) and call.call_time<=now:
+                if call.call_type == u'主叫':
+                    times+=1
         r = minRule()
         if times>=0 and times<10:
             r.score=10
@@ -173,7 +175,7 @@ class Sp(BaseRule):
             r.score = 50
         elif times>50:
             r.score=100
-        r.name=u'主叫次数'
+        r.name=u'半年内主叫次数'
         r.value=str(times)
         r.source = str(times)
         r.feature_val = str(times)+u'次'
@@ -182,11 +184,13 @@ class Sp(BaseRule):
     '''主叫时长'''
     def get_call_in_duration(self,basedata):
         duration=0
+        now = basedata.create_time
         for call in basedata.sp_calls:
-            if call.call_type == u'主叫':
-                duration+=call.call_duration
+            if call.call_time>=now-timedelta(180) and call.call_time<=now:
+                if call.call_type == u'主叫':
+                    duration+=call.call_duration
         r = minRule()
-        r.name=u'主叫时长'
+        r.name=u'半年内主叫时长'
         r.score=0
         r.source=str(duration)
         if duration>0 and duration<=500:
@@ -207,11 +211,13 @@ class Sp(BaseRule):
     '''被叫次数'''
     def get_call_out_times(self,basedata):
         times=0
+        now = basedata.create_time
         for call in basedata.sp_calls:
-            if call.call_type == u'被叫':
-                times+=1
+            if call.call_time>=now-timedelta(180) and call.call_time<=now:
+                if call.call_type == u'被叫':
+                    times+=1
         r = minRule()
-        r.name=u'被叫次数'
+        r.name=u'半年内被叫次数'
         r.score=0
         r.source=str(times)
         if times<1000:
@@ -227,12 +233,14 @@ class Sp(BaseRule):
     '''被叫时长'''
     def get_call_out_duration(self,basedata):
         duration=0
+        now = basedata.create_time
         for call in basedata.sp_calls:
-            if call.call_type == u'被叫':
-                duration+=call.call_duration
+            if call.call_time>=now-timedelta(180) and call.call_time<=now:
+                if call.call_type == u'被叫':
+                    duration+=call.call_duration
         r = minRule()
         avg=duration
-        r.name=u'被叫时长'
+        r.name=u'半年内被叫时长'
         r.score=0
         r.source=str(avg)
         if avg<1000:
@@ -247,7 +255,7 @@ class Sp(BaseRule):
         r.feature_val = str(duration)+'s'
         return r
 
-    '''通话记录电话号码出现在通讯录的比例'''
+    '''通话记录电话号码出现在通讯录的个数'''
     def callsame_location_with_contact(self,basedata):
         contact = basedata.contacts
         value,count=[],0
@@ -258,20 +266,27 @@ class Sp(BaseRule):
                 value.append(
                     it.name+';'+it.phone+';'+it.phone_location
                 )
-        radio=count*1.0/(len(contact) or 1)
+        radio=count*1.0/(conlen or 1)
         r = minRule()
-        r.name = u'通话记录电话号码出现在通讯录的比例'
-        r.value = '\t'.join(value)
-        if radio>0 and radio<=1:
-            r.score = radio*100
-        elif radio>1:
+
+        r.name = u'通话记录电话号码出现在通讯录的个数'
+        if count>=0 and count<40:
+            r.score=40
+        elif count>=40 and count<60:
+            r.score=60
+        elif count>=60 and count<80:
+            r.score = 80
+        elif count>=80 and count<=100:
             r.score = 100
-        r.source = '{"count":%s,"conlen":%s}'%(str(count),str(conlen))
-        r.feature_val = "%.2f"%(radio)
+        elif count>100:
+            r.score = 100
+
+        r.value = '\t'.join(value)
+        r.source = str(count)
+        r.feature_val = str(count)+u'个'
         return r
 
-
-    '''短信记录电话号码出现在通讯录中的比例'''
+    '''短信记录电话号码出现在通讯录中的个数'''
     def smssame_location_with_contact(self,basedata):
         contact=basedata.contacts
         value,count=[],0
@@ -284,17 +299,24 @@ class Sp(BaseRule):
                 )
         radio = count*1/(conlen or 1)
         r = minRule()
-        r.name = u'短信记录电话号码出现在通讯录的比例'
-        if radio>0 and radio<=1:
-            r.score = radio*100
-        elif radio>1:
+        r.name = u'短信记录电话号码出现在通讯录个数'
+        if count>=0 and count<40:
+            r.score=40
+        elif count>=40 and count<60:
+            r.score=60
+        elif count>=60 and count<80:
+            r.score = 80
+        elif count>=80 and count<=100:
             r.score = 100
+        elif count>100:
+            r.score = 100
+
         r.value = '\t'.join(value)
-        r.feature_val = "%.2f"%(radio)
-        r.source = '{"count":%s,"conlen":%s}'%(str(count),str(conlen))
+        r.feature_val = str(count)+u'个'
+        r.source = str(count)
         return r
 
-    '''通话记录中电话号码在老家的比例'''
+    '''通话记录中电话号码在老家的个数'''
     def callsame_location_with_idcard(self,basedata):
         home_location = basedata.home_location
         count=0
@@ -309,21 +331,25 @@ class Sp(BaseRule):
         call_len = len(basedata.sp_calls)
         radio = count*1.0/(call_len or 1)
         r = minRule()
-        r.name = u'通话记录中电话号码在老家的比例'
+        r.name = u'通话记录中电话号码在老家的个数'
         r.value = value
 
-        if radio>0 and radio<=0.1:
+        if count>=0 and count<40:
+            r.score=40
+        elif count>=40 and count<60:
+            r.score=60
+        elif count>=60 and count<80:
+            r.score = 80
+        elif count>=80 and count<=100:
             r.score = 100
-        elif radio>0.1 and radio<=1:
-            r.score = radio*100
-        elif radio>1:
-            r.score = 50
-        r.source = '{"count":%s,"conlen":%s}'%(str(count),str(call_len))
-        r.feature_val = "%.2f"%(radio)
+        elif count>100:
+            r.score = 100
+        r.source = str(count)
+        r.feature_val = str(count)
         return r
 
 
-    '''短信记录电话号码在老家的比例'''
+    '''短信记录电话号码在老家的个数'''
     def smssame_location_with_idcard(self,basedata):
         home_location = basedata.home_location
         count=0
@@ -338,20 +364,25 @@ class Sp(BaseRule):
         sms_len = len(basedata.sp_sms)
         radio = count*1.0/(sms_len or 1)
         r = minRule()
-        r.name = u'通话记录中电话号码在老家的比例'
+        r.name = u'通话记录中电话号码在老家的个数'
         r.value = value
-        if radio>0 and radio<=0.1:
+
+        if count>=0 and count<40:
+            r.score=40
+        elif count>=40 and count<60:
+            r.score=60
+        elif count>=60 and count<80:
+            r.score = 80
+        elif count>=80 and count<=100:
             r.score = 100
-        elif radio>0.1 and radio<=1:
-            r.score = radio*100
-        elif radio>1:
-            r.score = 50
-        r.source = '{"count":%s,"smslen":%s}'%(str(count),str(sms_len))
-        r.feature_val = "%.2f"%(radio)
+        elif count>100:
+            r.score = 100
+        r.source =str(count)
+        r.feature_val = str(count)+u'个'
         return r
 
 
-    '''通话记录中电话号码与申请人同一手机归属地的比例'''
+    '''通话记录中电话号码与申请人同一手机归属地的个数'''
     def callsame_location_with_userphone(self,basedata):
         user_plocation = basedata.user_plocation
         count=0
@@ -365,21 +396,25 @@ class Sp(BaseRule):
         call_len = len(basedata.sp_calls)
         radio = count*1.0/(call_len or 1)
         r = minRule()
-        r.name = u'通话记录中电话号码与申请人同一手机归属地的比例'
+        r.name = u'通话记录中电话号码与申请人同一手机归属地个数'
         r.value = value
-        if radio>0 and radio<=0.3:
-            r.score = 30
-        elif radio>0.3 and radio<=0.5:
+
+        if count>=0 and count<40:
+            r.score=40
+        elif count>=40 and count<60:
+            r.score=60
+        elif count>=60 and count<80:
+            r.score = 80
+        elif count>=80 and count<=100:
             r.score = 100
-        elif radio>0.5 and radio<=1:
-            r.score = 70
-        elif radio>1:
-            r.score = 20
-        r.source = '{"count":%s,"calllen":%s}'%(str(count),str(call_len))
-        r.feature_val = "%.2f"%(radio)
+        elif count>100:
+            r.score = 100
+
+        r.source = str(count)
+        r.feature_val = str(count)+u'个'
         return r
 
-    '''短信记录中电话号码与申请人同一手机归属地的比例'''
+    '''短信记录中电话号码与申请人同一手机归属地的个数'''
     def smssame_location_with_userphone(self,basedata):
         user_plocation = basedata.user_plocation
         count=0
@@ -394,18 +429,22 @@ class Sp(BaseRule):
         sms_len = len(basedata.sp_sms)
         radio = count*1.0/(sms_len or 1)
         r = minRule()
-        r.name = u'短信记录中电话号码与申请人同一手机归属地的比例'
+        r.name = u'短信记录中电话号码与申请人同一手机归属地的个数'
         r.value = value
-        if radio>0 and radio<=0.3:
-            r.score = 30
-        elif radio>0.3 and radio<=0.5:
+
+        if count>=0 and count<40:
+            r.score=40
+        elif count>=40 and count<60:
+            r.score=60
+        elif count>=60 and count<80:
+            r.score = 80
+        elif count>=80 and count<=100:
             r.score = 100
-        elif radio>0.5 and radio<=1:
-            r.score = 70
-        elif radio>1:
-            r.score = 20
-        r.source = '{"count":%s,"calllen":%s}'%(str(count),str(sms_len))
-        r.feature_val = "%.2f"%(radio)
+        elif count>100:
+            r.score = 100
+
+        r.source = str(count)
+        r.feature_val = str(count)+u'个'
         return r
 
     '''是否设置21呼叫转移'''
@@ -582,12 +621,12 @@ class Sp(BaseRule):
         call_in_duration = min_rmap[20007].score*0.025  #半年内主叫时长
         call_out_times = min_rmap[20008].score*0.025 #半年内被叫次数
         call_out_duration = min_rmap[20009].score*0.025 #半年内被叫时长
-        call_in_contact = min_rmap[20010].score*0.05 #通话记录电话号码出现在通讯录的比例
-        smssame_in_contact = min_rmap[20011].score*0.05 #短信记录电话号码出现在通讯录中的比例
-        callsame_with_idcard = min_rmap[20012].score*0.25 #通话记录电话号码在老家的比例
-        smssame_with_idcard = min_rmap[20013].score*0.25 #短信记录电话号码在老家的比例
-        callsame_with_userphone = min_rmap[20014].score*0.25 #通话记录中电话号码与申请人同一手机归属地的比例
-        smssame_with_userphone = min_rmap[20015].score*0.25 #短信记录中电话号码与申请人同一手机归属地的比例
+        call_in_contact = min_rmap[20010].score*0.05 #通话记录电话号码出现在通讯录的个数
+        smssame_in_contact = min_rmap[20011].score*0.05 #短信记录电话号码出现在通讯录中个数
+        callsame_with_idcard = min_rmap[20012].score*0.25 #通话记录电话号码在老家的个数
+        smssame_with_idcard = min_rmap[20013].score*0.25 #短信记录电话号码在老家的个数
+        callsame_with_userphone = min_rmap[20014].score*0.25 #通话记录中电话号码与申请人同一手机归属地的个数
+        smssame_with_userphone = min_rmap[20015].score*0.25 #短信记录中电话号码与申请人同一手机归属地的个数
         set_21 = min_rmap[20016].score*0.1 #是否设置21呼叫转移
         dunning_call = min_rmap[20017].score*0.05  #是否电话被催收
         dunning_sms = min_rmap[20018].score*0.05  #是否被短信催收
