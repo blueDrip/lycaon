@@ -227,7 +227,7 @@ class JD(BaseRule):
         r.value=ss
         r.score=0
         count_address = len(count_mp.keys())
-        r.name=u'不同的收货个数'
+        r.name=u'不同的收货地址个数'
         if count_address<=15:
             r.score=100
         elif count_address>15 and count_address<=30:
