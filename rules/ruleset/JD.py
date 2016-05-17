@@ -246,7 +246,8 @@ class JD(BaseRule):
                     phone_list.append(it['phone'])
         for c in basedata.contacts:
             if len(c.phone)>=11:
-                str_=c[0:3]+'****'+c[7:]
+                
+                str_=c.phone[0:3]+'****'+c.phone[7:]
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()

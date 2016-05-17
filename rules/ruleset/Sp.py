@@ -364,7 +364,7 @@ class Sp(BaseRule):
         sms_len = len(basedata.sp_sms)
         radio = count*1.0/(sms_len or 1)
         r = minRule()
-        r.name = u'通话记录中电话号码在老家的个数'
+        r.name = u'短信记录中电话号码在老家的个数'
         r.value = value
 
         if count>=0 and count<40:

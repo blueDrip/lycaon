@@ -86,10 +86,20 @@ SENSE_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sense_word.txt"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test',
+        'NAME': 'qianbao',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'HOST': '182.92.71.136',
+        'PORT': '3306',
+        'PASSWORD': 'wangzhanghu123',
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'django':{
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'django',
+        'USER': 'root',
+        'HOST': '182.92.71.136',
+        'PORT': '3306',
+        'PASSWORD': 'wangzhanghu123'
     }
 }
 

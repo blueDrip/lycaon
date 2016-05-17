@@ -16,7 +16,8 @@ from django.conf import settings
 #用户通讯录
 
 class UserContact(Document):
-    phone = StringField(default=str, unique_with=['owner_phone','name','created_time'])
+    phone = StringField(default=str,unique_with=['user_id', 'name'])
+    user_id = StringField(default=str,required = True)
     owner_phone = StringField(required=True)
     created_time = DateTimeField()
     phone_location = StringField(default=str)
@@ -29,12 +30,12 @@ class UserContact(Document):
     @classmethod
     def create_contact(cls,data):
         c = cls()
-
         c.phone = data.phone
+        c.user_id = data.user_id
         c.owner_phone = data.owner_phone
-        c.created_time = data.created_time
+        c.created_time = datetime.datetime.now()
         c.phone_location = data.phone_location
-        c.source = data.source #usercontact来源 1:通讯录，2.sp
+        c.source = data.source         #usercontact来源 1:通讯录，2.sp
         c.created_at = data.created_at # 手机内创建时间
         c.name = data.name
         c.call_count = data.call_count
@@ -70,6 +71,7 @@ class UserContact(Document):
 
 class UserCallPhone(Document):
     username = StringField(default = str)
+    user_id = StringField(default = str)
     owner_phone = StringField(default = str)
     call_time= DateTimeField()
     created_time = DateTimeField()
@@ -85,6 +87,7 @@ class UserCallPhone(Document):
         call = cls()
         call.owner_phone = data.owner_phone
         call.username = data.username
+        call.user_id = data.user_id
         call.phone = data.phone
         call.call_time = data.call_time
         call.call_duration = data.call_duration
@@ -120,6 +123,7 @@ class UserCallPhone(Document):
 
 class UserShortMessage(Document):
     username = StringField(default = str)
+    user_id = StringField(default = str)
     owner_phone = StringField(default = str)
     send_time= DateTimeField()
     created_time = DateTimeField()
@@ -133,6 +137,7 @@ class UserShortMessage(Document):
     def create_sms(cls,data):
         sms = cls()
         sms.owner_phone = data.owner_phone
+        sms.user_id = data.user_id
         sms.username = data.username
         sms.phone = data.phone
         sms.send_time = data.send_time
@@ -171,6 +176,7 @@ class UserShortMessage(Document):
 #上网
 class UserNetInfo(Document):
     owner_phone = StringField()
+    user_id = StringField(default = str)
     start_time= DateTimeField()
     sum_flow = StringField(default = str)
     created_time = DateTimeField()
@@ -182,6 +188,7 @@ class UserNetInfo(Document):
     def create_net(cls,data):
         n=cls()
         n.owner_phone = data.owner_phone
+        n.user_id = data.user_id
         n.start_time = data.start_time
         n.sum_flow = data.sum_flow
         n.created_time = datetime.datetime.now()
@@ -340,7 +347,7 @@ class DetailRule(Document):
     rules = ListField(ReferenceField(minRule))
 
 class topResult(Document):
-    owner_phone = StringField(default = str)
+    user_id = StringField(default = str)
     score = FloatField(default = 0)
     rulelist=ListField(ReferenceField(DetailRule))
     value=StringField(default = str)
