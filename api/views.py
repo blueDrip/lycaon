@@ -6,7 +6,7 @@ from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
 from rules.base import BaseData
 from rules.ruleset.Sp import Sp
-from api.models import Question
+#from api.models import Question
 from rules.raw_data import UserContact,topResult
 from datetime import datetime
 
@@ -39,8 +39,10 @@ def get_usercontact(request):
         req=''
         conlist = []
         try:
+
             req = json.loads(request.body)
             conlist = eval(req['linkmen'])
+
         except:
             return HttpResponse('json格式错误')
         clist=[]

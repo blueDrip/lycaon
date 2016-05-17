@@ -3,7 +3,6 @@
 import sys
 import os
 reload(sys)
-sys.setdefaultencoding('utf8')
 from rules.models import BaseRule
 class Tbao(BaseRule):
 	def __init__(self):

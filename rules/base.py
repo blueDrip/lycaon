@@ -64,8 +64,16 @@ def format_phone(phone):
 
 class BaseData(object):
 
-    """Docstring for OrderInfo. """
-    def __init__(self,oid,ext=None):
+    """Docstring for OrderInfo. 
+        map_info = {
+            'user':None,
+            'jd_login_name':None,
+            'tb_login_name':None,
+            'sp_login_name':None,
+            'bank_login_name':None,
+        }
+    """
+    def __init__(self,map_info={},ext=None):
         #try:
             '''user info'''
             self.user=None
@@ -106,6 +114,7 @@ class BaseData(object):
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
+                uc.user_id = ''
                 uc.owner_phone = self.user_phone
                 uc.phone=itt['anotherNm']
                 uc.username = uc.phone in cmap and cmap[uc.phone] or u'none'
@@ -127,9 +136,9 @@ class BaseData(object):
                 stime=k[:-2]+'-'+itt['startTime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
+                s.user_id = ''
                 s.send_time = st
                 s.phone=itt['anotherNm']
-
                 s.owner_phone = self.user_phone
                 s.username = s.phone in cmap and cmap[s.phone] or u'none'
 
@@ -152,6 +161,7 @@ class BaseData(object):
                 n=UserNetInfo()
                 n.owner_phone = self.user_phone
                 n.start_time=st
+                n.user_id = u''
                 n.comm_time = get_duration(itt['commTime'])
                 n.sum_flow=itt['sumFlow']
                 n.created_time = datetime.now()
