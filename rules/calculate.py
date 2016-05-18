@@ -18,6 +18,9 @@ from rules.models import BaseRule
 from rules.base import BaseData
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata
 
+cal_logger = logging.getLogger('django.cal')
+cal_logger.setLevel(logging.INFO)
+
 '''调用之前进行黑名单验证'''
 def is_black():
     pass

@@ -75,14 +75,15 @@ class BaseData(object):
         }
     """
     def __init__(self,map_info={},ext=None):
-        #try:
+        try:
             '''user info'''
             self.user=None
             self.user_plocation=u'北京'
             self.home_location = u'江西南昌市'
             self.user_phone=u'15600300721'
             self.username=u'李超'
-            
+
+            self.user_id='safasf2333333333r'
             self.create_time=datetime.now()          
             self.ext_api = ext or EXT_API()
             '''sp info'''
@@ -103,9 +104,9 @@ class BaseData(object):
             self.init_sp_calldetail()
             self.init_sp_smsdetail()
             self.init_sp_netdetail()
-        #except:
-        #    print get_tb_info()
-        #    base_logger.error(get_tb_info())
+        except:
+            print get_tb_info()
+            base_logger.error(get_tb_info())
     def init_sp_calldetail(self):
         mp = self.load_sp_datadetail(self.sp.phonedetail)
         cmap={ c.phone:c.name for c in self.contacts }
@@ -127,8 +128,13 @@ class BaseData(object):
                 uc.source=u'sp'
                 uc.call_type=itt['commMode']
                 self.sp_calls.append(uc)
-        #存库
-        UserCallPhone.create_calls(self.sp_calls)
+        try:
+            UserCallPhone.create_calls(self.sp_calls)
+        except:
+            base_logger.error(get_tb_info())
+            base_logger.error("【init sp_calls error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
+            print 'init sp_calls error'
+            
     def init_sp_smsdetail(self):
         mp = self.load_sp_datadetail(self.sp.smsdetail)
         cmap={ c.phone:c.name for c in self.contacts }
@@ -150,9 +156,12 @@ class BaseData(object):
                 s.source=u'sp'
                 s.sms_type=itt['commMode']
                 self.sp_sms.append(s)
-        #存库
-        UserShortMessage.create_smses(self.sp_sms)
-
+        try:
+            UserShortMessage.create_smses(self.sp_sms)
+        except:
+            base_logger.error(get_tb_info())
+            base_logger.error("【init sp_sms error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
+            print 'init sp_sms error'
     def init_sp_netdetail(self):
         mp = self.load_sp_datadetail(self.sp.netdetail)
         for k,v in mp.items():
@@ -170,8 +179,12 @@ class BaseData(object):
                 n.source=u'sp'
                 n.net_type=itt['netType']
                 self.sp_net.append(n)
-        #存库
-        UserNetInfo.create_nets(self.sp_net)
+        try:
+            UserNetInfo.create_nets(self.sp_net)
+        except:
+            base_logger.error(get_tb_info())
+            base_logger.error("【init sp_net error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
+            print 'init sp_net error'            
 
     def load_sp_datadetail(self,sp_map):
         mp={}
@@ -195,7 +208,8 @@ class BaseData(object):
         try:
             conlist = ucl['linkmen']
         except:
-            print 'json解析错误'
+            base_logger.error(get_tb_info())
+            base_logger.error("【init contact error】"  + ",uid=" + self.user_id + ",datetime="+datetime.now())
         clist=[]
         for cc in conlist:
             itt=eval(cc)
@@ -215,8 +229,7 @@ class BaseData(object):
             u = UserContact.create_contacts(clist)
         except:
             base_logger.error(get_tb_info())
-            base_logger.error("SaveContactError"  + ",uid=" + self.user_id)
-
+            base_logger.error("【SaveContactError】"  + ",uid=" + self.user_id)
             print 'SaveContactError'
         self.contacts=clist
 
@@ -240,10 +253,7 @@ class BaseData(object):
 
         return
 
-       
-
-
-
+      
     #添加短信和电话中的联系人到通讯录中
 #    def init_contact(self,userid):
         #source:  0:来着短信  1:来自通话记录  其他：来自通讯记录     
