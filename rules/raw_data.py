@@ -360,6 +360,16 @@ class phonebook(Document):
     device_id=StringField(default=str)
 
 
+#招商信用卡
+class cmbcc(Document):
+    detailBill = ListField()
+    username = StringField()
+    canBorrowCash = StringField()
+    repaymentInfo =ListField()
+    billAddr = ListField()
+    simpleBill = ListField()
+    canUserAmount = StringField()
+    totalAmount = StringField()
 
 class minRule(Document):
     ruleid=StringField(default = str)

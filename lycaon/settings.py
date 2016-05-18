@@ -187,6 +187,12 @@ LOGGING = {
             'filename': LOG_DIR + 'sms.log',
             'formatter': 'standard',
         },
+        'cal':{
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename':LOG_DIR + 'calculate.log',
+            'formatter':'standard',
+        },
         
     },
     'loggers': {
@@ -210,7 +216,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-
+        'django.cal': {
+            'handlers': ['cal'],
+            'level': 'INFO',
+            'propagate': True,
+        },        
     }
 }
 
