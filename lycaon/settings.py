@@ -80,6 +80,9 @@ CUISHOU_GUHUA_FILE= BASE_DIR + "/rules/conf/cuishou_guhua.txt"
 CUISHOU_SHOUJI_FILE= BASE_DIR + "/rules/conf/cuishou_shouji.txt"
 SMS_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sms_badword.txt"
 SENSE_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sense_word.txt"
+CITY_CONF = BASE_DIR+'/data/city.conf'
+
+
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
