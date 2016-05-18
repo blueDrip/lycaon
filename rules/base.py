@@ -18,6 +18,7 @@ import logging
 from datetime import datetime
 from rules.util.utils import get_tb_info
 from rules.raw_data import jingdong,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
+from rules.raw_data import phonebook
 from rules.ext_api import EXT_API
 
 
@@ -187,21 +188,38 @@ class BaseData(object):
             
    
     def init_contact(self):
-        ucl = UserContact.objects.filter(owner_phone=u'18204315019')
-        self.contacts =  [c for c in ucl]
-        #更新手机归属地
-        for c in self.contacts:
-            # c.phone = normalize_num(c.phone)
-            c.name=c.name.replace(' ','')
-            c.phone = format_phone(c.phone)
-            g = self.ext_api.get_phone_location(c.phone)
-            c.phone_location = g['province'] + "-" + g['city'] + "-" + g['supplier']
-            try:
-                c.save()
-            except:
-                base_logger.error(get_tb_info())
-                base_logger.error("SaveContactError" + c.phone + ",uid=" + self.user_id)
-                continue
+        ucl = phonebook.objects.filter(user_id=u'111').first()
+        if not ucl:
+            return
+        conlist = []
+        try:
+            conlist = ucl['linkmen']
+        except:
+            print 'json解析错误'
+        clist=[]
+        for cc in conlist:
+            itt=eval(cc)
+            u = UserContact()
+            u.name=itt['name'] and itt['name'].decode('utf8') or u''
+            u.user_id = ucl['user_id']
+            u.owner_phone=ucl["phone"]
+            u.device_id = ucl["device_id"]
+            u.source = str(itt['source'])
+            u.created_at = datetime.now()
+            u.phone =  format_phone(itt['contact_phone']) #号码规范
+            g=self.ext_api.get_phone_location(u.phone)
+            u.phone_location=g['province']+'-'+g['city']+'-'+g['supplier'] #手机归属地解析
+            u.call_count = 0
+            clist.append(u)
+        try:
+            u = UserContact.create_contacts(clist)
+        except:
+            base_logger.error(get_tb_info())
+            base_logger.error("SaveContactError"  + ",uid=" + self.user_id)
+
+            print 'SaveContactError'
+        self.contacts=clist
+
         #得到 含有有意义名字的通信录
         num_map = {}
         for c in self.contacts:
@@ -212,7 +230,7 @@ class BaseData(object):
             if c.name in num_map:
                 num_map[c.name].append(c)
             else:
-                num_map[c.name] = [c] 
+                num_map[c.name] = [c]
 
         for k,v in num_map.items():
             if len(v) >=8:
