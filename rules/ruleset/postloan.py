@@ -82,7 +82,7 @@ def pre_contacts(oinfo,parent_l,parent_l_ch,spouse_l):
                 c.name=c.name[-1:]==u'家' and c.name[0:-1] not in spouse_list and c.name[0:-1] or c.name
                 c.name=c.name[0]==u'家' and c.name[1:] not in spouse_list and c.name[1:] or c.name
         except:
-            print 'err'            
+            print 'pre err'            
             continue
     return tmp_contacts_l
 

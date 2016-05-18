@@ -11,24 +11,30 @@ from mongoengine import (
 import traceback
 from django.db import models
 from django.conf import settings
-# from raven.contrib.django.raven_compat.models import client
  
 #用户通讯录
 
 class UserContact(Document):
-    phone = StringField(default=str,unique_with=['user_id', 'name'])
-    user_id = StringField(default=str,required = True)
-    owner_phone = StringField(required=True)
+    phone = StringField(required = True,unique_with=['user_id', 'name'])
+    user_id = StringField(required = True)
+    owner_phone = StringField(required = True)
     created_time = DateTimeField()
     phone_location = StringField(default=str)
     source = StringField(default=str) #usercontact来源 1:通讯录，2.sp
     created_at = DateTimeField()  # 手机内创建时间
-    name = StringField()
+    name = StringField(default = str)
     call_count = IntField(default=int)
     device_id = StringField(default=str)
 
+    meta = {
+        "indexes": [
+            'phone', 'user_id', '-created_time', 'device_id'
+        ],
+        'index_background': True
+    }
+
     @classmethod
-    def create_contact(cls,data):
+    def create_contact(cls,data,need_save=True):
         c = cls()
         c.phone = data.phone
         c.user_id = data.user_id
@@ -40,50 +46,55 @@ class UserContact(Document):
         c.name = data.name
         c.call_count = data.call_count
         c.device_id = data.device_id
+        if not need_save:
+            return c
         try:
             return c.save()
         except:
-            
+            print 'save error'
             return None
 
     @classmethod
     def create_contacts(cls,contacts):
         contacts_filter = filter(
-        None,
-        [cls.create_contact(c) for c in contacts])
+            None,
+            [cls.create_contact(c,need_save=False)  for  c  in  contacts] )
         if not contacts_filter:
             return None
         try:
             cls.objects.insert(
-                contacts_filter,
-                write_concern={'continue_on_error': True})
-        #except NotUniqueError:
-        #    return None
-        except:
-            print 'err'
+                contacts_filter
+            )
+            return 'ok'
+        except NotUniqueError:
+            print 'init UserContact duble key error'
             return None
-        #except:
-        #    if settings.DEBUG:
-        #        traceback.print_exc()
-        #    else:
-        #       client.captureException()        
-        return 'sss'    
+        except:
+            if settings.DEBUG:
+                traceback.print_exc()
 
 class UserCallPhone(Document):
-    username = StringField(default = str)
-    user_id = StringField(default = str)
-    owner_phone = StringField(default = str)
+    username = StringField(default=str)
+    user_id = StringField(required=True)
+    owner_phone = StringField(required=True)
+    phone=StringField(required=True)
     call_time= DateTimeField()
     created_time = DateTimeField()
     call_duration = IntField(0)
     source =StringField(default=str)
     location=StringField(default=str)
     phone_location = StringField(default=str)
-    phone=StringField(default=str,unique_with=['owner_phone', 'username','created_time'])
     call_type=StringField(default=str)
 
+    meta = {
+        "indexes": [
+            'user_id', '-created_time'
+        ],
+        'index_background': True
+    }
+
     @classmethod
-    def create_call(cls,data):
+    def create_call(cls,data,need_save=True):
         call = cls()
         call.owner_phone = data.owner_phone
         call.username = data.username
@@ -96,6 +107,8 @@ class UserCallPhone(Document):
         call.location=data.location
         call.phone_location=data.phone_location      
         call.call_type=data.call_type
+        if not need_save:
+            return call
         try:
             return call.save()
         except:
@@ -105,36 +118,43 @@ class UserCallPhone(Document):
     def create_calls(cls,contacts):
         contacts_filter = filter(
         None,
-        [cls.create_call(c) for c in contacts])
+        [cls.create_call(c,need_save=False) for c in contacts])
         if not contacts_filter:
             return None
         try:
             cls.objects.insert(
                 contacts_filter,
                 write_concern={'continue_on_error': True})
-        #except NotUniqueError:
-        #    return None
-        except:
+            return 'ok'
+        except NotUniqueError:
+            print 'init UserCallphone double key error'
             return None
-        #    if settings.DEBUG:
-        #        traceback.print_exc()
-        #    else:
-        #       client.captureException()
+        except:
+            if settings.DEBUG:
+                traceback.print_exc()
+        return None
 
 class UserShortMessage(Document):
     username = StringField(default = str)
-    user_id = StringField(default = str)
-    owner_phone = StringField(default = str)
+    user_id = StringField(required=True)
+    #phone=StringField(required=True,unique_with=['user_id', 'username'])
+    phone=StringField(required=True)
+    owner_phone = StringField(required=True)
     send_time= DateTimeField()
     created_time = DateTimeField()
     source =StringField(default=str)
     location=StringField(default=str)
     phone_location = StringField(default=str)
-    phone=StringField(default=str,unique_with=['owner_phone', 'username','created_time'])
     sms_type=StringField(default=str)
+    meta = {
+        "indexes": [
+            'user_id', '-created_time'
+        ],
+        'index_background': True
+    }
 
     @classmethod
-    def create_sms(cls,data):
+    def create_sms(cls,data,need_save = True):
         sms = cls()
         sms.owner_phone = data.owner_phone
         sms.user_id = data.user_id
@@ -146,6 +166,8 @@ class UserShortMessage(Document):
         sms.location=data.location
         sms.phone_location=data.phone_location
         sms.sms_type=data.sms_type
+        if not need_save:
+            return sms
         try:
             return sms.save()
         except:
@@ -155,7 +177,7 @@ class UserShortMessage(Document):
     def create_smses(cls,contacts):
         smss_filter = filter(
         None,
-        [cls.create_sms(c) for c in contacts])
+        [cls.create_sms(c,need_save=False) for c in contacts])
         print smss_filter
         
         if not smss_filter:
@@ -164,19 +186,19 @@ class UserShortMessage(Document):
             cls.objects.insert(
                 smss_filter,
                 write_concern={'continue_on_error': True})
-        #except NotUniqueError:
-        #    return None
-        except:
+            return 'ok'
+        except NotUniqueError:
+            print 'init sms double key error'
             return None
-        #    if settings.DEBUG:
-        #        traceback.print_exc()
-        #    else:
-        #       client.captureException()
+        except:
+            if settings.DEBUG:
+                traceback.print_exc()
+        return None
 
 #上网
 class UserNetInfo(Document):
-    owner_phone = StringField()
-    user_id = StringField(default = str)
+    owner_phone = StringField(required=True)
+    user_id = StringField(required=True)
     start_time= DateTimeField()
     sum_flow = StringField(default = str)
     created_time = DateTimeField()
@@ -184,8 +206,9 @@ class UserNetInfo(Document):
     net_type = StringField(default = str)
     net_location=StringField(default=str)
     net_source = StringField(default = str)
+
     @classmethod
-    def create_net(cls,data):
+    def create_net(cls,data,need_save=True):
         n=cls()
         n.owner_phone = data.owner_phone
         n.user_id = data.user_id
@@ -196,32 +219,29 @@ class UserNetInfo(Document):
         n.net_type = data.net_type
         n.net_location = data.net_location
         n.net_source = data.net_source
-        #try:
-        return n.save()
-        #except:
-        #   return None
+        if not need_save:
+            return n
+        try:
+            return n.save()
+        except:
+            return None
 
     @classmethod
     def create_nets(cls,nets):
         n_filter = filter(
         None,
-        [cls.create_net(n) for n in nets])
+        [cls.create_net(n,need_save=False) for n in nets])
         if not n_filter:
             return None
         try:
             cls.objects.insert(
                 n_filter,
                 write_concern={'continue_on_error': True})
-        #except NotUniqueError:
-        #    return None
+            return 'ok'
         except:
-            return None
-        #except:
-        #    if settings.DEBUG:
-        #        traceback.print_exc()
-        #    else:
-        #       client.captureException()
-
+            if settings.DEBUG:
+                traceback.print_exc()
+        return None
     
 #京东
 class jingdong(Document):
@@ -330,6 +350,16 @@ class chinaTelecom(Document):
     phonedetail = ListField()
     smsdetail = ListField()
     netdetail = ListField()
+
+#手机联系人
+class phonebook(Document):
+    user_id = StringField(default=str)
+    name = StringField(default=str)
+    phone = StringField(default=str)
+    linkmen = StringField(default=str) 
+    device_id=StringField(default=str)
+
+
 
 class minRule(Document):
     ruleid=StringField(default = str)
