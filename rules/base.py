@@ -53,13 +53,13 @@ def get_duration(string):
     return h+m+s
 def format_phone(phone):
     phone = phone.replace('-','').replace(' ','')
-    if "+86" == phone[:3]:
+    if u"+86" == phone[:3]:
         phone = phone[3:]
-    elif '86' == phone[:2]:
+    elif u'86' == phone[:2]:
         phone = phone[2:]
-    elif '+0086'== phone[:5]:
+    elif u'+0086'== phone[:5]:
         phone = phone[5:]
-    elif '0086' == phone[:4]:
+    elif u'0086' == phone[:4]:
         phone = phone[4:]
     return phone
 
