@@ -67,7 +67,7 @@ def cal():
     b=JD(bd)
     tp_rs = topResult()
 
-    print '>>>>>>>>>>>>>>>>个人信息'
+    print '【个人信息】'
     dl=[]
     Dr_p=DetailRule()
     b=PersonInfo(bd)
@@ -82,7 +82,7 @@ def cal():
     Dr_p.rules=dl
     Dr_p.save()
 
-    print '>>>>>>>>>>>>>京东'
+    print '【京东】'
     Dr_jd=DetailRule()
     dl=[]
     b = JD(bd)
@@ -97,7 +97,7 @@ def cal():
     Dr_jd.rule_id=2
     Dr_jd.save()
 
-    print '>>>>>>>>>>>>>>>>>运营商'
+    print '【运营商】'
     dl=[]
     b=Sp(bd)
     Dr_sp=DetailRule()
@@ -113,7 +113,7 @@ def cal():
     Dr_sp.rules=dl
     Dr_sp.save()
 
-    print '>>>>>>>>>>>>>>>>>贷后'
+    print '【贷后】'
     b=PostLoanNewRule(bd)
     Dr_post=DetailRule()
     dl=[]
@@ -122,14 +122,13 @@ def cal():
         v.value = v.value.replace('\t','<br/>')
         v.save()
         dl.append(v)
-    print 'success'
     Dr_post.name=u'贷后'
     Dr_post.rule_id=4
     Dr_post.score=int(b.get_score())
     Dr_post.rules=dl
     Dr_post.save()
 
-    print '>>>>>>>>>>>>>>bank'
+    print '【信用卡】'
     b = creditCard(bd)
     Dr_credit = DetailRule()
     dl = []
@@ -143,7 +142,7 @@ def cal():
     Dr_credit.score=int(b.get_score())
     Dr_credit.rules=dl
     Dr_credit.save()    
-
+    print 'finish'
 
     tp_rs.name = u'credit_score'
     tp_rs.score=Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1
