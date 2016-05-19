@@ -18,7 +18,7 @@ import logging
 from datetime import datetime
 from rules.util.utils import get_tb_info
 from rules.raw_data import jingdong,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
-from rules.raw_data import phonebook
+from rules.raw_data import phonebook,cmbcc
 from rules.ext_api import EXT_API
 
 
@@ -100,10 +100,16 @@ class BaseData(object):
             self.calls = []
             self.sms = []
 
+            '''creditCard'''
+            self.cb=None
+
             self.init_contact()
             self.init_sp_calldetail()
             self.init_sp_smsdetail()
             self.init_sp_netdetail()
+            self.init_cmbcc()
+
+
         except:
             print get_tb_info()
             base_logger.error(get_tb_info())
@@ -252,6 +258,13 @@ class BaseData(object):
                 self.good_contacts.append(v)
 
         return
+    
+
+    def init_cmbcc(self):
+        self.cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
+        #cb_detail_list = cb and ab.detailBill or
+        #for k,v in 
+
 
       
     #添加短信和电话中的联系人到通讯录中

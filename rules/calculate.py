@@ -14,6 +14,7 @@ from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
 from rules.ruleset.Sp import Sp
 from rules.ruleset.postloan import PostLoanNewRule
+from rules.ruleset.creditCard import creditCard
 from rules.models import BaseRule
 from rules.base import BaseData
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata
@@ -119,7 +120,6 @@ def cal():
     for k,v in b.min_rule_map.items():
         v.ruleid=str(k)        
         v.value = v.value.replace('\t','<br/>')
-        v.ruleid = str(k)
         v.save()
         dl.append(v)
     print 'success'
@@ -130,13 +130,26 @@ def cal():
     Dr_post.save()
 
     print '>>>>>>>>>>>>>>bank'
-    
+    b = creditCard(bd)
+    Dr_credit = DetailRule()
+    dl = []
+    for k,v in b.min_rule_map.items():
+        v.ruleid=str(k)
+        v.value = v.value.replace('\t','<br/>')
+        v.save()
+        dl.append(v)
+    Dr_credit.name = u'招商银行信用卡'    
+    Dr_credit.rule_id=5
+    Dr_credit.score=int(b.get_score())
+    Dr_credit.rules=dl
+    Dr_credit.save()    
+
 
     tp_rs.name = u'credit_score'
-    tp_rs.score=Dr_p.score*0.3+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2
-    print Dr_p.score,Dr_jd.score,Dr_sp.score,Dr_post.score
+    tp_rs.score=Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1
+    print Dr_p.score,Dr_jd.score,Dr_sp.score,Dr_post.score,Dr_credit.score
     print '得分',tp_rs.score
-    tp_rs.rulelist=[Dr_p,Dr_jd,Dr_sp,Dr_post]
+    tp_rs.rulelist=[Dr_p,Dr_jd,Dr_sp,Dr_credit,Dr_post]
     tp_rs.save()
     print 'successful!'
 
