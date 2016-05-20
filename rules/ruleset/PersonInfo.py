@@ -79,14 +79,6 @@ class PersonInfo(BaseRule):
         r.score=0
         r.feature_val=r.value
         return r
-    def is_black(self):
-        r=minRule()
-        r.value=u'非黑名单'
-        r.name=u'是否黑名单'
-        r.score=100
-        r.source=u'是'
-        r.feature_val = r.value
-        return r
     def get_profession(self):
         r=minRule()
         r.value=u'老师' 
