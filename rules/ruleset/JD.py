@@ -86,11 +86,13 @@ class JD(BaseRule):
     '''实名认证'''
     def is_valid_name(self,basedata):
         r=minRule()
-        ispass=basedata.jd.isrealname
+        ispass=basedata.jd and basedata.jd.isrealname or u'unknow'
         r.score=0
         r.source=ispass
         r.name=u'实名认证'
-        if u'验证通过' in ispass:
+        if u'unknow' in ispass:
+            r.value = u'unknow'
+        elif u'验证通过' in ispass:
             r.value=u'验证通过'
             r.score=100
         elif u'验证失败' in ispass:
@@ -106,11 +108,13 @@ class JD(BaseRule):
     '''手机验证'''
     def is_valid_phone(self,basedata):
         r=minRule()
-        ispass=basedata.jd.isvalidphone
+        ispass=basedata.jd and basedata.jd.isvalidphone or u'unknow'
         r.score=0
         r.name=u'手机验证'        
         r.source=ispass
-        if u'验证通过' in ispass:
+        if u'unknow' in ispass:
+            r.value = u'unknow'
+        elif u'验证通过' in ispass:
             r.value=u'验证通过'
             r.score=100
         elif u'验证失败' in ispass:
@@ -126,12 +130,14 @@ class JD(BaseRule):
     '''会员级别'''
     def get_huiyuanjibie(self,basedata):
         r=minRule()
-        grade=basedata.jd.huiyuanjibie
+        grade=basedata.jd and basedata.jd.huiyuanjibie or u'unknow'
         r.value=grade
         r.score=0
         r.source=grade
         r.name=u'会员级别'
-        if u'钻石会员'==grade:
+        if u'unknow' in grade:
+            r.score = 0
+        elif u'钻石会员'==grade:
             r.score=100
         elif u'金牌会员'==grade:
             r.score=80
@@ -155,6 +161,7 @@ class JD(BaseRule):
         avg_days=inter*1.0/(len(login_his) or 1)
         r.name=u'平均登陆时间登陆间隔'
         r.feature_val = str(int(avg_days))+u'天/次'
+        r.source = str(inter)
         r.score=100
         if avg_days>0 and avg_days<=5:
             r.score=100
@@ -251,13 +258,14 @@ class JD(BaseRule):
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()
-        r.name=u'收件人在通讯录中'
+        r.name=u'收件人出现在通讯录中'
         r.score = 0
+        r.source = str(len(value))
+        r.feature_val = u'无'
         if value:
             r.value = '\t'.join(value)
             r.score=100
             r.feature_val = u'出现个数:%s'%(str(len(value)))
-        r.feature_val = u'无'
         return r
     #收件人号码出现下短信中
     def address_phone_in_sms(self,basedata):
@@ -273,13 +281,14 @@ class JD(BaseRule):
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()
-        r.name=u'与收件人有电话联系'
+        r.name=u'与收件人有短信联系'
         r.score = 0
+        r.source = str(len(value))
+        r.feature_val = u'无'
         if value:
             r.value = '\t'.join(value)
             r.score=100
             r.feature_val = u'出现个数:%s'%(str(len(value)))
-        r.feature_val = u'无'
         return r
     #收件人号码出现在通话记录中
     def address_phone_in_call(self,basedata):
@@ -295,13 +304,14 @@ class JD(BaseRule):
                 if str_ in phone_list:
                     value.append(str_)
         r = minRule()
-        r.name= u'与收件人有短信联系'
+        r.name= u'与收件人有电话联系'
         r.score=0
+        r.source = str(len(value))
+        r.feature_val = u'无'
         if value:
             r.score=100
             r.value='\t'.join(value) 
             r.feature_val = u'有%s联系'%(str(len(value)))
-        r.feature_val = u'无'
         return r
 
     #手机归属地中出现在收货地址中
@@ -315,14 +325,16 @@ class JD(BaseRule):
                         k+';'+it['phone']+';'+it['value']
                     )
         r = minRule()
-        r.name=u'手机归属地中出现在收货地址中'
+        r.name=u'申请用户手机归属地出现在收货地址中'
         r.value = '\t'.join(value)
         r.score = 0
         r.feature_val = u'无'
+        r.source = str(len(value))
         if value:
             r.score=100
             r.feature_val = u'出现%s个'%(str(len(value)))
-        return r 
+        return r
+
     #收件人中有申请人
     def owner_name_in_address(self,basedata):
         owner_name=basedata.username
@@ -337,6 +349,7 @@ class JD(BaseRule):
         r.value= '\t'.join(value)
         r.score=0
         r.feature_val = str(len(value))+'个'
+        r.source = str(len(value))
         if value:
             r.score=100
         return r

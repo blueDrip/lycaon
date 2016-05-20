@@ -100,6 +100,7 @@ class Sp(BaseRule):
         r.value = '\t'.join([ u'时间:'+str(k)+'; '+str(v) for k,v in re_map.items() ])
         r.name=u'半年内充值金额'
         r.feature_val = u'充值金额:'+str(amount)+u'元'
+        r.source = str(amount)
         if amount<=30:
             r.score=10
         elif amount>30 and amount<100:
@@ -119,6 +120,7 @@ class Sp(BaseRule):
         r.value='\t'.join([ u'时间:'+str(k)+'; '+u'1次' for k,v in re_map.items() ])
         r.name=u'半年内充值次数'
         r.feature_val = u'充值次数:'+str(times)+u'次'
+        r.source = str(times)
         if times<=30:
             r.score=10
         elif times>30 and times<100:
@@ -145,6 +147,7 @@ class Sp(BaseRule):
         r.value='\t'.join([u'登陆时间:'+str(it) for it in re_list])
         r.name=u'半年内平均充值间隔'+str(avg)
         r.feature_val=str(avg)+u'天/次'
+        r.source = str(days)
         if avg>0 and avg<5:
             r.score=100
         elif avg>=5 and avg<10:
@@ -206,6 +209,7 @@ class Sp(BaseRule):
         elif duration>10000:
             r.score=100
         r.value = str(duration)
+        r.source = str(duration)
         r.feature_val = str(duration)+'s'
         return r
     '''被叫次数'''
@@ -252,6 +256,7 @@ class Sp(BaseRule):
         elif avg>=4000:
             r.score=100
         r.value = str(avg)
+        r.source = str(duration)
         r.feature_val = str(duration)+'s'
         return r
 
@@ -333,7 +338,6 @@ class Sp(BaseRule):
         r = minRule()
         r.name = u'通话记录中电话号码在老家的个数'
         r.value = value
-
         if count>=0 and count<40:
             r.score=40
         elif count>=40 and count<60:
@@ -481,10 +485,12 @@ class Sp(BaseRule):
             r.score=10
             r.value='\t'.join(value)
             r.feature_val = u'被电话催收过%s次'%(str(len(value)))
+            r.source = u'有'
             return r
         r.name = u'没有被电话催收过'
         r.feature_val = u'无'
         r.score=100
+        r.source = u'无'
         return r
 
     '''是否被短信催收'''
@@ -499,10 +505,12 @@ class Sp(BaseRule):
         if value:
             r.score=10
             r.value=value
+            r.source = u'有'
             r.feature_val = u'被短信催收过%s次'%(str(len(value)))
             return r
         
         r.score=100
+        r.source = u'无'
         r.value=u'短信不含催收号码'
         r.feature_val = u'无'
         return r
@@ -522,9 +530,9 @@ class Sp(BaseRule):
         if user_plocation not in net_map:
             r.score=0
             r.feature_val = u'不一致'
-            r.source = str(0) #0：不一致
+            r.source = u'不一致' #0：不一致
             return r
-        r.source = u'1'
+        r.source = u'一致'
         r.score=100
         return r
 
@@ -553,12 +561,14 @@ class Sp(BaseRule):
         r.name = u'与021,0755通话次数'
         if resmap:
             r.value='\t'.join([ k+''+'\t'.join(v)  for k,v in resmap.items()])
-            r.feature_val = u'出现%s次'%(len(resmap.keys))   
+            r.feature_val = u'出现%s次'%(len(resmap.keys()))   
             r.score=10
+            r.source = u'有'
             return r
         r.score=100
         r.feature_val = u'未出现'
         r.value = '0'
+        r.source = u'无'
         return r
 
     '''申请号与本机有通话'''
@@ -569,10 +579,12 @@ class Sp(BaseRule):
         r.value=''
         r.name = u'申请号与本机有通话'
         r.feature_val = u'无'
+        r.source = u'无'
         if user_phone in self.sms_record_map or user_phone in self.sms_record_map:
             r.score=100
             r.value+=user_phone+'\t'
-            r.feature_val = '有'
+            r.feature_val = u'有'
+            r.source = u'有'
         return r
     '''通话记录长度'''
     def call_record_len(self):
@@ -580,6 +592,7 @@ class Sp(BaseRule):
         r = minRule()
         r.name = u'通话记录长度'
         r.feature_val = str(call_len)
+        r.source = str(call_len)
         if call_len<30:
             r.score=10
         elif call_len>=30 and call_len<50:
@@ -597,6 +610,7 @@ class Sp(BaseRule):
         r = minRule()
         r.name = u'短信记录长度'
         r.feature_val = str(sms_len)
+        r.source = str(sms_len)
         if sms_len<30:
             r.score=10
         elif sms_len>=30 and sms_len<50:
@@ -623,16 +637,16 @@ class Sp(BaseRule):
         call_out_duration = min_rmap[20009].score*0.025 #半年内被叫时长
         call_in_contact = min_rmap[20010].score*0.05 #通话记录电话号码出现在通讯录的个数
         smssame_in_contact = min_rmap[20011].score*0.05 #短信记录电话号码出现在通讯录中个数
-        callsame_with_idcard = min_rmap[20012].score*0.25 #通话记录电话号码在老家的个数
-        smssame_with_idcard = min_rmap[20013].score*0.25 #短信记录电话号码在老家的个数
-        callsame_with_userphone = min_rmap[20014].score*0.25 #通话记录中电话号码与申请人同一手机归属地的个数
-        smssame_with_userphone = min_rmap[20015].score*0.25 #短信记录中电话号码与申请人同一手机归属地的个数
-        set_21 = min_rmap[20016].score*0.1 #是否设置21呼叫转移
+        callsame_with_idcard = min_rmap[20012].score*0.025 #通话记录电话号码在老家的个数
+        smssame_with_idcard = min_rmap[20013].score*0.025 #短信记录电话号码在老家的个数
+        callsame_with_userphone = min_rmap[20014].score*0.025 #通话记录中电话号码与申请人同一手机归属地的个数
+        smssame_with_userphone = min_rmap[20015].score*0.025 #短信记录中电话号码与申请人同一手机归属地的个数
+        set_21 = min_rmap[20016].score*0.075 #是否设置21呼叫转移
         dunning_call = min_rmap[20017].score*0.05  #是否电话被催收
         dunning_sms = min_rmap[20018].score*0.05  #是否被短信催收
         phone_in_netlocation = min_rmap[20019].score*0.05 #手机所在地在上网地点出现次数
         call_with_021_0755 = min_rmap[20020].score*0.05  #与021,0755通话次数
-        userphone_in_calls_or_sms = min_rmap[20021].score*0.1 #申请号与本机有通话
+        userphone_in_calls_or_sms = min_rmap[20021].score*0.025 #申请号与本机有通话
 
         score = call_record_len_s+sms_record_len_s+incharge_amount+incharge_times+incharge_inter_days
         score+=call_in_times_s+call_in_duration+call_out_times+call_out_duration+call_in_contact
