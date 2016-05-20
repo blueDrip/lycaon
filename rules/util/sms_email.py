@@ -77,7 +77,6 @@ if __name__ =='__main__':
     my = MyEmail(u'ttttt')
     my.user = "1049787469@qq.com"
     my.passwd = "abcd1243"
-    #my.to_list = ["qiuye@daixiaomi.com"]
     my.to_list = ["1049787469@qq.com"]
     my.cc_list = [""]
     my.tag = "订单流量监控报警"
