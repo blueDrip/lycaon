@@ -17,6 +17,7 @@ from rules.ruleset.postloan import PostLoanNewRule
 from rules.ruleset.creditCard import creditCard
 from rules.models import BaseRule
 from rules.base import BaseData
+from rules.ext_api import EXT_API
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata
 
 cal_logger = logging.getLogger('django.cal')
@@ -62,8 +63,10 @@ def cal():
  
     #if is_black or is_basic
     #    return '黑名单'
+    ext_api = EXT_API()
+
     b=BaseRule()
-    bd=BaseData('')
+    bd=BaseData(map_info={},ext=ext_api)
     b=JD(bd)
     tp_rs = topResult()
 
