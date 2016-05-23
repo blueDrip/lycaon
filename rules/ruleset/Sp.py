@@ -57,7 +57,10 @@ class Sp(BaseRule):
         return ppmap
 
     def init_recharge_map(self,basedata):
-        mp=json.loads(basedata.sp.recharge)['data']
+        recharge = basedata.sp and basedata.sp.recharge or '{}'
+        #mp=json.loads(basedata.sp.recharge)['data']
+        json_data = json.loads(recharge)
+        mp = 'data' in json_data and json_data['data'] or {}
         charge_mp={}
         now=basedata.create_time
         for it in mp:

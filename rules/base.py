@@ -83,7 +83,7 @@ class BaseData(object):
             self.user_phone=u'15600300721'
             self.username=u'李超'
 
-            self.user_id='safasf2333333333r'
+            self.user_id=u'safasf2333333333r'
             self.create_time=datetime.now()          
             self.ext_api = ext or EXT_API()
             '''sp info'''
@@ -114,7 +114,8 @@ class BaseData(object):
             print get_tb_info()
             base_logger.error(get_tb_info())
     def init_sp_calldetail(self):
-        mp = self.load_sp_datadetail(self.sp.phonedetail)
+        phonedetail = self.sp and self.sp.phonedetail or {}
+        mp = self.load_sp_datadetail(phonedetail)
         cmap={ c.phone:c.name for c in self.contacts }
         for k,v in mp.items():
             for itt in v:
@@ -122,7 +123,9 @@ class BaseData(object):
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
-                uc.user_id = ''
+
+                uc.user_id = self.user_id
+
                 uc.owner_phone = self.user_phone
                 uc.phone=itt['anotherNm']
                 uc.username = uc.phone in cmap and cmap[uc.phone] or u'none'
@@ -135,21 +138,28 @@ class BaseData(object):
                 uc.call_type=itt['commMode']
                 self.sp_calls.append(uc)
         try:
-            UserCallPhone.create_calls(self.sp_calls)
+            ul = UserCallPhone.objects.filter(user_id = self.user_id)
+            if ul:
+                self.sp_calls = ul
+                print 'calls_list exist!'
+            else:
+                UserCallPhone.create_calls(self.sp_calls)
         except:
             base_logger.error(get_tb_info())
             base_logger.error("【init sp_calls error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
             print 'init sp_calls error'
             
     def init_sp_smsdetail(self):
-        mp = self.load_sp_datadetail(self.sp.smsdetail)
+        smsdetail = self.sp and self.sp.smsdetail or {}
+        mp = self.load_sp_datadetail(smsdetail)
         cmap={ c.phone:c.name for c in self.contacts }
         for k,v in mp.items():
             for itt in v:
                 stime=k[:-2]+'-'+itt['startTime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
-                s.user_id = ''
+                s.user_id = self.user_id
+
                 s.send_time = st
                 s.phone=itt['anotherNm']
                 s.owner_phone = self.user_phone
@@ -163,13 +173,19 @@ class BaseData(object):
                 s.sms_type=itt['commMode']
                 self.sp_sms.append(s)
         try:
-            UserShortMessage.create_smses(self.sp_sms)
+            sms_list = UserShortMessage.objects.filter(user_id = self.user_id)
+            if sms_list:
+                self.sp_sms = sms_list
+                print 'sp_sms exist'    
+            else:
+                UserShortMessage.create_smses(self.sp_sms)
         except:
             base_logger.error(get_tb_info())
             base_logger.error("【init sp_sms error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
             print 'init sp_sms error'
     def init_sp_netdetail(self):
-        mp = self.load_sp_datadetail(self.sp.netdetail)
+        netdetail = self.sp and self.sp.netdetail or {}
+        mp = self.load_sp_datadetail(netdetail)
         for k,v in mp.items():
             for itt in v:
                 stime=k[:-2]+'-'+itt['startTime']
@@ -177,7 +193,9 @@ class BaseData(object):
                 n=UserNetInfo()
                 n.owner_phone = self.user_phone
                 n.start_time=st
-                n.user_id = u''
+
+                n.user_id = self.user_id
+
                 n.comm_time = get_duration(itt['commTime'])
                 n.sum_flow=itt['sumFlow']
                 n.created_time = datetime.now()
@@ -186,7 +204,12 @@ class BaseData(object):
                 n.net_type=itt['netType']
                 self.sp_net.append(n)
         try:
-            UserNetInfo.create_nets(self.sp_net)
+            net_list = UserNetInfo.objects.filter(user_id = self.user_id)
+            if net_list:
+                self.sp_net = net_list
+                print 'net_list exist'
+            else:
+                UserNetInfo.create_nets(self.sp_net)
         except:
             base_logger.error(get_tb_info())
             base_logger.error("【init sp_net error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))

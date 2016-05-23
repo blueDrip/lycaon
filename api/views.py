@@ -33,38 +33,8 @@ def index(request):
         return HttpResponse(e)
     '''
     return HttpResponse('sdfdsf')
-#@csrf_exempt
-#def get_usercontact(request):
-#    if  request.method == 'POST':
-#        req=''
-#        conlist = []
-#        try:
-#
-#            req = json.loads(request.body)
-#            conlist = eval(req['linkmen'])
-#
-#        except:
-#            return HttpResponse('json格式错误')
-#        clist=[]
-#        for itt in conlist:
-#            u = UserContact()
-#            u.name=itt['name']
-#            u.owner_phone=req["phone"]
-#            u.device_id = req["device_id"]
-#            u.source = str(itt['source'])
-#            u.created_at = datetime.now()
-#            u.phone = itt['contact_phone']
-#            u.phone_location=''
-#            u.call_count = 0
-#            clist.append(u)
-#        u = UserContact.create_contacts(clist)
-#        if u:
-#            logger.info('success')
-#            return HttpResponse({'ok'})
-#        return HttpResponse('an error happend!')
-#    if request.method == 'GET':
-#        return HttpResponse(request.GET['name'])
 
 def credit_detail(request):
-    top_rs = topResult.objects.filter().first()
+    uid=request.GET['uid']
+    top_rs = topResult.objects.filter(user_id = uid).order_by('-created_time').first()
     return render(request, 'api/detail.html', {'tp': top_rs})
