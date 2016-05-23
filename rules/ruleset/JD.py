@@ -33,7 +33,10 @@ class JD(BaseRule):
 
         }        
     def init_consume_map(self,consume_str,basedata):
-        cl = consume_str.strip('##\*\*\*##').replace(u'￥','').split('##***##')
+        cl_str = consume_str.strip('##\*\*\*##').replace(u'￥','')
+        cl = []
+        if '##***##' in cl_str:
+            cl = cl_str.split('##***##')
         clist=[]
         now=basedata.create_time
         for c in cl:
@@ -47,7 +50,10 @@ class JD(BaseRule):
                 })
         return clist
     def init_login_history_list(self,consume_str):
-        login_his=consume_str.strip('##\*\*\*##').split('##***##')
+        login_his_str=consume_str.strip('##\*\*\*##')
+        login_his = []
+        if '##***##' in login_his_str:
+            login_his = login_his_str.split('##***##')
         cmap={}
         for his in login_his:
             h=his.split('###$$$')
@@ -60,8 +66,13 @@ class JD(BaseRule):
             })
         return cmap
     def init_info_mp(self,basedata):
-        sub_str = re.sub('\t|\n|\r|\s+','',basedata.jd.address)
-        sub_list = sub_str.strip('#***#').split('#***#')
+        sub_str = re.sub('\t|\n|\r|\s+','',basedata.jd and basedata.jd.address or '')
+        sub_list_str = sub_str.strip('#***#')
+        sub_list = []
+
+        if '#***#' in sub_list_str:
+            sub_list = sub_list_str.split('#***#')
+
         infomp={}
         for adr in sub_list:
             info = adr.replace('###','').split('$$$')
@@ -78,9 +89,15 @@ class JD(BaseRule):
         return infomp
 
     def load_data(self,basedata):
-        self.consume_before_3mon_list=self.init_consume_map(basedata.jd.three_month_before_consume,basedata)
-        self.consume_after_list = self.init_consume_map(basedata.jd.three_month_consume,basedata)
-        self.login_his_map= self.init_login_history_list(basedata.jd.loginhistory)
+        three_month_before_consume = basedata.jd and basedata.jd.three_month_before_consume or ''
+        self.consume_before_3mon_list=self.init_consume_map(three_month_before_consume,basedata)
+
+        three_month_consume = basedata.jd and basedata.jd.three_month_consume or ''
+        self.consume_after_list = self.init_consume_map(three_month_consume,basedata)
+
+        loginhistory = basedata.jd and basedata.jd.loginhistory or ''
+        self.login_his_map= self.init_login_history_list(loginhistory)
+
         self.address_info_map = self.init_info_mp(basedata)
 
     '''实名认证'''

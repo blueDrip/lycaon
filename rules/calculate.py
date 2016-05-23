@@ -6,9 +6,10 @@ import socket
 import time
 import urllib
 import datetime
-
+import requests
 import binascii
 import logging
+import json
 from rules.raw_data import topResult,DetailRule
 from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
@@ -19,7 +20,7 @@ from rules.models import BaseRule
 from rules.base import BaseData
 from rules.ext_api import EXT_API
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata
-
+from rules.util.sms_email import MyEmail
 cal_logger = logging.getLogger('django.cal')
 cal_logger.setLevel(logging.INFO)
 
@@ -32,10 +33,26 @@ def is_black():
 2.通话记录（手机上传的）>30
 3.不是中介
 '''
-def is_basic():
-    pass
-
-
+def is_apix_basic(query_map={}):
+    api_key = 'a8bbd3a565b04acf600e6b053beffea2'
+    url = "http://e.apix.cn/apixcredit/blacklist/dishonest"
+    querystring = {
+        "type":'person',
+        "name":'姜俊智',
+        "cardno":'440882197508218433',
+        "phoneNo":'',
+        "email":None
+    }
+    headers = {
+        'accept': "application/json",
+        'content-type': "application/json",
+        'apix-key': api_key
+    }
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    rs = json.loads(response.text)
+    if rs['code'] == 0:
+        return True
+    return False
 
 def get_token(str_token):
 
@@ -63,8 +80,12 @@ def cal():
  
     #if is_black or is_basic
     #    return '黑名单'
-    ext_api = EXT_API()
+    
+    user_type = u'正常用户'
+    if is_apix_basic():
+        user_type = u'黑名单'
 
+    ext_api = EXT_API()
     b=BaseRule()
     bd=BaseData(map_info={},ext=ext_api)
     b=JD(bd)
@@ -151,7 +172,10 @@ def cal():
     tp_rs.score=Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1
     print Dr_p.score,Dr_jd.score,Dr_sp.score,Dr_post.score,Dr_credit.score
     print '得分',tp_rs.score
+    print user_type
     tp_rs.rulelist=[Dr_p,Dr_jd,Dr_sp,Dr_credit,Dr_post]
+    tp_rs.user_type = user_type
+    tp_rs.user_id = u'safasf2333333333r'
     tp_rs.save()
     print 'successful!'
 

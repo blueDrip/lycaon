@@ -393,3 +393,4 @@ class topResult(Document):
     value=StringField(default = str)
     name = StringField(default = str)
     created_time = datetime.datetime.now()
+    user_type = StringField(default = '正常用户') #黑名单用户
