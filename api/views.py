@@ -6,7 +6,7 @@ from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
 from rules.base import BaseData
 from rules.ruleset.Sp import Sp
-#from api.models import Question
+from api.models import Profile
 from rules.raw_data import UserContact,topResult
 from datetime import datetime
 
@@ -38,3 +38,7 @@ def credit_detail(request):
     uid=request.GET['uid']
     top_rs = topResult.objects.filter(user_id = uid).order_by('-created_time').first()
     return render(request, 'api/detail.html', {'tp': top_rs})
+
+def users_views(request):
+    ulist = Profile.objects.all()
+    return render(request,'api/users.html',{'users':ulist})

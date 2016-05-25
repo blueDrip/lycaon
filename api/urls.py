@@ -5,4 +5,5 @@ urlpatterns = [
     #url(r'api/user/^$', views.get_usercontact),
     #url(r'^users/$', views.get_usercontact),
     url(r'^detail/$',views.credit_detail),
+    url(r'^userinfo/$',views.users_views),
 ]

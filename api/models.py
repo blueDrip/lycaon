@@ -18,6 +18,7 @@ class Profile(models.Model):
     user_id = models.BinaryField()
     is_certification = models.IntegerField(default = 0)
     phone_place = models.CharField(max_length = 255)
+    phone_type = models.CharField(max_length = 255)
     trust_score = models.FloatField()
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
