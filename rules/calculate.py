@@ -19,7 +19,9 @@ from rules.ruleset.creditCard import creditCard
 from rules.models import BaseRule
 from rules.base import BaseData
 from rules.ext_api import EXT_API
-from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata
+from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount
+from rules.raw_data import jingdong,liantong,yidong
+from rules.raw_data import phonebook,cmbcc
 from rules.util.sms_email import MyEmail
 cal_logger = logging.getLogger('django.cal')
 cal_logger.setLevel(logging.INFO)
@@ -56,38 +58,56 @@ def is_apix_basic(query_map={}):
 
 def get_token(str_token):
 
-    str_token = '45695BB5EEBE4ECAB3BFDD796E6EC6F9;a656824c-15a0-11e6-8081-00505639188b;17428a90-1b33-11e6-803c-00163e162482;0b047660-18f1-11e6-8ce9-00163e162482'
+    #str_token = '45695BB5EEBE4ECAB3BFDD796E6EC6F9;a656824c-15a0-11e6-8081-00505639188b;17428a90-1b33-11e6-803c-00163e162482;0b047660-18f1-11e6-8ce9-00163e162482'
 
     token_list = [ it for it in str_token.split(';') ]
     
-    userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0])).first or None
-    idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
     sp_phoneno = Yunyinglogdata.objects.using('django').filter( uuid = str(token_list[2])).first().phoneno
     e_commerce_loginname = Dianshanglogdata.objects.using('django').filter( 
         uuid = str(token_list[3])
     ).first().loginname
+    bank_login_name = BankAccount.objects.using('django').filter(token='').first()
+
+    '''user,sp,jd,phonecontact,cb'''
+    userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0])).first()
+    #userinfo = Profile.objects.filter(user_id = token_list[0]).first()
+    idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
+    sp=yidong.objects.filter(phone_no = sp_phoneno).first()
+    jd=jingdong.objects.filter(jd_login_name = e_commerce_loginname).first()
+    ucl = phonebook.objects.filter(user_id = u'111').first()
+    cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
 
     return {
         'user':userinfo,
         'idcard':idcard,
-        'jd_login_name' : e_commerce_loginname,
-        'tb_login_name' : None,
-        'sp_login_name' : sp_phoneno,
-        'bank_login_name' : None
+        'jd' : jd,
+        'tb' : None,
+        'sp' : sp,
+        'ucl': ucl,
+        'cb' :cb
     }
 
-def cal():
- 
-    #if is_black or is_basic
-    #    return '黑名单'
-    
+def cal_by_message(msg):
+    rmap=get_token(msg)
+    cal(minfo=rmap)
+
+
+def cal(minfo = {
+        'user':None,
+        'idcard':None,
+        'jd':None,
+        'tb':None,
+        'sp':None,
+        'ucl':None,
+        'cb':None}
+    ):    
     user_type = u'正常用户'
     if is_apix_basic():
         user_type = u'黑名单'
 
     ext_api = EXT_API()
     b=BaseRule()
-    bd=BaseData(map_info={},ext=ext_api)
+    bd=BaseData(map_info=minfo,ext=ext_api)
     b=JD(bd)
     tp_rs = topResult()
 
@@ -169,13 +189,13 @@ def cal():
     print 'finish'
 
     tp_rs.name = u'credit_score'
-    tp_rs.score=Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1
+    tp_rs.score=(Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1)*10
     print Dr_p.score,Dr_jd.score,Dr_sp.score,Dr_post.score,Dr_credit.score
     print '得分',tp_rs.score
     print user_type
     tp_rs.rulelist=[Dr_p,Dr_jd,Dr_sp,Dr_credit,Dr_post]
     tp_rs.user_type = user_type
-    tp_rs.user_id = u'safasf2333333333r'
+    tp_rs.user_id = minfo['user'] and minfo['user'].user_id or u'safasf23333333'
     tp_rs.save()
     print 'successful!'
 

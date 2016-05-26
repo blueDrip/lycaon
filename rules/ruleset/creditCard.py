@@ -250,7 +250,11 @@ class creditCard(BaseRule):
         r = minRule()
         r.name = u'三个月内单笔消费金额>=8000元的次数'
         r.value = '\t'.join([ u'时间:'+str(it['business_day'])+ u'; 金额：'+str(it['business_money'])+';'+it['business_customer'] for it in max_list])
-        r.score = mx_times<=10 and mx_times*10 or 100 
+
+        if mx_times<=0:
+            r.score=0
+        else:
+            r.score = mx_times<=10 and mx_times*10 or 100
         r.feature_val = u'次数:'+str(mx_times)
         r.source = str(mx_times)
         return r
@@ -267,6 +271,13 @@ class creditCard(BaseRule):
         if user_pl not in bill_addr:
             r.source = u'否'
             r.score = 10
+        elif user_pl in bill_addr:
+            r.source = u'是'
+            r.score = 100
+        else:
+            r.score = 10
+            r.source = u'unknow'
+
         r.feature_val = r.source
         return r
 

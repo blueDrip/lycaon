@@ -10,18 +10,19 @@ class PersonInfo(BaseRule):
             10001:self.get_age(basedata),
             10002:self.get_sex(basedata),
             10003:self.get_edu(basedata),
-            10004:self.get_residenza(), 
-            10005:self.get_marry_status(),
-            #10007:self.is_black(),
-            10006:self.get_profession(),
-            10007:self.is_samephoto_with_idcard()
+            10004:self.get_residenza(basedata), 
+            10005:self.get_marry_status(basedata),
+            10006:self.get_profession(basedata),
+            10007:self.is_samephoto_with_idcard(basedata)
         }    
 
     def get_age(self,basedata):
         r = minRule()
-        age=basedata.user and basedata.user.age or 18
+        age = basedata.idcard_info['age']
         r.source=str(age)
-        if age<=18:
+        if u'unknow' == age:
+            r.score = 5
+        elif age<=18:
             r.score=10
         elif age>18 or age<=25:
             r.score=70
@@ -29,12 +30,12 @@ class PersonInfo(BaseRule):
             r.score=100
         elif age>40:
             r.score=70
-        r.value=str(age)+u'岁'
-        r.feature_val=str(age)+u'岁'
+        r.value = str(age)+u'岁;出生年月日:'+basedata.idcard_info['birthday']
+        r.feature_value=str(age)+u'岁'
         r.name=u'年龄'
         return r
     def get_sex(self,basedata):
-        sex=basedata.user and basedata.user.sex or 'unknow'
+        sex = basedata.idcard_info['sex']
         r=minRule()
         r.source=sex
         r.score=0
@@ -48,7 +49,7 @@ class PersonInfo(BaseRule):
         return r
 
     def get_edu(self,basedata):
-        edu=basedata.user and basedata.user.edu or 'unknow'
+        edu=basedata.user and basedata.user.education or 'unknow'
         r = minRule()
         r.value=edu
         r.source=edu
@@ -64,37 +65,64 @@ class PersonInfo(BaseRule):
             r.score=40
         r.feature_val = edu
         return r
-    def get_residenza(self):
-        r=minRule()
-        r.value=u'临夏县'
-        r.name=u'住址'
-        r.source=u'县'
+    def get_residenza(self,basedata):
+        home_location=basedata.home_location
+        r=minRule() 
+        r.value=home_location
+        r.name=u'老家住址(市/县)'
+        r.score = 20
+        if u'县' in home_location:
+            r.score = 60
+            r.source=u'县'
+        elif u'市' in home_location:
+            r.score = 80
+            r.source=u'市'
+        r.feature_val = r.source
         r.score=30
         return r
-    def get_marry_status(self):
+    def get_marry_status(self,basedata):
         r=minRule()
-        r.value=u'结婚'
+        marr = basedata.user and basedata.user.marry_info or 'unknow'
+        r.value = marr
         r.name=u'是否结婚'
-        r.source=u'结婚'
-        r.score=0
-        r.feature_val=r.value
+        r.source = marr
+        r.score = 40
+        if u'unknow' == marr:
+            r.score = 40
+            r.feature_val = marr
+        if u'结婚' in marr:
+            r.score = 80
+            r.feature_val = u'结婚' 
+        elif u'未婚' in marr:
+            r.score = 60
+            r.feature_val = u'未婚'
+        
         return r
-    def get_profession(self):
+
+    def get_profession(self,basedata):
+        p = basedata.user and basedata.user.profession or 'unknow'
         r=minRule()
-        r.value=u'老师' 
+        r.value = p
         r.name=u'职业'
         r.score=100
         r.source=u'待定'
-        r.feature_val = r.value
+        r.feature_val = u'服务行业'
         return r
-    def is_samephoto_with_idcard(self):
+    def is_samephoto_with_idcard(self,basedata):
+        idsame = basedata.user and basedata.user.is_certification or 'unknow'
         r=minRule()
-        r.value=u'相同'
-        r.name=u'身份证照片是否一致'
-        r.score=100
-        r.source=u'相同'
-        r.feature_val = r.value
+        r.name=u'是否身份验证'
+        if idsame==1:
+            r.source = u'验证通过'
+            r.score = 100
+        elif idsame ==0:
+            r.source = u'未通过'
+            r.score = 0
+        r.source = idsame
+        r.feature_val = r.source
+        r.value = idsame
         return r
+
     def get_score(self):
         min_rule_map = self.min_rule_map
         age_score=min_rule_map[10001].score*0.2
