@@ -132,7 +132,12 @@ class BaseData(object):
             base_logger.error(get_tb_info())
 
     def init_idcard_info(self):
-        idcard_info_map={ 'sex':u'unknow','age':'unknow','home_location':u'unknow','birthday':u'unknow' }
+        idcard_info_map={ 'sex':u'unknow',
+            'age':'unknow',
+            'home_location':u'unknow',
+            'birthday':u'unknow',
+            'idcard':u'unknow'
+        }
         print self.idcard.cardno
         if not self.idcard or self.idcard == u'unknow':
             self.idcard_info = idcard_info_map
@@ -144,7 +149,8 @@ class BaseData(object):
             'sex':info[0],
             'home_location':info[1],
             'birthday':info[2],
-            'age':age
+            'age':age,
+            'idcard':self.idcard.cardno
         }
             
     def init_sp_calldetail(self):
