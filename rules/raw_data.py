@@ -325,9 +325,11 @@ class yidong(Document):
     t27 = StringField(name='201510--phonedetail')
     t37 = StringField(name='201510--netdetail')
     t47 = StringField(name='201510--smsdetail')
-
-
-
+    meta = {
+        "indexes": [
+            'phone_no'
+        ]
+    }
 #联通chinaUnicom
 class liantong(Document):
     base_info =StringField(default=str)

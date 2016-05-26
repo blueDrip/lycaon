@@ -68,32 +68,49 @@ class BaseData(object):
     """Docstring for OrderInfo. 
         map_info = {
             'user':None,
-            'jd_login_name':None,
-            'tb_login_name':None,
-            'sp_login_name':None,
-            'bank_login_name':None,
+            'idcard':None,
+            'jd':None,
+            'tb':None,
+            'sp':None,
+            'cb':None,
         }
     """
     def __init__(self,map_info={},ext=None):
         try:
             '''user info'''
-            self.user=None
-            self.user_plocation=u'北京'
-            self.home_location = u'江西南昌市'
+            #self.user=None
+            #self.user_plocation=u'北京'
+            #self.home_location = u'江西南昌市'
+            #self.user_phone=u'15600300721'
+            #self.username=u'李超'
+            self.ext_api = ext or EXT_API()
+            '''user info'''
+            self.user = map_info['user']
+            self.idcard = map_info['idcard']
+            self.idcard_info={}
+            self.user_plocation=map_info['user'] and map_info['user'].phone_place or u'unknow'
             self.user_phone=u'15600300721'
             self.username=u'李超'
+            self.user_id = map_info['user'] and map_info['user'].user_id or u'safasf2333333333'
 
-            self.user_id=u'safasf2333333333r'
-            self.create_time=datetime.now()          
-            self.ext_api = ext or EXT_API()
+
+            self.init_idcard_info()
+            self.home_location = self.idcard_info['home_location']
+            self.create_time=datetime.now()
+
+            '''usercontact'''
+            self.ucl = map_info['ucl']
+
             '''sp info'''
-            self.sp=yidong.objects.filter()[2]
+            #self.sp=yidong.objects.filter(phone_no=map_info['sp_login_name']).first()
+            self.sp = map_info['sp']
             self.sp_calls=[]
             self.good_calls=[]
             self.sp_sms=[]
             self.sp_net=[]
             '''JD info'''
-            self.jd=jingdong.objects.filter(jd_login_name=str("lcswr@126.com")).first()
+            #self.jd=jingdong.objects.filter(jd_login_name=map_info['jd_login_name']).first()
+            self.jd = map_info['jd']
             '''contact info'''
             self.contacts = []
             self.good_contacts = []
@@ -101,18 +118,35 @@ class BaseData(object):
             self.sms = []
 
             '''creditCard'''
-            self.cb=None
+            self.cb = map_info['cb']
 
             self.init_contact()
             self.init_sp_calldetail()
             self.init_sp_smsdetail()
             self.init_sp_netdetail()
-            self.init_cmbcc()
+            #self.init_cmbcc()
 
 
         except:
             print get_tb_info()
             base_logger.error(get_tb_info())
+
+    def init_idcard_info(self):
+        idcard_info_map={ 'sex':u'unknow','age':'unknow','home_location':u'unknow','birthday':u'unknow' }
+        print self.idcard.cardno
+        if not self.idcard or self.idcard == u'unknow':
+            self.idcard_info = idcard_info_map
+            return
+        info = self.ext_api.get_info_by_id(self.idcard.cardno)
+        b = info[2]
+        age = (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365
+        self.idcard_info={
+            'sex':info[0],
+            'home_location':info[1],
+            'birthday':info[2],
+            'age':age
+        }
+            
     def init_sp_calldetail(self):
         phonedetail = self.sp and self.sp.phonedetail or {}
         mp = self.load_sp_datadetail(phonedetail)
@@ -230,7 +264,8 @@ class BaseData(object):
             
    
     def init_contact(self):
-        ucl = phonebook.objects.filter(user_id=u'111').first()
+        #ucl = phonebook.objects.filter(user_id=u'111').first()
+        ucl = self.ucl
         if not ucl:
             return
         conlist = []
@@ -284,10 +319,10 @@ class BaseData(object):
     
 
     def init_cmbcc(self):
-        self.cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
+        #self.cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
         #cb_detail_list = cb and ab.detailBill or
         #for k,v in 
-
+        self.cb=None
 
       
     #添加短信和电话中的联系人到通讯录中

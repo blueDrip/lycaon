@@ -102,5 +102,12 @@ class Dianshanglogdata(models.Model):
     class Meta:
         db_table = 'dianshang_logdata'
 
-
+class BankAccount(models.Model):
+    account_type = models.CharField(max_length=8)
+    token = models.CharField(max_length=32,primary_key=True)
+    login_name = models.CharField(max_length=32)
+    created_at = models.DateTimeField()
+     
+    class Meta:
+        db_table = 'bank_account'
 

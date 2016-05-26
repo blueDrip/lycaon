@@ -37,8 +37,8 @@ class Sp(BaseRule):
             20014:self.callsame_location_with_userphone(basedata),#通话记录中号码与申请人同一手机归属地的个数
             20015:self.smssame_location_with_userphone(basedata),#短信记录中号码与申请人同一手机归属地的个数
             20016:self.set_21(basedata),#是否设置21呼叫转移
-            20017:self.is_dunning_call(),#是否电话被催收
-            20018:self.is_dunning_sms(),#是否被短信催收
+            20017:self.is_dunning_call(basedata),#是否电话被催收
+            20018:self.is_dunning_sms(basedata),#是否被短信催收
             20019:self.phone_location_int_net_location(basedata),#手机所在地在上网地点出现次数
             20020:self.call_with_021_0755(basedata),#与021,0755通话次数
             20021:self.userphone_in_calls_or_sms(basedata),#申请号与本机有通话
@@ -71,6 +71,14 @@ class Sp(BaseRule):
                     key:it['payFee']
                 })
         return charge_mp
+    #基本验证
+    def is_basic(self,basedata,r):
+        if not basedata.sp:
+            r.feature_val = u'unknow'
+            r.source = u'unknow'
+            r.value = u'unknow'
+            r.score = 10
+            return r
 
     #半年内通话记录
     def init_phone_record_mp(self,basedata):
@@ -465,6 +473,8 @@ class Sp(BaseRule):
                 value.append(
                     c.name+';'+c.phone+';'+c.phone_location
                 )
+
+
         if value:
             r.score = 10
             r.value = '\t'.join(value)
@@ -473,10 +483,11 @@ class Sp(BaseRule):
         r.value = u'无'
         r.feature_val = str(u'没有号码被设置')
         r.score=100
+        self.is_basic(basedata,r)
         return r 
 
     '''是否电话被催收'''
-    def is_dunning_call(self):
+    def is_dunning_call(self,basedata):
         r=minRule()
         r.name=u'是否被催收'
         r.score=0
@@ -494,10 +505,11 @@ class Sp(BaseRule):
         r.feature_val = u'无'
         r.score=100
         r.source = u'无'
+        self.is_basic(basedata,r)
         return r
 
     '''是否被短信催收'''
-    def is_dunning_sms(self):
+    def is_dunning_sms(self,basedata):
         r=minRule()
         r.name=u'是否短信被催收'
         r.score=0
@@ -516,6 +528,7 @@ class Sp(BaseRule):
         r.source = u'无'
         r.value=u'短信不含催收号码'
         r.feature_val = u'无'
+        self.is_basic(basedata,r)
         return r
 
     '''手机归属地与上网所在地一致'''
@@ -537,6 +550,8 @@ class Sp(BaseRule):
             return r
         r.source = u'一致'
         r.score=100
+        self.is_basic(basedata,r)
+
         return r
 
     '''与021,0755通话次数'''
@@ -562,6 +577,14 @@ class Sp(BaseRule):
 
         r = minRule()
         r.name = u'与021,0755通话次数'
+
+        if not basedata.sp:
+            r.feature_val = u'unknow'
+            r.source = u'unknow'
+            r.value = u'unknow'
+            r.score = 5
+            return r
+
         if resmap:
             r.value='\t'.join([ k+''+'\t'.join(v)  for k,v in resmap.items()])
             r.feature_val = u'出现%s次'%(len(resmap.keys()))   
@@ -578,16 +601,18 @@ class Sp(BaseRule):
     def userphone_in_calls_or_sms(self,basedata):
         user_phone=basedata.user_phone
         r = minRule()
-        r.score=0
+        r.score=100
         r.value=''
         r.name = u'申请号与本机有通话'
         r.feature_val = u'无'
         r.source = u'无'
+
         if user_phone in self.sms_record_map or user_phone in self.sms_record_map:
-            r.score=100
+            r.score=20
             r.value+=user_phone+'\t'
             r.feature_val = u'有'
             r.source = u'有'
+        self.is_basic(basedata,r)
         return r
     '''通话记录长度'''
     def call_record_len(self):
