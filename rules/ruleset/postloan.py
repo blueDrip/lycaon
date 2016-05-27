@@ -546,17 +546,21 @@ class PostLoanNewRule(BaseRule):
         return r
     #父母长度在老家比例
     def parents_location_same_with_idCard(self,bd):
-        idcard={'city':''}
+        hl = bd.home_location
         pmap=self.father_mp
         pmap.update(self.father_mp)
         pmap.update(self.mather_mp)
         pmap.update(self.home_mp)
         count=0
         value = ''
-        for k,v in pmap.items():
-            if idcard['city'] in v:
-                count+=1
-                value+=k+';'+v+'\t'
+        for c in bd.contacts:
+            location=c.phone_location.split('-')
+
+            if c.phone in pmap:
+                if location[1] in hl or location[0] in hl:
+                    count+=1
+                    value+=c.phone+';'+c.phone_location+'\t'
+
         radio=count*1.0/(len(bd.contacts) or 1)
         r = minRule()
         r.name=u'父母在老家的个数'
@@ -573,16 +577,18 @@ class PostLoanNewRule(BaseRule):
         return r
 
     def relative_location_same_with_idcard(self,bd):
-        idcard={'city':''}
+        hl = bd.home_location
         count=0
         value=''
         r=minRule()
         r.name=u'亲属在老家的个数'
-        
-        for k,v in self.r_relative_map.items():
-            if idcard['city'] in v:
-                count+=1
-                value+=k+';'+v+'\t'
+        for c in bd.contacts:
+            location=c.phone_location.split('-')
+            if c.phone in self.r_relative_map:   
+                if location[1] in hl or location[0] in hl:
+                    count+=1
+                    value+=c.phone+';'+c.phone_location+'\t'
+
         r.value=value
         if count>0 and count<=3:
             r.score=60

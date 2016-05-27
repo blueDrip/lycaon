@@ -320,54 +320,46 @@ def init_online_shop_info(basedata,jd):
 
 
 '''通讯录'''
-def init_contact_info(basedata,postloan):
+def init_contact_info(basedata,postloan,sp):
 
+    contact_list = basedata and basedata.contacts or []
+    clen=len(contact_list) or 1
+    upl=basedata and basedata.user_plocation or ''
+    hl=basedata and basedata.home_location or ''
+    count=0
+    ic=0
+    for c in contact_list:
+        location=c.phone_location.split('-')
+        if location[1] in upl or location[0] in upl:        
+            count += 1
+        if location[1] in hl or location[0] in hl:
+            ic +=1
 
     same_with_pl_info = {
-        u'通讯录中手机号归属地与申请人手机归属地一致个数' : u'unknow',
-        u'通讯录中手机号归属地与申请人手机归属地一致比率' : u'unknow',
-        u'通讯录中手机号归属地与申请人身份证区域一致个数' : u'unknow',
-        u'通讯录中手机号归属地与申请人身份证区域一致比率' : u'unknow'
+        u'通讯录中手机号归属地与申请人手机归属地一致个数' : str(count),
+        u'通讯录中手机号归属地与申请人手机归属地一致比率' : "%.2f"%(count*1.0/clen),
+        u'通讯录中手机号归属地与申请人身份证区域一致个数' : str(ic),
+        u'通讯录中手机号归属地与申请人身份证区域一致比率' : "%.2f"%(ic*1.0/clen)
     }
 
-    relative_info = [{
-        u'称呼' : u'unknow',
-        u'电话' : u'unknow',
-        u'归属地' : u'unknow',
-        u'备注' : u'unknow',
-
-    },
-    {
-        u'称呼' : u'unknow',
-        u'电话' : u'unknow',
-        u'归属地' : u'unknow',
-        u'备注' : u'unknow',
-    },    
-    {
-        u'称呼' : u'unknow',
-        u'电话' : u'unknow',
-        u'归属地' : u'unknow',
-        u'备注' : u'unknow',
-    }]
-
-    contact_info = [{
-        u'称呼' : u'unknow',
-        u'电话' : u'unknow',
-        u'归属地' : u'unknow',
-        u'备注' : u'unknow'
-    },
-    {
-        u'称呼' : u'unknow',
-        u'电话' : u'unknow',
-        u'归属地' : u'unknow',
-        u'备注' : u'unknow'
-    },
-    {
-        u'称呼' : u'unknow',
-        u'电话' : u'unknow',
-        u'归属地' : u'unknow',
-        u'备注' : u'unknow'
-    }]
+    relative_info = []
+    contact_info = []
+    relatives_map={}
+    relatives_map.update(postloan and postloan.father_mp or {})
+    relatives_map.update(postloan and postloan.mather_mp or {})
+    relatives_map.update(postloan and postloan.home_mp or {})
+    relatives_map.update(postloan and postloan.r_relative_map or {})
+    for c in contact_list:
+        temp_c={
+            u'称呼':c.name,
+            u'电话' : c.phone,
+            u'归属地' : c.phone_location,
+            u'备注' : u'---'
+        }
+        if c.phone in relatives_map: 
+            relative_info.append(temp_c)
+        else:
+            contact_info.append(temp_c)
 
     info = {
         u'通讯录':same_with_pl_info,
@@ -388,10 +380,10 @@ def init_sp_record_info(basedata):
     }
     
     no_arrearage_info = {
+
         u'长时间关机（连续3天无数据、无通话、无短信记录)' : u'unknow',
         u'呼叫法院相关号码': u'unknow',
         u'申请人号码是否出现在网贷黑名单上':u'unknow',
-        u'申请号是否与本机有通话' : u'unknow'
     }
     
     call_info = [{
@@ -441,6 +433,7 @@ def init_sp_record_info(basedata):
         u'短信数量' : u'unknow',
         u'话费消费' : u'unknow',
     }
+
     
     info = {
         u'基本信息1' : basic_info,
