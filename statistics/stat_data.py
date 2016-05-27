@@ -18,6 +18,7 @@ from mongoengine import (
 )
 import logging
 import StringIO
+import json
 logger = logging.getLogger('django.rules')
 logger.setLevel(logging.INFO)
 import time
@@ -320,7 +321,7 @@ def init_online_shop_info(basedata,jd):
 
 
 '''通讯录'''
-def init_contact_info(basedata,postloan,sp):
+def init_contact_info(basedata,postloan):
 
     contact_list = basedata and basedata.contacts or []
     clen=len(contact_list) or 1
@@ -370,18 +371,21 @@ def init_contact_info(basedata,postloan,sp):
     return info
 
 '''通话记录'''
-def init_sp_record_info(basedata):
+def init_sp_record_info(basedata,sp,p):
+    
+    bas_info=json.loads(basedata.sp and basedata.sp.base_info or '{}')
+    data=bas_info and bas_info['data'] or {}
     basic_info={
         u'运营商实名认证' : u'unknow',
-        u'运营商实名与自有实名是否一致' : u'unknow',
+        u'运营商实名与自有实名是否一致':u'unknow',
         u'入网时间' : u'unknow',
-        u'地址' : u'unknow',
-        u'网龄' : u'unknow'
+        u'地址' : data and data['address'] or u'unknow',
+        u'网龄' : data and data['netAge'] or u'unknow'
     }
-    
+ 
     no_arrearage_info = {
 
-        u'长时间关机（连续3天无数据、无通话、无短信记录)' : u'unknow',
+        u'长时间关机（连续3天无数据、无通话、无短信记录,无上网记录)' : u'unknow',
         u'呼叫法院相关号码': u'unknow',
         u'申请人号码是否出现在网贷黑名单上':u'unknow',
     }
@@ -394,36 +398,27 @@ def init_sp_record_info(basedata):
         u'归属地' : u'unknow',
         u'被叫次数' : u'unknow',
         u'主叫次数' : u'unknow'
-    },
-    {
-        u'通讯录匹配' : u'unknow',
-        u'号码' : u'unknow',
-        u'通话时间' : u'unknow',
-        u'通话次数' : u'unknow',
-        u'归属地' : u'unknow',
-        u'被叫次数' : u'unknow',
-        u'主叫次数' : u'unknow'
     }]
 
     contact_info ={
-        u'通话记录长度' : u'unknow',
-        u'短信记录长度' : u'unknow',
-        u'半年内主叫次数' : u'unknow',
-        u'半年内主叫时长' : u'unknow',
-        u'半年内被叫次数' : u'unknow',
-        u'半年内被叫时长' : u'unknow',
-        u'亲属长度' : u'unknow',
-        u'亲属在老家的个数' : u'unknow',
-        u'亲属通话时长' : u'unknow',
-        u'亲属通话次数' : u'unknow'
+        u'通话记录长度' : sp and sp.min_rule_map[20001].feature_val or u'unknow', 
+        u'短信记录长度' : sp and sp.min_rule_map[20002].feature_val or u'unknow',
+        u'半年内主叫次数' : sp and sp.min_rule_map[20006].feature_val or u'unknow',
+        u'半年内主叫时长' : sp and sp.min_rule_map[20007].feature_val or u'unknow',
+        u'半年内被叫次数' : sp and sp.min_rule_map[20008].feature_val or u'unknow',
+        u'半年内被叫时长' : sp and sp.min_rule_map[20009].feature_val or u'unknow',
+        u'亲属长度' : p and p.min_rule_map[50006] or u'unknow',
+        u'亲属在老家的个数' : p and p.min_rule_map[50007] or u'unknow',
+        u'亲属通话时长' : p and p.min_rule_map[50008] or u'unknow',
+        u'亲属通话次数' : p and p.min_rule_map[50009] or u'unknow'
     }
         
 
     consume_level_info={
-        u'半年内充值金额':u'unknow',
-        u'半年内充值次数':u'unknow',
-        u'半年内平均充值间隔' : u'unknow',
-        u'月均消费' : u'unknow'
+        u'半年内充值金额':sp and sp.min_rule_map[20003].feature_val or u'unknow',
+        u'半年内充值次数':sp and sp.min_rule_map[20004].feature_val or u'unknow',
+        u'半年内平均充值间隔' : sp and sp.min_rule_map[20005] or u'unknow',
+        u'月均消费' : sp and float(sp.min_rule_map[20003].source)/6.0 or u'unknow'
     }
 
     bisic_info_month = {
