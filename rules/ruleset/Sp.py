@@ -41,7 +41,7 @@ class Sp(BaseRule):
             20018:self.is_dunning_sms(basedata),#是否被短信催收
             20019:self.phone_location_int_net_location(basedata),#手机所在地在上网地点出现次数
             20020:self.call_with_021_0755(basedata),#与021,0755通话次数
-            20021:self.userphone_in_calls_or_sms(basedata),#申请号与本机有通话
+            20021:self.userphone_in_calls_or_sms(basedata),#申请号与其他人有联系
         }
 
     def init_cuishou_map(self):
@@ -597,18 +597,18 @@ class Sp(BaseRule):
         r.source = u'无'
         return r
 
-    '''申请号与本机有通话'''
+    '''申请号与他人有联系'''
     def userphone_in_calls_or_sms(self,basedata):
         user_phone=basedata.user_phone
         r = minRule()
-        r.score=100
+        r.score=10
         r.value=''
-        r.name = u'申请号与本机有通话'
+        r.name = u'申请号与他人有联系'
         r.feature_val = u'无'
         r.source = u'无'
 
         if user_phone in self.sms_record_map or user_phone in self.sms_record_map:
-            r.score=20
+            r.score=100
             r.value+=user_phone+'\t'
             r.feature_val = u'有'
             r.source = u'有'
@@ -674,7 +674,7 @@ class Sp(BaseRule):
         dunning_sms = min_rmap[20018].score*0.05  #是否被短信催收
         phone_in_netlocation = min_rmap[20019].score*0.05 #手机所在地在上网地点出现次数
         call_with_021_0755 = min_rmap[20020].score*0.05  #与021,0755通话次数
-        userphone_in_calls_or_sms = min_rmap[20021].score*0.025 #申请号与本机有通话
+        userphone_in_calls_or_sms = min_rmap[20021].score*0.025 #申请号与其他人有联系
 
         score = call_record_len_s+sms_record_len_s+incharge_amount+incharge_times+incharge_inter_days
         score+=call_in_times_s+call_in_duration+call_out_times+call_out_duration+call_in_contact

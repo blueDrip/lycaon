@@ -79,11 +79,15 @@ class JD(BaseRule):
             key=len(info)>2 and  info[1] or None
             value=len(info)>3 and info[3] or None
             phone=len(info)>7 and info[7] or None
+            tel_phone=len(info)>9 and info[9] or None
+            email=len(info)>11 and info[11] or None
             if key and key not in infomp:
                 infomp[key]=[]
             infomp[key].append({
                 'value':value,
-                'phone' :str(phone)
+                'phone' :str(phone),
+                'tel_phone':tel_phone,
+                'email':email
             })
 
         return infomp
