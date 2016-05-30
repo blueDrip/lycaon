@@ -58,10 +58,7 @@ def is_apix_basic(query_map={}):
 
 def get_token(str_token):
 
-    #str_token = '45695BB5EEBE4ECAB3BFDD796E6EC6F9;a656824c-15a0-11e6-8081-00505639188b;17428a90-1b33-11e6-803c-00163e162482;0b047660-18f1-11e6-8ce9-00163e162482'
-
     token_list = [ it for it in str_token.split(';') ]
-    
     sp_phoneno = Yunyinglogdata.objects.using('django').filter( uuid = str(token_list[2])).first().phoneno
     e_commerce_loginname = Dianshanglogdata.objects.using('django').filter( 
         uuid = str(token_list[3])
@@ -69,8 +66,7 @@ def get_token(str_token):
     bank_login_name = BankAccount.objects.using('django').filter(token='').first()
 
     '''user,sp,jd,phonecontact,cb'''
-    userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0])).first()
-    #userinfo = Profile.objects.filter(user_id = token_list[0]).first()
+    userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
     idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
     sp=yidong.objects.filter(phone_no = sp_phoneno).first()
     jd=jingdong.objects.filter(jd_login_name = e_commerce_loginname).first()
@@ -79,21 +75,26 @@ def get_token(str_token):
 
     return {
         'user':userinfo,
+        'user_id':token_list[0].replace('-',''),
         'idcard':idcard,
         'jd' : jd,
         'tb' : None,
         'sp' : sp,
         'ucl': ucl,
-        'cb' :cb
+        'cb' : cb
     }
 
 def cal_by_message(msg):
     rmap=get_token(msg)
-    cal(minfo=rmap)
-
-
+    s=cal(minfo=rmap)
+    user=rmap['user']
+    if user:
+        user.trust_score=s
+        user.save()
+        print 'save successful'
 def cal(minfo = {
         'user':None,
+        'user_id':str(None),
         'idcard':None,
         'jd':None,
         'tb':None,
@@ -195,7 +196,9 @@ def cal(minfo = {
     print user_type
     tp_rs.rulelist=[Dr_p,Dr_jd,Dr_sp,Dr_credit,Dr_post]
     tp_rs.user_type = user_type
-    tp_rs.user_id = minfo['user'] and minfo['user'].user_id or u'safasf23333333'
+    tp_rs.user_id = minfo['user_id']
     tp_rs.save()
+    
     print 'successful!'
+    return tp_rs.score
 
