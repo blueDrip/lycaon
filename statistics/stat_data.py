@@ -382,23 +382,75 @@ def init_sp_record_info(basedata,sp,p):
         u'地址' : data and data['address'] or u'unknow',
         u'网龄' : data and data['netAge'] or u'unknow'
     }
- 
-    no_arrearage_info = {
 
-        u'长时间关机（连续3天无数据、无通话、无短信记录,无上网记录)' : u'unknow',
+     
+
+
+    #no_arrearage_info = {
+    #    u'长时间关机（连续3天没上网)' : u'unknow',
+    #    u'呼叫法院相关号码': u'unknow',
+    #    u'申请人号码是否出现在网贷黑名单上':u'unknow',
+    #}
+
+    sp_calls = basedata and basedata.sp_calls or []
+    call_info=[]
+    call_map={}
+    month_info={}
+
+    for call in sp_calls:
+        if call.phone not in call_map:
+            call_map[call.phone]={u'call_in':0,u'call_out':0,u'call_count':0}
+        if call.call_type==u'主叫':
+            call_map[call.phone][u'call_out'] +=1
+        elif call.call_type==u'被叫':
+            call_map[call.phone][u'call_in'] +=1
+        call_map[call.phone][u'call_count'] += 1
+        #按月统计
+        key=str(call.call_time.year)+'-'+str(call.call_time.month)
+        if key not in month_info:
+            month_info[key]={u'call_out':0,
+                u'call_in':0,
+                u'message':0,
+                u'consume':0
+            }    
+        if key in str(call.call_time):
+            month_info[key][u'call_out']+=1
+            month_info[key][u'call_in']+=1
+            
+    for msg in basedata and basedata.sp_sms or []:
+        key=str(msg.send_time.year)+'-'+str(msg.send_time.month)
+        if key in month_info:
+            month_info[key][u'message']+=1
+
+
+    for call in sp_calls:
+        key=call.phone
+        call_info.append({
+            u'通讯录匹配' : call.username !=u'none' and u'匹配' or u'未匹配',
+            u'号码' : key,
+            u'通话时间' : str(call.call_duration),
+            u'通话次数' : str(call_map[key][u'call_count']),
+            u'归属地' : call.phone_location,
+            u'被叫次数' : str(call_map[key][u'call_in']),
+            u'主叫次数' : str(call_map[key][u'call_out'])
+        })
+    #net_list=[]
+    #for net in basedata and basedata.sp_net or []:
+    #    net_list.append(net.start_time)
+    #排序
+    #net_list.sort()
+    #max_inter = 2
+    #for i in range(0,len(net_list)-1):
+    #    day=(net_list[i+1] - net_list[i]).days
+    #    max_inter=max_inter<day and day or max_inter
+
+    no_arrearage_info = {
+        #u'长时间关机（连续几天没上网)' : str(max_inter)+'天',
+        u'长时间关机（连续3天无数据、无通话、无短信记录':u'unknow',
         u'呼叫法院相关号码': u'unknow',
         u'申请人号码是否出现在网贷黑名单上':u'unknow',
-    }
-    
-    call_info = [{
-        u'通讯录匹配' : u'unknow',
-        u'号码' : u'unknow',
-        u'通话时间' : u'unknow',
-        u'通话次数' : u'unknow',
-        u'归属地' : u'unknow',
-        u'被叫次数' : u'unknow',
-        u'主叫次数' : u'unknow'
-    }]
+    }    
+
 
     contact_info ={
         u'通话记录长度' : sp and sp.min_rule_map[20001].feature_val or u'unknow', 
@@ -421,22 +473,24 @@ def init_sp_record_info(basedata,sp,p):
         u'月均消费' : sp and float(sp.min_rule_map[20003].source)/6.0 or u'unknow'
     }
 
-    bisic_info_month = {
-        u'月份' : u'unknow',
-        u'主叫时间（minutes）':u'unknow',
-        u'被叫时间(minuntes)' :u'unknow',
-        u'短信数量' : u'unknow',
-        u'话费消费' : u'unknow',
-    }
 
-    
+    basic_info_month=[]    
+    for k,v in month_info.items():
+        basic_info_month.append({
+            u'月份' : key,
+            u'主叫时间（minutes）':str(v[u'call_out']/60),
+            u'被叫时间(minuntes)' :str(v[u'call_in']/60),
+            u'短信数量' : str(v[u'message']),
+            u'话费消费' : str(v[u'consume']),
+        })
+
     info = {
         u'基本信息1' : basic_info,
         u'基本信息2' : no_arrearage_info,
         u'通话记录' : call_info,
         u'人际交往密切程度' : contact_info,
         u'近期月均消费水平' : consume_level_info,
-        u'运营商月消费' : bisic_info_month,
+        u'运营商月消费' : basic_info_month,
     }
 
     return info

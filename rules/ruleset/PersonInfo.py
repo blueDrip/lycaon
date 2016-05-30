@@ -103,10 +103,24 @@ class PersonInfo(BaseRule):
         p = basedata.user and basedata.user.profession or 'unknow'
         r=minRule()
         r.value = p
+        r.score=10
+        if p==u'信息产业':
+            r.score=90
+        elif p==u'农业':
+            r.score=80
+        elif p==u'渔业':
+            r.score=70
+        elif p==u'林业':
+            r.score=60
+        elif p==u'畜牧业':
+            r.score=50
+        elif p==u'金融业':
+            r.score=40
+        else:
+            r.score=20
         r.name=u'职业'
-        r.score=100
-        r.source=u'待定'
-        r.feature_val = u'服务行业'
+        r.source = p
+        r.feature_val = p
         return r
     def is_samephoto_with_idcard(self,basedata):
         idsame = basedata.user and basedata.user.is_certification or 'unknow'
