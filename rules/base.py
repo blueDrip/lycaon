@@ -138,7 +138,7 @@ class BaseData(object):
             'birthday':u'unknow',
             'idcard':u'unknow'
         }
-        print self.idcard.cardno
+        #print self.idcard.cardno
         if not self.idcard or self.idcard == u'unknow':
             self.idcard_info = idcard_info_map
             return

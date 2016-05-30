@@ -89,10 +89,11 @@ def init_online_shop_info(basedata,jd):
     jd_consume_info = {
         u'累计消费总额' : jd and jd.min_rule_map[30005].feature_val or u'unknow',
         u'累计消费笔数' : jd and jd.min_rule_map[30006].feature_val or u'unknow',
-        u'商品总件数' : len(consume_list),
         u'单笔最高消费' : len(cm_list) and cm_list[-1] or u'unknow',
         u'单笔最低消费' : len(cm_list) and cm_list[0] or u'unknow',
         u'平均每笔消费' : (jd and float(jd.min_rule_map[30005].source) or 0)*1.0/(jd and float(jd.min_rule_map[30006].source) or 1),
+        u'累计订单总数' : len(consume_list),
+        u'商品总件数' : u'unknow',
         u'返修退换货比率' : u'unknow',
         u'评价总数' : u'unknow',
         u'差评比率' : u'unknow',
@@ -100,10 +101,11 @@ def init_online_shop_info(basedata,jd):
     tb_consume_info = {
         u'累计消费总额' : u'unknow',
         u'累计消费笔数' : u'unknow',
-        u'商品总件数' : u'unknow',
         u'单笔最高消费' : u'unknow',
         u'单笔最低消费' : u'unknow',
         u'平均每笔消费' : u'unknow',
+        u'累计订单总数' : u'unknow',
+        u'商品总件数' : u'unknow',
         u'返修退换货比率' : u'unknow',
         u'评价总数' : u'unknow',
         u'差评比率' : u'unknow',
@@ -144,14 +146,18 @@ def init_online_shop_info(basedata,jd):
     }]
 
     jd_limit_amount_info = {
-        u'白条额度' : u'unknow',
-        u'芝麻信用分数' : u'---',
-        u'花呗额度' : u'---'
+        u'白条额度':u'unknow',
+        u'白条剩余额度':u'unknow',
+        u'白条累计消费':u'unknow',
+        u'芝麻信用分数':u'unknow',
+        u'花呗额度':u'unknow'
     }
     tb_limit_amount_info = {
-        u'白条额度' : u'---',
-        u'芝麻信用分数' : u'---',
-        u'花呗额度' : u'---'
+        u'白条额度':u'unknow',
+        u'白条剩余额度':u'unknow',
+        u'白条累计消费':u'unknow',
+        u'芝麻信用分数':u'unknow',
+        u'花呗额度':u'unknow'
     }
     
     tb_valid_info = {
@@ -257,14 +263,15 @@ def init_online_shop_info(basedata,jd):
             u'淘宝':tb_basic_info
         },
         u'额度' : {
-            u'name' : [
-                u'白条额度',
-                u'芝麻信用分数',
-                u'花呗额度'
-            ],
+            #u'name' : [
+            #    u'白条额度',
+            #    u'芝麻信用分数',
+            #    u'花呗额度'
+            #],
             u'type' : u'json',
             u'京东' : jd_limit_amount_info,
-            u'淘宝' : tb_limit_amount_info
+            u'淘宝' : {},
+            #u'淘宝' : tb_limit_amount_info
         },
         u'美信认证' :{
             u'name' : [u'实名认证是否与美信生活实名认证一致'],
@@ -276,10 +283,11 @@ def init_online_shop_info(basedata,jd):
             u'name' : [
                 u'累计消费总额',
                 u'累计消费笔数',
-                u'商品总件数',
                 u'单笔最高消费',
                 u'单笔最低消费',
                 u'平均每笔消费',
+                u'累计订单总数',
+                u'商品总件数',
                 u'返修退换货比率',
                 u'评价总数',
                 u'差评比率'
@@ -305,7 +313,7 @@ def init_online_shop_info(basedata,jd):
                 u'data2':month_map_info,
             },
             u'淘宝':{
-                u'data1':[],
+                u'data1':{},
                 u'data2':{}
             }
         },
