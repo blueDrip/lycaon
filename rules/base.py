@@ -68,6 +68,7 @@ class BaseData(object):
     """Docstring for OrderInfo. 
         map_info = {
             'user':None,
+            'user_id':None,
             'idcard':None,
             'jd':None,
             'tb':None,
@@ -91,7 +92,7 @@ class BaseData(object):
             self.user_plocation=map_info['user'] and map_info['user'].phone_place or u'unknow'
             self.user_phone=u'15600300721'
             self.username=u'李超'
-            self.user_id = map_info['user'] and map_info['user'].user_id or u'safasf2333333333'
+            self.user_id = map_info['user_id']
 
 
             self.init_idcard_info()
