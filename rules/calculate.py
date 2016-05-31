@@ -58,8 +58,7 @@ def get_token(str_token):
     bank_login_name = BankAccount.objects.using('django').filter(token='').first()
 
     '''user,sp,jd,phonecontact,cb'''
-    #userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
-    userinfo=None
+    userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
     idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
     sp=yidong.objects.filter(phone_no = sp_phoneno).first()
     jd=jingdong.objects.filter(jd_login_name = e_commerce_loginname).first()
