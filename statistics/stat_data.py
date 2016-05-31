@@ -250,7 +250,7 @@ def init_online_shop_info(basedata,jd):
             u'tb' : {},
             #u'淘宝' : tb_limit_amount_info
         },
-        u'lovelif' :{   #美信认证
+        u'lovelife' :{   #美信认证
             u'jd':jd_valid_info,
             u'tb':tb_valid_info
         },
@@ -292,20 +292,17 @@ def init_contact_info(basedata,postloan):
     clen=len(contact_list) or 1
     upl=basedata and basedata.user_plocation or ''
     hl=basedata and basedata.home_location or ''
-    count=0
-    ic=0
+    lcmap={}
     for c in contact_list:
-        location=c.phone_location.split('-')
-        if location[1] in upl or location[0] in upl:        
-            count += 1
-        if location[1] in hl or location[0] in hl:
-            ic +=1
-
+        city=c.phone_location.split('-')[0]
+        if city not in lcmap:
+            lcmap[city]=0
+        lcmap[city]+=1
+        lcmap[city]=lcmap[city]*100/clen
+    #排序
+    tup=sorted(lcmap.items(), key=lambda lcmap: lcmap[1],reverse=True)
     same_with_pl_info = {
-        u'ul_in_cl' : str(count),#通讯录中手机号归属地与申请人手机归属地一致个数
-        u'ul_in_cl_radio' : "%.2f"%(count*1.0/clen),#通讯录中手机号归属地与申请人手机归属地一致比率
-        u'idcard_in_cl' : str(ic),#通讯录中手机号归属地与申请人身份证区域一致个数
-        u'idcard_in_cl_radio' : "%.2f"%(ic*1.0/clen) #通讯录中手机号归属地与申请人身份证区域一致比率
+        u'ul_radio' :{ it[0]:'%.2f'%(it[1]*1.0/clen)++str('%') for it in tup } 
     }
 
     relative_info = []
@@ -355,7 +352,10 @@ def init_sp_record_info(basedata,sp,p):
         u'name_in_sp':u'unknow',#运营商实名与自有实名是否一致
         u'startime' : u'unknow',#入网时间
         u'addr' : data and data['address'] or u'unknow',#地址
-        u'netage' : data and data['netAge'] or u'unknow' #网龄
+        u'netage' : data and data['netAge'] or u'unknow', #网龄
+        u'left_amount': u'unknow',#账户余额
+        u'first_call_time':u'unknow',#最早一次通话时间
+        u'last_call_time' : u'unknow' #最后一次通话时间
     }
 
 
@@ -404,7 +404,7 @@ def init_sp_record_info(basedata,sp,p):
     #自定义排序　通话时间，通话次数，主叫次数排序    
     def _key_of_sort(dic):
         return dic[u'call_duration'],dic[u'call_times'],dic[u'call_out']
-    call_info.sort(key=_key_of_sort)
+    call_info.sort(key=_key_of_sort,reverse=True)
 
     #net_list=[]
     #for net in basedata and basedata.sp_net or []:
