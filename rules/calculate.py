@@ -10,6 +10,7 @@ import requests
 import binascii
 import logging
 import json
+from datetime import datetime
 from rules.raw_data import topResult,DetailRule
 from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
@@ -26,15 +27,6 @@ from rules.util.sms_email import MyEmail
 cal_logger = logging.getLogger('django.cal')
 cal_logger.setLevel(logging.INFO)
 
-'''调用之前进行黑名单验证'''
-def is_black():
-    pass
-'''
-满足基本的条件
-1.通讯录长度>30
-2.通话记录（手机上传的）>30
-3.不是中介
-'''
 def is_apix_basic(query_map={}):
     api_key = 'a8bbd3a565b04acf600e6b053beffea2'
     url = "http://e.apix.cn/apixcredit/blacklist/dishonest"
@@ -91,7 +83,8 @@ def cal_by_message(msg):
     if user:
         user.trust_score=s
         user.save()
-        print 'save successful'
+        print '【save successful】'
+
 def cal(minfo = {
         'user':None,
         'user_id':str(None),
@@ -101,7 +94,11 @@ def cal(minfo = {
         'sp':None,
         'ucl':None,
         'cb':None}
-    ):    
+    ):
+
+    user_id=minfo['user_id']
+    cal_logger.info(u'【start calculate score】　' + str(user_id))    
+
     user_type = u'正常用户'
     if is_apix_basic():
         user_type = u'黑名单'
@@ -111,8 +108,7 @@ def cal(minfo = {
     bd=BaseData(map_info=minfo,ext=ext_api)
     b=JD(bd)
     tp_rs = topResult()
-
-    print '【个人信息】'
+    cal_logger.info(u'【个人信息】开始计算\t'+str(user_id)+'\t'+ str(datetime.now()))
     dl=[]
     Dr_p=DetailRule()
     b=PersonInfo(bd)
@@ -123,11 +119,11 @@ def cal(minfo = {
         dl.append(v)
     Dr_p.name=u'个人信息'
     Dr_p.rule_id=1
-    Dr_p.score=int(b.get_score())
+    Dr_p.score=int(b.get_score())*10
     Dr_p.rules=dl
     Dr_p.save()
-
-    print '【京东】'
+    cal_logger.info(u'【个人信息】计算完成\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_p.score))
+    cal_logger.info(u'【京东】开始计算\t'+str(user_id)+'\t'+str(datetime.now()))
     Dr_jd=DetailRule()
     dl=[]
     b = JD(bd)
@@ -137,12 +133,12 @@ def cal(minfo = {
         v.save()
         dl.append(v)
     Dr_jd.name=u'京东'
-    Dr_jd.score=int(b.get_score())
+    Dr_jd.score=int(b.get_score())*10
     Dr_jd.rules=dl
     Dr_jd.rule_id=2
     Dr_jd.save()
-
-    print '【运营商】'
+    cal_logger.info(u'【京东】计算完成\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_jd.score))
+    cal_logger.info(u'【运营商】开始计算\t' + str(user_id)+'\t'+str(datetime.now()))
     dl=[]
     b=Sp(bd)
     Dr_sp=DetailRule()
@@ -151,14 +147,13 @@ def cal(minfo = {
         v.value = v.value.replace('\t','<br/>')
         v.save()
         dl.append(v)
-
     Dr_sp.name=u'运营商'
     Dr_sp.rule_id=3
-    Dr_sp.score=int(b.get_score())
+    Dr_sp.score=int(b.get_score())*10
     Dr_sp.rules=dl
     Dr_sp.save()
-
-    print '【贷后】'
+    cal_logger.info(u'【运营商】计算结束\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_sp.score))
+    cal_logger.info(u'【贷后】开始计算\t'+str(user_id)+'\t'+str(datetime.now()))
     b=PostLoanNewRule(bd)
     Dr_post=DetailRule()
     dl=[]
@@ -169,11 +164,11 @@ def cal(minfo = {
         dl.append(v)
     Dr_post.name=u'贷后'
     Dr_post.rule_id=4
-    Dr_post.score=int(b.get_score())
+    Dr_post.score=int(b.get_score())*10
     Dr_post.rules=dl
     Dr_post.save()
-
-    print '【信用卡】'
+    cal_logger.info(u'【贷后】计算结束\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_sp.score))
+    cal_logger.info(u'【信用卡】开始计算\t'+str(user_id)+'\t'+str(datetime.now()))
     b = creditCard(bd)
     Dr_credit = DetailRule()
     dl = []
@@ -184,13 +179,14 @@ def cal(minfo = {
         dl.append(v)
     Dr_credit.name = u'招商银行信用卡'    
     Dr_credit.rule_id=5
-    Dr_credit.score=int(b.get_score())
+    Dr_credit.score=int(b.get_score())*10
     Dr_credit.rules=dl
-    Dr_credit.save()    
+    Dr_credit.save()
+    cal_logger.info(u'【信用卡】计算完成\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_credit.score))
     print 'finish'
 
     tp_rs.name = u'credit_score'
-    tp_rs.score=(Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1)*10
+    tp_rs.score=(Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1)
     print Dr_p.score,Dr_jd.score,Dr_sp.score,Dr_post.score,Dr_credit.score
     print '得分',tp_rs.score
     print user_type
@@ -198,7 +194,7 @@ def cal(minfo = {
     tp_rs.user_type = user_type
     tp_rs.user_id = minfo['user_id']
     tp_rs.save()
-    
-    print 'successful!'
+    cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(tp_rs.score))
+    print '【successful!】'
     return tp_rs.score
 
