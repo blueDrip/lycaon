@@ -7,11 +7,11 @@
 	    <title>Visual Admin - Login</title>
         <meta name="description" content="">
         <meta name="author" content="templatemo">
-        
+        {% load staticfiles %}
 	    <link href='http://fonts.useso.com/css?family=Open+Sans:400,300,400italic,700' rel='stylesheet' type='text/css'>
-	    <link href="../css/font-awesome.min.css" rel="stylesheet">
-	    <link href="../css/bootstrap.min.css" rel="stylesheet">
-	    <link href="../css/templatemo-style.css" rel="stylesheet">
+	    <link href="{{ static ('css/font-awesome.min.css') }}" rel="stylesheet">
+	    <link href="{{ static ('css/bootstrap.min.css') }}" rel="stylesheet">
+	    <link href="{{ static ('css/templatemo-style.css') }}" rel="stylesheet">
 	    
 	    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -26,7 +26,7 @@
 	          <div class="square"></div>
 	          <h1>Visual Admin</h1>
 	        </header>
-	        <form action="/credit/admin_index/" class="templatemo-login-form">
+	        <form action="#" class="templatemo-login-form">
 	        	<div class="form-group">
 	        		<div class="input-group">
 		        		<div class="input-group-addon"><i class="fa fa-user fa-fw"></i></div>	        		
