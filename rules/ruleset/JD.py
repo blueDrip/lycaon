@@ -17,7 +17,7 @@ class JD(BaseRule):
         self.load_data(basedata)
         self.min_rule_map={
 
-            30001:self.is_valid_name(basedata),#京东实名验证
+            30001:self.is_valid_name(basedata),#京东身份证验证
             30002:self.is_valid_phone(basedata),#京东手机验证
             30003:self.get_huiyuanjibie(basedata),#京东会员等级
             30004:self.get_avg_login_integer_days(basedata),#京东半年内平均登陆时间间隔(登陆时间/次数)
@@ -28,7 +28,14 @@ class JD(BaseRule):
             30009:self.address_phone_in_contact(basedata),#收件人电话号码出现在通讯录中
             30010:self.address_phone_in_sms(basedata),#收件人出现下短信中
             30011:self.address_phone_in_call(basedata),#收件人出现在通话记录中
-            30012:self.owner_phone_location_in_address(basedata),#申请人手机归属地出现在收货地址中
+            30012:self.owner_phone_location_in_address(basedata),#收货地址中包含申请人所在地
+            30013:self.valid_email(basedata),#邮箱验证
+            30014:self.is_open_ious(basedata),#是否开通白条
+            30015:self.ious_amount(basedata),#白条额度
+            30016:self.can_use_ious_amount(basedata),#可用京东白条额度
+            30017:self.consume_ious_amount(basedata),#已用京东白条额度
+            30018:self.repay_ious_amount_one_week(basedata),#一周内待还金额
+            30019:self.phone_bankinfo(basedata),#绑定银行卡中有申请人手机号
             #30012:None,#半年内是否出现消费断档
 
         }        
@@ -42,6 +49,8 @@ class JD(BaseRule):
         for c in cl:
             cc = c.split('###$$$')
             kk=get_right_datetime(cc[0])
+            if not kk:
+                continue
             if kk>now-timedelta(180) and kk<=now:
                 clist.append({
                     'time':kk,
@@ -59,8 +68,11 @@ class JD(BaseRule):
             h=his.split('###$$$')
             hl=len(h)>1 and h[1].split(' ') or []
             key = get_right_datetime(h[0])
+            if not key:
+                continue
             cmap.update({ key:{
-                            'province':hl and hl[1] or 'none',
+                            'country':hl and hl[0] or 'none',
+                            'province':len(hl)>1 and hl[1] or 'none',
                             'city':len(hl)>2 and hl[2] or 'none'
                         }
             })
@@ -81,6 +93,8 @@ class JD(BaseRule):
             phone=len(info)>7 and info[7] or None
             tel_phone=len(info)>9 and info[9] or None
             email=len(info)>11 and info[11] or None
+            if not key:
+                continue
             if key and key not in infomp:
                 infomp[key]=[]
             infomp[key].append({
@@ -99,18 +113,18 @@ class JD(BaseRule):
         three_month_consume = basedata.jd and basedata.jd.three_month_consume or ''
         self.consume_after_list = self.init_consume_map(three_month_consume,basedata)
 
-        loginhistory = basedata.jd and basedata.jd.loginhistory or ''
+        loginhistory = basedata.jd and basedata.jd.login_history or ''
         self.login_his_map= self.init_login_history_list(loginhistory)
 
         self.address_info_map = self.init_info_mp(basedata)
 
-    '''实名认证'''
+    '''身份证认证'''
     def is_valid_name(self,basedata):
         r=minRule()
-        ispass=basedata.jd and basedata.jd.isrealname or u'unknow'
+        ispass=basedata.jd and basedata.jd.indentify_verified or u'unknown'
         r.score=0
         r.source=ispass
-        r.name=u'实名认证'
+        r.name=u'身份证认证'
         if u'unknow' in ispass:
             r.value = u'unknow'
         elif u'验证通过' in ispass:
@@ -129,7 +143,7 @@ class JD(BaseRule):
     '''手机验证'''
     def is_valid_phone(self,basedata):
         r=minRule()
-        ispass=basedata.jd and basedata.jd.isvalidphone or u'unknow'
+        ispass=basedata.jd and basedata.jd.phone_verifyied or u'unknown'
         r.score=0
         r.name=u'手机验证'        
         r.source=ispass
@@ -151,7 +165,7 @@ class JD(BaseRule):
     '''会员级别'''
     def get_huiyuanjibie(self,basedata):
         r=minRule()
-        grade=basedata.jd and basedata.jd.huiyuanjibie or u'unknow'
+        grade=basedata.jd and basedata.jd.user_level or u'unknow'
         r.value=grade
         r.score=0
         r.source=grade
@@ -378,12 +392,163 @@ class JD(BaseRule):
     def grp_consume_in_harf_year(self,basedata):
         pass
 
+    #邮箱认证
+    def valid_email(self,basedata):
+        ispass=basedata.jd and basedata.jd.email_verified or u'unknown'
+        r = minRule()
+        r.name=u'是否邮箱验证'
+        r.source=ispass
+        if u'unknown' in ispass:
+            r.value = u'unknown'
+        elif u'验证通过' in ispass:
+            r.value=u'验证通过'
+            r.score=100
+        elif u'验证失败' in ispass:
+            r.value=u'验证失败'
+            r.score=70
+        else:
+            r.value=u'未验证'
+            r.score=20
+        r.feature_val = r.value
+        return r
+
+    #是否开通白条
+    def is_open_ious(self,basedata):
+        isopen=basedata.jd and basedata.jd.baitiao or {}
+        flag=False
+        r = minRule()
+        r.name = u'是否开通白条'
+        r.score = 30
+        if isopen:
+            flag = u'isOpen' in isopen and isopen[u'isOpen'] or False
+        if flag:
+            r.value = u'unknown'
+        else:
+            r.value = u'开通'
+            r.score = 100
+        r.source = flag
+        r.feature_val = r.value
+        return r
+
+    #白条额度
+    def ious_amount(self,basedata):
+        bt=basedata.jd and basedata.jd.baitiao or {}
+        r = minRule()
+        r.name = u'白条额度'
+        r.score = 10
+        if bt:
+            flag = u'totalAmount' in bt and float(bt[u'totalAmount'].replace(',','')) or 'unknown'
+        r.value = str(flag)
+        if flag>=0 and flag<1000:
+            r.score = 30
+        elif flag>=1000 and flag<2000:
+            r.score = 50
+        elif flag>=2000 and flag<3000:
+            r.score = 60
+        elif flag>=4000 and flag<5000:
+            r.score = 80
+        else:
+            r.score = 100
+        r.source = str(flag)
+        r.feature_val = str(flag)
+        return r                
+
+    #可用京东白条额度
+    def can_use_ious_amount(self,basedata):
+
+        bt=basedata.jd and basedata.jd.baitiao or {}
+        r = minRule()
+        r.name = u'可用白条额度'
+        r.score = 10
+        if bt:
+            flag = u'avaliableAmount' in bt and float(bt[u'avaliableAmount'].replace(',','')) or 'unknown'
+        r.value = str(flag)
+        if flag>=0 and flag<1000:
+            r.score = 30
+        elif flag>=1000 and flag<2000:
+            r.score = 50
+        elif flag>=2000 and flag<3000:
+            r.score = 60
+        elif flag>=4000 and flag<5000:
+            r.score = 80
+        else:
+            r.score = 100
+        r.source = str(flag)
+        r.feature_val = str(flag)
+        return r
+
+    #已用京东白条额度
+    def consume_ious_amount(self,basedata):
+
+        bt=basedata.jd and basedata.jd.baitiao or {}
+        r = minRule()
+        r.name = u'已用白条额度'
+        r.score = 10
+        if bt:
+            flag = u'consumeAmount' in bt and float(bt[u'consumeAmount'].replace(',','')) or 'unknown'
+        r.value = str(flag)
+        if flag>=0 and flag<1000:
+            r.score = 30
+        elif flag>=1000 and flag<2000:
+            r.score = 50
+        elif flag>=2000 and flag<3000:
+            r.score = 60
+        elif flag>=4000 and flag<5000:
+            r.score = 80
+        else:
+            r.score = 100
+        r.source = str(flag)
+        r.feature_val = str(flag)
+        return r
+
+    #一周内待还金额
+    def repay_ious_amount_one_week(self,basedata):
+
+        bt=basedata.jd and basedata.jd.baitiao or {}
+        r = minRule()
+        r.name = u'一周内待还白条额度'
+        r.score = 10
+        if bt:
+            flag = u'pending' in bt and float(bt[u'pending'].replace(',','')) or 'unknown'
+        r.value = str(flag)
+        if flag>=0 and flag<1000:
+            r.score = 30
+        elif flag>=1000 and flag<2000:
+            r.score = 50
+        elif flag>=2000 and flag<3000:
+            r.score = 60
+        elif flag>=4000 and flag<5000:
+            r.score = 80
+        else:
+            r.score = 100
+        r.source = str(flag)
+        r.feature_val = str(flag)
+        return r
+
+    #绑定银行卡中有申请人手机号
+    def phone_bankinfo(self,basedata):
+        bankinfo=basedata.jd and basedata.jd.bankinfo or u'unknown'
+        up=basedata.user_phone
+        bank_phone =  up[:3]+'****'+up[7:]
+        r=minRule()
+        r.name=u'绑定银行卡中有申请人手机号'
+        r.score = 20
+        r.value = bankinfo
+        if u'unknown' in bankinfo:
+            r.score = 10
+            r.feature_val = u'unknown'
+        elif bank_phone in bankinfo:
+            r.score = 100
+            r.feature_val = u'有'
+        r.source = r.feature_val
+        return r
+
     def get_score(self):
         min_rmap = self.min_rule_map
         valid_name = min_rmap[30001].score*0.1 #京东实名验证
-        valid_phone = min_rmap[30002].score*0.1  #京东手机验证
-        grade = min_rmap[30003].score*0.1 #京东会员等级
-        avg_login_days = min_rmap[30004].score*0.1 #京东半年内平均登陆时间间隔(登陆时间/次数)
+        valid_phone = min_rmap[30002].score*0.06  #京东手机验证
+        grade = min_rmap[30003].score*0.05 #京东会员等级
+        avg_login_days = min_rmap[30004].score*0.05 #京东半年内平均登陆时间间隔(登陆时间/次数)
         consume_amount = min_rmap[30005].score*0.05 #京东半年内消费金额
         consume_times = min_rmap[30006].score*0.05 #半年内消费次数
         owner_name_in_address = min_rmap[30007].score*0.1 #收件人中有申请人
@@ -393,9 +558,23 @@ class JD(BaseRule):
         address_phone_in_call = min_rmap[30011].score*0.1 #收件人出现在通话记录中
         owner_phone_location_in_address = min_rmap[30012].score*0.07 #申请人手机归属地出现在收货地址中
 
+        valid_email = min_rmap[30013].score*0.02 #邮箱验证
+        open_ious = min_rmap[30014].score*0.02 #是否开通白条
+        ious_amount = min_rmap[30015].score*0.02 #白条额度
+        can_use_ious_amount = min_rmap[30016].score*0.02 #可用京东白条额度
+        consume_ious_amount = min_rmap[30017].score*0.02 #已用京东白条额度
+        repay_ious_one_week = min_rmap[30018].score*0.02 #一周内待还金额
+        phone_bankinfo = min_rmap[30019].score*0.02 #绑定银行卡中有申请人手机号
+
+
         score=valid_name+valid_phone+grade+avg_login_days
         score+=consume_amount+consume_times+owner_name_in_address
         score+=address+address_phone_in_contact+address_phone_in_sms
         score+=address_phone_in_call+owner_phone_location_in_address
+
+        score+=valid_email+open_ious+ious_amount
+        score+=can_use_ious_amount+consume_ious_amount
+        score+=repay_ious_one_week+phone_bankinfo
+
         return score  
 
