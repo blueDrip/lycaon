@@ -6,4 +6,5 @@ urlpatterns = [
     #url(r'^users/$', views.get_usercontact),
     url(r'^detail/$',views.credit_detail),
     url(r'^userinfo/$',views.users_views),
+    url(r'^login/$',views.admin_login_views),
 ]

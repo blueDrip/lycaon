@@ -42,3 +42,7 @@ def credit_detail(request):
 def users_views(request):
     ulist = Profile.objects.all()
     return render(request,'api/users.html',{'users':ulist})
+
+'''数据分析admin'''
+def admin_login_views(request):
+    return render(request,'admin/login.html')
