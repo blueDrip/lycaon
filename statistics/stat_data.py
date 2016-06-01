@@ -41,13 +41,13 @@ def get_stop_time(dist=1):
 '''实名验证'''
 def init_valid_name_info(basedata):
     return {
-        u'is_valid_name' : u'unknow',#是否实名认证
-        u'name' : u'unknow',#姓名
+        u'is_valid_name' : u'unknown',#是否实名认证
+        u'name' : u'unknown',#姓名
         u'idcard' : basedata.idcard_info['idcard'],#idcardno
         u'sex' : basedata.idcard_info['sex'],#性别
         u'age' : basedata.idcard_info['age'],#年龄
         u'idcard_location' : basedata.idcard_info['home_location'],#身份证所在地
-        u'in_law_black' : u'unknow' #申请人身份证号码是否出现在法院黑名单上
+        u'in_law_black' : u'unknown' #申请人身份证号码是否出现在法院黑名单上
     }
 
 '''电商分析'''
@@ -55,54 +55,51 @@ def init_online_shop_info(basedata,jd):
     bjd = basedata and basedata.jd or None
     login_his = jd and jd.login_his_map.keys() or []
     login_his.sort()
-
-
     jd_basic_info={
-        u'login_name':bjd and bjd.jd1_login_name or u'unknow',#会员名    
-        u'grade':bjd and bjd.huiyuanjibie or u'unknow',#会员等级
-        u'is_pass_valid':jd and jd.min_rule_map[30001].feature_val or u'unknow',#是否通过姓名验证
-        u'binding_phone' : u'unknow',#绑定手机号
-        u'login_email' : bjd and bjd.email or u'unknow',#登陆邮箱
-        u'last_login_date' : len(login_his)>0 and login_his[-1] or u'unknow',#最后一次登陆时间
-        u'total_time':u'unknow' #使用时间
+        u'login_name':bjd and bjd.jd_login_name or u'unknown',#会员名    
+        u'grade':bjd and bjd.user_level or u'unknown',#会员等级
+        u'is_pass_valid':jd and jd.min_rule_map[30001].feature_val or u'unknown',#是否通过姓名验证
+        u'binding_phone' : u'unknown',#绑定手机号
+        u'login_email' : bjd and bjd.email_host.replace('\r\n','') or u'unknown',#登陆邮箱
+        u'last_login_date' : len(login_his)>0 and login_his[-1] or u'unknown',#最后一次登陆时间
+        u'total_time':u'unknown' #使用时间
     }
     tb_basic_info = {
-        u'login_name' : u'unknow',#会员名    
-        u'grade' : u'unknow',#会员等级
-        u'is_pass_valid' : u'unknow',#是否通过姓名验证
-        u'binding_phone' : 'unknow',#绑定手机号
-        u'login_email' : u'unknow',#登陆邮箱
-        u'last_login_date' : u'unknow',#最后一次登陆时
-        u'total_time':u'unknow'
+        u'login_name' : u'unknown',#会员名    
+        u'grade' : u'unknown',#会员等级
+        u'is_pass_valid' : u'unknown',#是否通过姓名验证
+        u'binding_phone' : 'unknown',#绑定手机号
+        u'login_email' : u'unknown',#登陆邮箱
+        u'last_login_date' : u'unknown',#最后一次登陆时
+        u'total_time':u'unknown'
     }
 
-    consume_list = jd and jd.consume_after_list or []
-    consume_list.extend(jd and jd.consume_before_3mon_list or [])
+    consume_list = jd and jd.consume_list or []
     cm_list = [ it['money'] for it in consume_list ]
     cm_list.sort()
     jd_consume_info = {
-        u'total_amount' : jd and jd.min_rule_map[30005].feature_val or u'unknow',#累计消费总额
-        u'total_consume_orders' : jd and jd.min_rule_map[30006].feature_val or u'unknow',#累计消费笔数
-        u'max_money' : len(cm_list) and cm_list[-1] or u'unknow',#单笔最高消费
-        u'min_money' : len(cm_list) and cm_list[0] or u'unknow',#单笔最低消费
+        u'total_amount' : jd and jd.min_rule_map[30005].feature_val or u'unknown',#累计消费总额
+        u'total_consume_orders' : jd and jd.min_rule_map[30006].feature_val or u'unknown',#累计消费笔数
+        u'max_money' : len(cm_list) and cm_list[-1] or u'unknown',#单笔最高消费
+        u'min_money' : len(cm_list) and cm_list[0] or u'unknown',#单笔最低消费
         u'avg_money' : (jd and float(jd.min_rule_map[30005].source) or 0)*1.0/(jd and float(jd.min_rule_map[30006].source) or 1),#平均每笔消费
         u'total_orders' : len(consume_list),#累计订单总数
-        u'goods_nums' : u'unknow',#商品总件数
-        u'back_goods_radio' : u'unknow',#返修退换货比率
-        u'judge_times' : u'unknow',#评价总数
-        u'bad_judge_times' : u'unknow',#差评比率
+        u'goods_nums' : u'unknown',#商品总件数
+        u'back_goods_radio' : u'unknown',#返修退换货比率
+        u'judge_times' : u'unknown',#评价总数
+        u'bad_judge_times' : u'unknown',#差评比率
     }
     tb_consume_info = {
-        u'total_amount' : u'unknow',
-        u'total_consume_orders' : u'unknow',
-        u'max_money' : u'unknow',
-        u'min_money' : u'unknow',
-        u'avg_money' : u'unknow',
-        u'total_orders' : u'unknow',
-        u'goods_nums' : u'unknow',
-        u'back_goods_radio' : u'unknow',
-        u'judge_times' : u'unknow',
-        u'bad_judge_times' : u'unknow',
+        u'total_amount' : u'unknown',
+        u'total_consume_orders' : u'unknown',
+        u'max_money' : u'unknown',
+        u'min_money' : u'unknown',
+        u'avg_money' : u'unknown',
+        u'total_orders' : u'unknown',
+        u'goods_nums' : u'unknown',
+        u'back_goods_radio' : u'unknown',
+        u'judge_times' : u'unknown',
+        u'bad_judge_times' : u'unknown',
     }
 
     jd_addr_info = jd and jd.init_info_mp(basedata) or {}
@@ -126,56 +123,56 @@ def init_online_shop_info(basedata,jd):
                 })
                 flag_list.append(it['value'])
     tb_addr_detail_list = [{
-        u'host_goods' : u'unknow',
-        u'addr_in' : u'unknow',
-        u'addr' : u'unknow',
-        u'phone' : u'unknow',
-        u'tel_phone' : u'unknow',
-        u'email' : u'unknow',
-        u'first_send_time' : u'unknow',
-        u'last_send_time' : u'unknow',
-        u'order_nums' : u'unknow',
-        u'consume_amount' : u'unknow',
+        u'host_goods' : u'unknown',
+        u'addr_in' : u'unknown',
+        u'addr' : u'unknown',
+        u'phone' : u'unknown',
+        u'tel_phone' : u'unknown',
+        u'email' : u'unknown',
+        u'first_send_time' : u'unknown',
+        u'last_send_time' : u'unknown',
+        u'order_nums' : u'unknown',
+        u'consume_amount' : u'unknown',
         u'source' : u'淘宝'
     }]
 
     jd_limit_amount_info = {
-        u'limit_amount':u'unknow',#白条额度
-        u'limit_last_amount':u'unknow',#白条剩余额度
-        u'limit_consume_amount':u'unknow',
-        u'zm_credit_score':u'unknow',#芝麻信用分数
-        u'hb_amount':u'unknow',#花呗额度
+        u'limit_amount':bjd and bjd.baitiao[u'totalAmount'] or u'unknown',#白条额度
+        u'limit_last_amount':bjd and bjd.baitiao[u'avaliableAmount'] or u'unknown',#白条剩余额度
+        u'limit_consume_amount':bjd and bjd.baitiao[u'consumeAmount'] or u'unknown',#白条可用额度
+        u'zm_credit_score':u'unknown',#芝麻信用分数
+        u'hb_amount':u'unknown',#花呗额度
     }
     tb_limit_amount_info = {
-        u'limit_amount':u'unknow',#白条额度
-        u'limit_last_amount':u'unknow',#白条剩余额度
-        u'limit_consume_amount':u'unknow',
-        u'zm_credit_score':u'unknow',#芝麻信用分数
-        u'hb_amount':u'unknow',#花呗额度
+        u'limit_amount':u'unknown',#白条额度
+        u'limit_last_amount':u'unknown',#白条剩余额度
+        u'limit_consume_amount':u'unknown',
+        u'zm_credit_score':u'unknown',#芝麻信用分数
+        u'hb_amount':u'unknown',#花呗额度
     }
     
     tb_valid_info = {
-        u'same_with_lovelife' : u'unknow',#实名认证是否与美信生活实名认证一致
+        u'same_with_lovelife' : u'unknown',#实名认证是否与美信生活实名认证一致
     }
     jd_valid_info = {
-        u'same_with_lovelif' : u'unknow',
+        u'same_with_lovelif' : u'unknown',
     }
     
     jd_addr_info = {
-        u'userphone_in_addr' : jd and jd.min_rule_map[30007].feature_val or u'unknow',#收获人中是否有申请人
-        u'addr_diff_nums' : jd and jd.min_rule_map[30008].feature_val or u'unknow',#不同的收货地址个数
-        u'phone_in_contact' : jd and jd.min_rule_map[30009].feature_val or u'unknow',#收件人出现在通讯录中
-        u'contact_sms' : jd and jd.min_rule_map[30010].feature_val or u'unknow',#与收件人有短信联系
-        u'ul_in_addr': jd and jd.min_rule_map[30012].feature_val or u'unknow',#申请用户手机归属地出现在收货地址中
-        u'contact_call' : jd and jd.min_rule_map[30011].feature_val or u'unknow' #与收件人有电话联系
+        u'userphone_in_addr' : jd and jd.min_rule_map[30007].feature_val or u'unknown',#收获人中是否有申请人
+        u'addr_diff_nums' : jd and jd.min_rule_map[30008].feature_val or u'unknown',#不同的收货地址个数
+        u'phone_in_contact' : jd and jd.min_rule_map[30009].feature_val or u'unknown',#收件人出现在通讯录中
+        u'contact_sms' : jd and jd.min_rule_map[30010].feature_val or u'unknown',#与收件人有短信联系
+        u'ul_in_addr': jd and jd.min_rule_map[30012].feature_val or u'unknown',#申请用户手机归属地出现在收货地址中
+        u'contact_call' : jd and jd.min_rule_map[30011].feature_val or u'unknown' #与收件人有电话联系
     }
     tb_addr_info={
-        u'userphone_in_addr' : u'unknow',
-        u'addr_diff_nums' : u'unknow',
-        u'phone_in_contact' : u'unknow',
-        u'contact_sms' : u'unknow',
-        u'ul_in_addr': u'unknow',
-        u'contact_call' : u'unknow'
+        u'userphone_in_addr' : u'unknown',
+        u'addr_diff_nums' : u'unknown',
+        u'phone_in_contact' : u'unknown',
+        u'contact_sms' : u'unknown',
+        u'ul_in_addr': u'unknown',
+        u'contact_call' : u'unknown'
     }
     
 
@@ -231,13 +228,13 @@ def init_online_shop_info(basedata,jd):
             })
             ll.append(k)
     tb_order_info={
-        u'order_date':u'unknow',
-        u'goods_name':u'unknow',
-        u'goods_nums':u'unknow',
-        u'amount':u'unknow',
-        u'pay_ways': u'unknow',
-        u'addr': u'unknow',
-        u'host_goods':u'unknow'
+        u'order_date':u'unknown',
+        u'goods_name':u'unknown',
+        u'goods_nums':u'unknown',
+        u'amount':u'unknown',
+        u'pay_ways': u'unknown',
+        u'addr': u'unknown',
+        u'host_goods':u'unknown'
     }
     #汇集
     info = {
@@ -348,14 +345,14 @@ def init_sp_record_info(basedata,sp,p):
     bas_info=json.loads(basedata.sp and basedata.sp.base_info or '{}')
     data=bas_info and bas_info['data'] or {}
     basic_info={
-        u'pass_sp' : u'unknow',#运营商实名认证
-        u'name_in_sp':u'unknow',#运营商实名与自有实名是否一致
-        u'startime' : u'unknow',#入网时间
-        u'addr' : data and data['address'] or u'unknow',#地址
-        u'netage' : data and data['netAge'] or u'unknow', #网龄
-        u'left_amount': u'unknow',#账户余额
-        u'first_call_time':u'unknow',#最早一次通话时间
-        u'last_call_time' : u'unknow' #最后一次通话时间
+        u'pass_sp' : u'unknown',#运营商实名认证
+        u'name_in_sp':u'unknown',#运营商实名与自有实名是否一致
+        u'startime' : u'unknown',#入网时间
+        u'addr' : data and data['address'] or u'unknown',#地址
+        u'netage' : data and data['netAge'] or u'unknown', #网龄
+        u'left_amount': u'unknown',#账户余额
+        u'first_call_time':u'unknown',#最早一次通话时间
+        u'last_call_time' : u'unknown' #最后一次通话时间
     }
 
 
@@ -418,31 +415,31 @@ def init_sp_record_info(basedata,sp,p):
 
     no_arrearage_info = {
         #u'长时间关机（连续几天没上网)' : str(max_inter)+'天',
-        u'shutdown_phone':u'unknow',#长时间关机（连续3天无数据、无通话、无短信记录
-        u'call_law': u'unknow',#呼叫法院相关号码
-        u'user_in_netloan':u'unknow',#申请人号码是否出现在网贷黑名单上
+        u'shutdown_phone':u'unknown',#长时间关机（连续3天无数据、无通话、无短信记录
+        u'call_law': u'unknown',#呼叫法院相关号码
+        u'user_in_netloan':u'unknown',#申请人号码是否出现在网贷黑名单上
     }    
 
 
     contact_info ={
-        u'call_len' : sp and sp.min_rule_map[20001].feature_val or u'unknow',#通话记录长度
-        u'sms_len' : sp and sp.min_rule_map[20002].feature_val or u'unknow',#短信记录长度
-        u'callout_times' : sp and sp.min_rule_map[20006].feature_val or u'unknow',#半年内主叫次数
-        u'call_duration' : sp and sp.min_rule_map[20007].feature_val or u'unknow',#半年内主叫时长
-        u'callin_times' : sp and sp.min_rule_map[20008].feature_val or u'unknow',#半年内被叫次数
-        u'callin_duration' : sp and sp.min_rule_map[20009].feature_val or u'unknow',#半年内被叫时长
-        u'rlen' : p and p.min_rule_map[50006].feature_val or u'unknow',#亲属长度
-        u'relative_in_idl' : p and p.min_rule_map[50007].feature_val or u'unknow',#亲属在老家的个数
-        u'rcall_len' : p and p.min_rule_map[50008].feature_val or u'unknow',#亲属通话时长
-        u'rcall_times' : p and p.min_rule_map[50009].feature_val or u'unknow'#亲属通话次数
+        u'call_len' : sp and sp.min_rule_map[20001].feature_val or u'unknown',#通话记录长度
+        u'sms_len' : sp and sp.min_rule_map[20002].feature_val or u'unknown',#短信记录长度
+        u'callout_times' : sp and sp.min_rule_map[20006].feature_val or u'unknown',#半年内主叫次数
+        u'call_duration' : sp and sp.min_rule_map[20007].feature_val or u'unknown',#半年内主叫时长
+        u'callin_times' : sp and sp.min_rule_map[20008].feature_val or u'unknown',#半年内被叫次数
+        u'callin_duration' : sp and sp.min_rule_map[20009].feature_val or u'unknown',#半年内被叫时长
+        u'rlen' : p and p.min_rule_map[50006].feature_val or u'unknown',#亲属长度
+        u'relative_in_idl' : p and p.min_rule_map[50007].feature_val or u'unknown',#亲属在老家的个数
+        u'rcall_len' : p and p.min_rule_map[50008].feature_val or u'unknown',#亲属通话时长
+        u'rcall_times' : p and p.min_rule_map[50009].feature_val or u'unknown'#亲属通话次数
     }
         
 
     consume_level_info={
-        u'incharge_amount':sp and sp.min_rule_map[20003].feature_val or u'unknow',#半年内充值金额
-        u'incharge_times':sp and sp.min_rule_map[20004].feature_val or u'unknow',#半年内充值次数
-        u'avg_incharge_inter' : sp and sp.min_rule_map[20005].feature_val or u'unknow',#半年内平均充值间隔
-        u'avg_month_consume' : sp and float(sp.min_rule_map[20003].source)/6.0 or u'unknow'#月均消费
+        u'incharge_amount':sp and sp.min_rule_map[20003].feature_val or u'unknown',#半年内充值金额
+        u'incharge_times':sp and sp.min_rule_map[20004].feature_val or u'unknown',#半年内充值次数
+        u'avg_incharge_inter' : sp and sp.min_rule_map[20005].feature_val or u'unknown',#半年内平均充值间隔
+        u'avg_month_consume' : sp and float(sp.min_rule_map[20003].source)/6.0 or u'unknown'#月均消费
     }
 
 

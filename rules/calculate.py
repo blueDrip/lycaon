@@ -21,9 +21,11 @@ from rules.models import BaseRule
 from rules.base import BaseData
 from rules.ext_api import EXT_API
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount
-from rules.raw_data import jingdong,liantong,yidong
+from rules.raw_data import JdData,liantong,yidong
 from rules.raw_data import phonebook,cmbcc
 from rules.util.sms_email import MyEmail
+from statistics.models import RulusDetailInfo
+from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
 cal_logger = logging.getLogger('django.cal')
 cal_logger.setLevel(logging.INFO)
 
@@ -52,16 +54,18 @@ def get_token(str_token):
 
     token_list = [ it for it in str_token.split(';') ]
     sp_phoneno = Yunyinglogdata.objects.using('django').filter( uuid = str(token_list[2])).first().phoneno
-    e_commerce_loginname = Dianshanglogdata.objects.using('django').filter( 
+    e_commerce = Dianshanglogdata.objects.using('django').filter( 
         uuid = str(token_list[3])
-    ).first().loginname
+    ).first()
+    e_commerce_loginname = e_commerce and e_commerce.loginname or str(None)
+
     bank_login_name = BankAccount.objects.using('django').filter(token='').first()
 
     '''user,sp,jd,phonecontact,cb'''
     userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
     idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
     sp=yidong.objects.filter(phone_no = sp_phoneno).first()
-    jd=jingdong.objects.filter(jd_login_name = e_commerce_loginname).first()
+    jd=JdData.objects.filter(jd_login_name = e_commerce_loginname).first()
     ucl = phonebook.objects.filter(user_id = u'111').first()
     cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
 
@@ -96,105 +100,76 @@ def cal(minfo = {
         'cb':None}
     ):
 
-    user_id=minfo['user_id']
-    cal_logger.info(u'【start calculate score】　' + str(user_id))    
+    rule_map={'personinfo':PersonInfo,
+        'jd' : JD,
+        'sp' : Sp,
+        'cb' : creditCard,
+        'postloan' : PostLoanNewRule,
+    }
+    name_list={'personinfo':u'个人信息',
+        'jd':u'京东',
+        'sp':u'运营商',
+        'cb':u'招商信用卡',
+        'postloan':u'贷后',
+    }
+    weight_map={
+        'personinfo':0.2,
+        'jd':0.3,
+        'sp':0.2,
+        'postloan':0.2,
+        'cb':0.1,
+    }
 
     user_type = u'正常用户'
     if is_apix_basic():
         user_type = u'黑名单'
-
     ext_api = EXT_API()
     b=BaseRule()
     bd=BaseData(map_info=minfo,ext=ext_api)
-    b=JD(bd)
-    tp_rs = topResult()
-    cal_logger.info(u'【个人信息】开始计算\t'+str(user_id)+'\t'+ str(datetime.now()))
-    dl=[]
-    Dr_p=DetailRule()
-    b=PersonInfo(bd)
-    for k,v in b.min_rule_map.items():
-        v.ruleid = str(k)
-        v.value = v.value.replace('\t','<br/>')
-        v.save()
-        dl.append(v)
-    Dr_p.name=u'个人信息'
-    Dr_p.rule_id=1
-    Dr_p.score=int(b.get_score())*10
-    Dr_p.rules=dl
-    Dr_p.save()
-    cal_logger.info(u'【个人信息】计算完成\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_p.score))
-    cal_logger.info(u'【京东】开始计算\t'+str(user_id)+'\t'+str(datetime.now()))
-    Dr_jd=DetailRule()
-    dl=[]
-    b = JD(bd)
-    for k,v in b.min_rule_map.items():
-        v.ruleid = str(k)
-        v.value = v.value.replace('\t','<br/>')
-        v.save()
-        dl.append(v)
-    Dr_jd.name=u'京东'
-    Dr_jd.score=int(b.get_score())*10
-    Dr_jd.rules=dl
-    Dr_jd.rule_id=2
-    Dr_jd.save()
-    cal_logger.info(u'【京东】计算完成\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_jd.score))
-    cal_logger.info(u'【运营商】开始计算\t' + str(user_id)+'\t'+str(datetime.now()))
-    dl=[]
-    b=Sp(bd)
-    Dr_sp=DetailRule()
-    for k,v in b.min_rule_map.items():
-        v.ruleid = str(k)
-        v.value = v.value.replace('\t','<br/>')
-        v.save()
-        dl.append(v)
-    Dr_sp.name=u'运营商'
-    Dr_sp.rule_id=3
-    Dr_sp.score=int(b.get_score())*10
-    Dr_sp.rules=dl
-    Dr_sp.save()
-    cal_logger.info(u'【运营商】计算结束\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_sp.score))
-    cal_logger.info(u'【贷后】开始计算\t'+str(user_id)+'\t'+str(datetime.now()))
-    b=PostLoanNewRule(bd)
-    Dr_post=DetailRule()
-    dl=[]
-    for k,v in b.min_rule_map.items():
-        v.ruleid=str(k)        
-        v.value = v.value.replace('\t','<br/>')
-        v.save()
-        dl.append(v)
-    Dr_post.name=u'贷后'
-    Dr_post.rule_id=4
-    Dr_post.score=int(b.get_score())*10
-    Dr_post.rules=dl
-    Dr_post.save()
-    cal_logger.info(u'【贷后】计算结束\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_sp.score))
-    cal_logger.info(u'【信用卡】开始计算\t'+str(user_id)+'\t'+str(datetime.now()))
-    b = creditCard(bd)
-    Dr_credit = DetailRule()
-    dl = []
-    for k,v in b.min_rule_map.items():
-        v.ruleid=str(k)
-        v.value = v.value.replace('\t','<br/>')
-        v.save()
-        dl.append(v)
-    Dr_credit.name = u'招商银行信用卡'    
-    Dr_credit.rule_id=5
-    Dr_credit.score=int(b.get_score())*10
-    Dr_credit.rules=dl
-    Dr_credit.save()
-    cal_logger.info(u'【信用卡】计算完成\t'+str(user_id)+'\t'+str(datetime.now())+'\t'+str(Dr_credit.score))
-    print 'finish'
+    top_rule = topResult()
 
-    tp_rs.name = u'credit_score'
-    tp_rs.score=(Dr_p.score*0.2+Dr_jd.score*0.2+Dr_sp.score*0.3+Dr_post.score*0.2+Dr_credit.score*0.1)
-    print Dr_p.score,Dr_jd.score,Dr_sp.score,Dr_post.score,Dr_credit.score
-    print '得分',tp_rs.score
-    print user_type
-    tp_rs.rulelist=[Dr_p,Dr_jd,Dr_sp,Dr_credit,Dr_post]
-    tp_rs.user_type = user_type
-    tp_rs.user_id = minfo['user_id']
-    tp_rs.save()
-    cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(tp_rs.score))
+    user_id=minfo['user_id']
+    rules_detail_map={}    
+
+    cal_logger.info(u'【start calculate score】　' + str(user_id))
+    #规则计算
+    score,i=0,1
+    for k,rule in rule_map.items():
+        cal_logger.info( name_list[k] +'\t'+str(user_id)+'\t'+ str(datetime.now()) )
+        detail_rule = DetailRule()
+        b=rule(bd)
+        for rd,min_rule in b.min_rule_map.items():
+            min_rule.ruleid = str(rd)
+            min_rule.value = min_rule.value.replace('\t','<br/>')
+            min_rule.save()
+            detail_rule.rules.append(min_rule)
+        detail_rule.name = name_list[k]
+        detail_rule.rule_id = i
+        detail_rule.score = int(b.get_score())*10
+        detail_rule.save()
+        top_rule.rulelist.append(detail_rule)
+        top_rule.score+=detail_rule.score*weight_map[k]
+        cal_logger.info( name_list[k] + '\t'+ str(user_id)+'\t'+str(datetime.now())+'\t'+str(detail_rule.score))
+        #加载模型
+        rules_detail_map[k]=b
+        i+=1
+    top_rule.name = u'credit_score'
+    top_rule.user_type = user_type
+    top_rule.user_id = minfo['user_id']
+    top_rule.save()
+    cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(top_rule.score))
     print '【successful!】'
-    return tp_rs.score
 
+    #try:
+    rule_detail = RulusDetailInfo()
+    rule_detail.valid_name_info = init_valid_name_info(bd)
+    rule_detail.online_shop_info = init_online_shop_info(bd,rules_detail_map['jd'])
+    rule_detail.contact_info = init_contact_info(bd,rules_detail_map['postloan'])
+    rule_detail.sp_info = init_sp_record_info(bd, rules_detail_map['sp'],rules_detail_map['postloan'])
+    rule_detail.credit_info = {}
+    rule_detail.created_at = datetime.now()
+    rule_detail.user_id = user_id
+    rule_detail.save()   
+    #except:
+        #print '【详情保存完成】'
+    return top_rule.score

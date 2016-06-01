@@ -440,7 +440,7 @@ class JD(BaseRule):
         else:
             r.value = u'开通'
             r.score = 100
-        r.source = flag
+        r.source = str(flag)
         r.feature_val = r.value
         return r
 
@@ -450,10 +450,13 @@ class JD(BaseRule):
         r = minRule()
         r.name = u'白条额度'
         r.score = 10
+        flag=u'unknown'
         if bt:
             flag = u'totalAmount' in bt and float(bt[u'totalAmount'].replace(',','')) or 'unknown'
         r.value = str(flag)
-        if flag>=0 and flag<1000:
+        if u'unknown' in str(flag):
+            pass
+        elif flag>=0 and flag<1000:
             r.score = 30
         elif flag>=1000 and flag<2000:
             r.score = 50
@@ -474,10 +477,13 @@ class JD(BaseRule):
         r = minRule()
         r.name = u'可用白条额度'
         r.score = 10
+        flag=u'unknown'
         if bt:
             flag = u'avaliableAmount' in bt and float(bt[u'avaliableAmount'].replace(',','')) or 'unknown'
         r.value = str(flag)
-        if flag>=0 and flag<1000:
+        if u'unknown' in str(flag):
+            pass
+        elif flag>=0 and flag<1000:
             r.score = 30
         elif flag>=1000 and flag<2000:
             r.score = 50
@@ -498,10 +504,13 @@ class JD(BaseRule):
         r = minRule()
         r.name = u'已用白条额度'
         r.score = 10
+        flag=u'unknown'
         if bt:
             flag = u'consumeAmount' in bt and float(bt[u'consumeAmount'].replace(',','')) or 'unknown'
         r.value = str(flag)
-        if flag>=0 and flag<1000:
+        if u'unknown' in str(flag):
+            pass
+        elif flag>=0 and flag<1000:
             r.score = 30
         elif flag>=1000 and flag<2000:
             r.score = 50
@@ -522,6 +531,7 @@ class JD(BaseRule):
         r = minRule()
         r.name = u'一周内待还白条额度'
         r.score = 10
+        flag=''
         if bt and u'pending' in bt:
             flag = float(bt[u'pending'].replace(',',''))
         else:

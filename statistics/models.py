@@ -6,7 +6,7 @@ import datetime
 import traceback
 from mongoengine import (
     StringField, IntField, Document, DateTimeField, BooleanField,
-    ObjectIdField,ListField,ListField,ReferenceField,FloatField,NotUniqueError,
+    ObjectIdField,ListField,DictField,ReferenceField,FloatField,NotUniqueError,
     EmbeddedDocument,
 )
 
@@ -15,9 +15,10 @@ from django.conf import settings
 from rules.raw_data import minRule
 
 class RulusDetailInfo(Document):
-    valid_name_info = ObjectIdField()
-    online_shop_info = ObjectIdField()
-    contact_info = ObjectIdField()
-    sp_info = ObjectIdField()
-    credit_info = ObjectIdField()
+    valid_name_info = DictField()
+    online_shop_info = DictField()
+    contact_info = DictField()
+    sp_info = DictField()
+    credit_info = DictField()
+    created_at = DateTimeField()
     user_id = StringField()
