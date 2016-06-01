@@ -17,7 +17,7 @@ import re
 import logging
 from datetime import datetime
 from rules.util.utils import get_tb_info
-from rules.raw_data import jingdong,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
+from rules.raw_data import JdData,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
 from rules.raw_data import phonebook,cmbcc
 from rules.ext_api import EXT_API
 
