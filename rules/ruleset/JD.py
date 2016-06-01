@@ -10,8 +10,7 @@ from datetime import datetime,timedelta
 class JD(BaseRule):
     def __init__(self,basedata):
         self.address_map={}
-        self.consume_before_3mon_list=[]
-        self.consume_after_list=[]
+        self.consume_list=[]
         self.login_his_map={}
         self.address_info_map={}
         self.load_data(basedata)
@@ -36,7 +35,7 @@ class JD(BaseRule):
             30017:self.consume_ious_amount(basedata),#已用京东白条额度
             30018:self.repay_ious_amount_one_week(basedata),#一周内待还金额
             30019:self.phone_bankinfo(basedata),#绑定银行卡中有申请人手机号
-            #30012:None,#半年内是否出现消费断档
+            30020:self.grp_consume_in_harf_year(basedata),#半年内是否出现消费断档
 
         }        
     def init_consume_map(self,consume_str,basedata):
@@ -108,11 +107,11 @@ class JD(BaseRule):
 
     def load_data(self,basedata):
         three_month_before_consume = basedata.jd and basedata.jd.three_month_before_consume or ''
-        self.consume_before_3mon_list=self.init_consume_map(three_month_before_consume,basedata)
+        self.consume_list = self.init_consume_map(three_month_before_consume,basedata)
 
         three_month_consume = basedata.jd and basedata.jd.three_month_consume or ''
-        self.consume_after_list = self.init_consume_map(three_month_consume,basedata)
-
+        self.consume_list.extend(self.init_consume_map(three_month_consume,basedata))
+         
         loginhistory = basedata.jd and basedata.jd.login_history or ''
         self.login_his_map= self.init_login_history_list(loginhistory)
 
@@ -210,8 +209,7 @@ class JD(BaseRule):
 
     #半年内消费金额
     def get_consume_amount_harf_year(self):
-        consume_list=self.consume_after_list
-        consume_list.extend(self.consume_before_3mon_list)
+        consume_list=self.consume_list
         amount=0
         value = []
         for it in consume_list:
@@ -238,8 +236,7 @@ class JD(BaseRule):
         return r
     #半年内消费次数
     def get_consume_times_harf_year(self):
-        consume_list=self.consume_after_list
-        consume_list.extend(self.consume_before_3mon_list)
+        consume_list=self.consume_list
         times = len(consume_list)
         r = minRule()
         r.score = 0
@@ -388,10 +385,27 @@ class JD(BaseRule):
         if value:
             r.score=100
         return r
-    #半年内出现消费断档的天数
+    #半年内相邻两次消费时间间隔
     def grp_consume_in_harf_year(self,basedata):
-        pass
-
+        r=minRule()
+        r.name = u'半年内平均消费时间间隔'
+        r.score = 10
+        consume_list = self.consume_list
+        #排序
+        consume_list.sort(key=lambda dic:dic['time'])
+        days=0
+        for i in range(0,len(consume_list)-1):
+            v,vnext = consume_list[i]['time'],consume_list[i+1]['time']
+            days += (vnext-v).days
+            r.value += '-'.join([str(v) for k,v in consume_list[i+1].items()])+'\t'
+        avg=days/6
+        if avg>40:
+            r.score = 20
+        else:
+            r.score = 100-avg*2
+        r.feature_val=str(avg)
+        r.source = str(days)
+        return r  
     #邮箱认证
     def valid_email(self,basedata):
         ispass=basedata.jd and basedata.jd.email_verified or u'unknown'
@@ -421,7 +435,7 @@ class JD(BaseRule):
         r.score = 30
         if isopen:
             flag = u'isOpen' in isopen and isopen[u'isOpen'] or False
-        if flag:
+        if not flag:
             r.value = u'unknown'
         else:
             r.value = u'开通'
@@ -508,19 +522,23 @@ class JD(BaseRule):
         r = minRule()
         r.name = u'一周内待还白条额度'
         r.score = 10
-        if bt:
-            flag = u'pending' in bt and float(bt[u'pending'].replace(',','')) or 'unknown'
-        r.value = str(flag)
-        if flag>=0 and flag<1000:
-            r.score = 30
-        elif flag>=1000 and flag<2000:
-            r.score = 50
-        elif flag>=2000 and flag<3000:
-            r.score = 60
-        elif flag>=4000 and flag<5000:
-            r.score = 80
+        if bt and u'pending' in bt:
+            flag = float(bt[u'pending'].replace(',',''))
         else:
+            flag=u'unknown'
+        r.value = str(flag)
+        if u'unknown' in str(flag):
+            pass
+        elif flag>=0 and flag<1000:
             r.score = 100
+        elif flag>=1000 and flag<2000:
+            r.score = 70
+        elif flag>=2000 and flag<3000:
+            r.score = 50
+        elif flag>=4000 and flag<5000:
+            r.score = 40
+        else:
+            r.score = 10
         r.source = str(flag)
         r.feature_val = str(flag)
         return r
@@ -555,7 +573,7 @@ class JD(BaseRule):
         address = min_rmap[30008].score*0.03 #收货地址个数
         address_phone_in_contact = min_rmap[30009].score*0.1 #收件人电话号码出现在通讯录中
         address_phone_in_sms = min_rmap[30010].score*0.1 #收件人出现下短信中
-        address_phone_in_call = min_rmap[30011].score*0.1 #收件人出现在通话记录中
+        address_phone_in_call = min_rmap[30011].score*0.07 #收件人出现在通话记录中
         owner_phone_location_in_address = min_rmap[30012].score*0.07 #申请人手机归属地出现在收货地址中
 
         valid_email = min_rmap[30013].score*0.02 #邮箱验证
@@ -566,6 +584,7 @@ class JD(BaseRule):
         repay_ious_one_week = min_rmap[30018].score*0.02 #一周内待还金额
         phone_bankinfo = min_rmap[30019].score*0.02 #绑定银行卡中有申请人手机号
 
+        grp_consume_in_harf_year=min_rmap[30020].score*0.03 #半年内平均消费时间间隔     
 
         score=valid_name+valid_phone+grade+avg_login_days
         score+=consume_amount+consume_times+owner_name_in_address
@@ -574,7 +593,7 @@ class JD(BaseRule):
 
         score+=valid_email+open_ious+ious_amount
         score+=can_use_ious_amount+consume_ious_amount
-        score+=repay_ious_one_week+phone_bankinfo
+        score+=repay_ious_one_week+phone_bankinfo+grp_consume_in_harf_year
 
         return score  
 
