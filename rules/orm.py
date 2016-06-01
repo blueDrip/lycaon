@@ -6,7 +6,7 @@ def jd_orm(cnd={}):
     if not cnd:
         return
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('jingdong').find_one(cnd)
+    c=d.get_collection('jingdong').find_one(cnd) or {}
     jd=JdData()
 
     jd.safe_priority = 'safe_priority' in c and c['safe_priority'] or ''
