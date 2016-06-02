@@ -122,6 +122,20 @@ def init_online_shop_info(basedata,jd):
                     u'source' : u'京东',#来源
                 })
                 flag_list.append(it['value'])
+
+    jd_addr_detail_list_default = [{
+        u'host_goods' : u'unknown',
+        u'addr_in' : u'unknown',
+        u'addr' : u'unknown',
+        u'phone' : u'unknown',
+        u'tel_phone' : u'unknown',
+        u'email' : u'unknown',
+        u'first_send_time' : u'unknown',
+        u'last_send_time' : u'unknown',
+        u'order_nums' : u'unknown',
+        u'consume_amount' : u'unknown',
+        u'source' : u'京东'
+    }]
     tb_addr_detail_list = [{
         u'host_goods' : u'unknown',
         u'addr_in' : u'unknown',
@@ -158,22 +172,22 @@ def init_online_shop_info(basedata,jd):
         u'same_with_lovelif' : u'unknown',
     }
     
-    jd_addr_info = {
-        u'userphone_in_addr' : jd and jd.min_rule_map[30007].feature_val or u'unknown',#收获人中是否有申请人
-        u'addr_diff_nums' : jd and jd.min_rule_map[30008].feature_val or u'unknown',#不同的收货地址个数
-        u'phone_in_contact' : jd and jd.min_rule_map[30009].feature_val or u'unknown',#收件人出现在通讯录中
-        u'contact_sms' : jd and jd.min_rule_map[30010].feature_val or u'unknown',#与收件人有短信联系
-        u'ul_in_addr': jd and jd.min_rule_map[30012].feature_val or u'unknown',#申请用户手机归属地出现在收货地址中
-        u'contact_call' : jd and jd.min_rule_map[30011].feature_val or u'unknown' #与收件人有电话联系
-    }
-    tb_addr_info={
-        u'userphone_in_addr' : u'unknown',
-        u'addr_diff_nums' : u'unknown',
-        u'phone_in_contact' : u'unknown',
-        u'contact_sms' : u'unknown',
-        u'ul_in_addr': u'unknown',
-        u'contact_call' : u'unknown'
-    }
+    #jd_addr_info = {
+    #    u'userphone_in_addr' : jd and jd.min_rule_map[30007].feature_val or u'unknown',#收获人中是否有申请人
+    #    u'addr_diff_nums' : jd and jd.min_rule_map[30008].feature_val or u'unknown',#不同的收货地址个数
+    #    u'phone_in_contact' : jd and jd.min_rule_map[30009].feature_val or u'unknown',#收件人出现在通讯录中
+    #    u'contact_sms' : jd and jd.min_rule_map[30010].feature_val or u'unknown',#与收件人有短信联系
+    #    u'ul_in_addr': jd and jd.min_rule_map[30012].feature_val or u'unknown',#申请用户手机归属地出现在收货地址中
+    #    u'contact_call' : jd and jd.min_rule_map[30011].feature_val or u'unknown' #与收件人有电话联系
+    #}
+    #tb_addr_info={
+    #    u'userphone_in_addr' : u'unknown',
+    #    u'addr_diff_nums' : u'unknown',
+    #    u'phone_in_contact' : u'unknown',
+    #    u'contact_sms' : u'unknown',
+    #    u'ul_in_addr': u'unknown',
+    #    u'contact_call' : u'unknown'
+    #}
     
 
     map_info={}
@@ -227,7 +241,8 @@ def init_online_shop_info(basedata,jd):
                 u'host_goods':u'---'#收货人
             })
             ll.append(k)
-    tb_order_info={
+
+    jd_order_default_info=[{
         u'order_date':u'unknown',
         u'goods_name':u'unknown',
         u'goods_nums':u'unknown',
@@ -235,7 +250,20 @@ def init_online_shop_info(basedata,jd):
         u'pay_ways': u'unknown',
         u'addr': u'unknown',
         u'host_goods':u'unknown'
-    }
+    }]
+
+    tb_order_info = [{}]    
+
+
+    tb_order_default_info=[{
+        u'order_date':u'unknown',
+        u'goods_name':u'unknown',
+        u'goods_nums':u'unknown',
+        u'amount':u'unknown',
+        u'pay_ways': u'unknown',
+        u'addr': u'unknown',
+        u'host_goods':u'unknown'
+    }]
     #汇集
     info = {
         u'base_info' : {    #基本信息
@@ -256,13 +284,9 @@ def init_online_shop_info(basedata,jd):
             u'tb':tb_consume_info
         },
         u'host_goods': {    #收件人分析
-            u'jd':jd_addr_detail_list,
+            u'jd':jd_addr_detail_list or jd_addr_detail_list_default,
             u'tb':tb_addr_detail_list
         },
-        #u'addr':{   #
-        #    u'jd':jd_addr_info,
-        #    u'tb':tb_addr_info
-        #},
         u'graph':{  #图表
             u'jd':{
                 u'data1':stage_map_info,
@@ -274,8 +298,8 @@ def init_online_shop_info(basedata,jd):
             }
         },
         u'order_record':{   #订单记录
-            u'jd': jd_order_info,
-            u'tb': tb_order_info
+            u'jd': jd_order_info or jd_order_default_info,
+            u'tb': tb_order_info or tb_order_default_info,
         }
     }
     return info
@@ -298,10 +322,16 @@ def init_contact_info(basedata,postloan):
         lcmap[city]=lcmap[city]*100/clen
     #排序
     tup=sorted(lcmap.items(), key=lambda lcmap: lcmap[1],reverse=True)
-    same_with_pl_info = {
-        u'ul_radio' :{ it[0]:'%.2f'%(it[1]*1.0/clen)++str('%') for it in tup } 
-    }
+    same_with_pl_info = []
+    for it in tup:
+        same_with_pl_info.append({
+            it[0]:'%.2f'%(it[1]*1.0/clen)+str('%')
+        })
+    same_with_pl_default_info=[{
+        'unknow':'unknown'
+    }]
 
+    #亲属
     relative_info = []
     contact_info = []
     relatives_map={}
@@ -320,6 +350,14 @@ def init_contact_info(basedata,postloan):
             relative_info.append(temp_c)
         else:
             contact_info.append(temp_c)
+    #default
+    contact_default_info=[{
+        u'name':u'unknown',
+        u'phone':u'unknown',
+        u'phone_location':u'unknown',
+        u'remarks':u'unknown'
+    }]
+
     clist=[]
     clist_none=[]
 
@@ -329,14 +367,12 @@ def init_contact_info(basedata,postloan):
             clist.append(c)
         else:
             clist_none.append(c)
-
     clist.extend( clist_none )
     info = {
-        u'part_contatcs':same_with_pl_info,#通讯录
-        u'relatives' : relative_info,#亲属
-        u'view_contacts' : clist #通讯录总览
+        u'part_contatcs':same_with_pl_info or same_with_pl_default_info,#通讯录
+        u'relatives' : relative_info or contact_default_info,#亲属
+        u'view_contacts' : clist or contact_default_info #通讯录总览
     }
-
     return info
 
 '''通话记录'''
@@ -403,6 +439,18 @@ def init_sp_record_info(basedata,sp,p):
         return dic[u'call_duration'],dic[u'call_times'],dic[u'call_out']
     call_info.sort(key=_key_of_sort,reverse=True)
 
+    call_default_info=[{
+        u'phone_in_contact':u'unknown',
+        u'phone':u'unknown',
+        u'call_duration' : u'unknown',
+        u'call_times' : u'unknown',
+        u'phone_location' : u'unknown',
+        u'call_in' : u'unknown',
+        u'call_out' : u'unknown'
+    }]
+
+
+
     #net_list=[]
     #for net in basedata and basedata.sp_net or []:
     #    net_list.append(net.start_time)
@@ -448,18 +496,25 @@ def init_sp_record_info(basedata,sp,p):
         basic_info_month.append({
             u'month' : key,#月份
             u'callout_duration':str(v[u'call_out']/60),#主叫时间
-            u'callin_duration' :str(v[u'call_in']/60),#被叫时间
+            u'calling_duration' :str(v[u'call_in']/60),#被叫时间
             u'sms_nums' : str(v[u'message']),#短信数量
             u'call_bill' : str(v[u'consume']),#话费消费
         })
+    basic_info_month_default=[{
+        u'month':u'unknown',
+        u'callout_duration' : u'unknown',
+        u'calling_duration' : u'unknown',
+        u'sms_nums' : u'unknown',
+        u'call_bill' : u'unknown',
+    }]
 
     info = {
         u'basic_one' : basic_info,#基本信息
         u'basic_two' : no_arrearage_info,#基本信息
-        u'call_record' : call_info,#通话记录
+        u'call_record' : call_info or call_default_info,#通话记录
         u'person_closeness' : contact_info,#人际交往密切程度
         u'consume_month' : consume_level_info,#近期月均消费水平
-        u'sp_consume_month' : basic_info_month,#运营商月消费
+        u'sp_consume_month' : basic_info_month or basic_info_month_default,#运营商月消费
     }
 
     return info
