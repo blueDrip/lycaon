@@ -379,7 +379,8 @@ def init_contact_info(basedata,postloan):
         })
     if len(same_with_pl_info)<=1:
         same_with_pl_info.append({
-            '---':'---'
+            '1':'---',
+            '2':'---'
         })
     #亲属
     relative_info = [
