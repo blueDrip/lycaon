@@ -20,8 +20,9 @@ class PersonInfo(BaseRule):
         r = minRule()
         age = basedata.idcard_info['age']
         r.source=str(age)
+        r.score = 10
         if u'unknow' == age:
-            r.score = 5
+            r.score = 10
         elif age<=18:
             r.score=10
         elif age>18 or age<=25:
@@ -38,7 +39,7 @@ class PersonInfo(BaseRule):
         sex = basedata.idcard_info['sex']
         r=minRule()
         r.source=sex
-        r.score=0
+        r.score = 10
         r.value=sex
         if sex==u'男':
             r.score=80
@@ -54,7 +55,7 @@ class PersonInfo(BaseRule):
         r.value=edu
         r.source=edu
         r.name=u'教育程度'
-        r.score=0
+        r.score=10
         if edu==u'本科':
             r.score=80
         elif edu in [u'研究生',u'博士']:
@@ -70,15 +71,14 @@ class PersonInfo(BaseRule):
         r=minRule() 
         r.value=home_location
         r.name=u'老家住址(市/县)'
-        r.score = 20
+        r.score = 10
         if u'县' in home_location:
             r.score = 60
             r.source=u'县'
         elif u'市' in home_location:
             r.score = 80
             r.source=u'市'
-        r.feature_val = r.source
-        r.score=30
+        r.feature_val = home_location
         return r
     def get_marry_status(self,basedata):
         r=minRule()
@@ -86,7 +86,7 @@ class PersonInfo(BaseRule):
         r.value = marr
         r.name=u'是否结婚'
         r.source = marr
-        r.score = 40
+        r.score = 10
         if u'unknow' == marr:
             r.score = 40
             r.feature_val = marr
@@ -125,6 +125,7 @@ class PersonInfo(BaseRule):
     def is_samephoto_with_idcard(self,basedata):
         idsame = basedata.user and basedata.user.is_certification or 'unknow'
         r=minRule()
+        r.score = 10
         r.name=u'是否身份验证'
         if idsame==1:
             r.source = u'验证通过'
