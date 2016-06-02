@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>规则详情</title>
+<style>
+
+body {
+    width: 80%;
+    margin: 40px auto;
+    font-family: 'trebuchet MS', 'Lucida sans', Arial;
+    font-size: 14px;
+    color: #444;
+}
+
+table {
+    *border-collapse: collapse; /* IE7 and lower */
+    border-spacing: 0;
+    width: 100%;    
+}
+
+/*----------------------*/
+
+.zebra td, .zebra th {
+    padding: 10px;
+    border-bottom: 1px solid #f2f2f2;    
+}
+
+.aa {
+    background: #f5f5f5;
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset; 
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        
+}
+.zebra th {
+    text-align: left;
+    text-shadow: 0 1px 0 rgba(255,255,255,.5); 
+    border-bottom: 1px solid #ccc;
+    background-color: #eee;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#eee));
+    background-image: -webkit-linear-gradient(top, #f5f5f5, #eee);
+    background-image:    -moz-linear-gradient(top, #f5f5f5, #eee);
+    background-image:     -ms-linear-gradient(top, #f5f5f5, #eee);
+    background-image:      -o-linear-gradient(top, #f5f5f5, #eee); 
+    background-image:         linear-gradient(top, #f5f5f5, #eee);
+}
+
+.zebra th:first-child {
+    -moz-border-radius: 6px 0 0 0;
+    -webkit-border-radius: 6px 0 0 0;
+    border-radius: 6px 0 0 0;  
+}
+
+.zebra th:last-child {
+    -moz-border-radius: 0 6px 0 0;
+    -webkit-border-radius: 0 6px 0 0;
+    border-radius: 0 6px 0 0;
+}
+
+.zebra th:only-child{
+    -moz-border-radius: 6px 6px 0 0;
+    -webkit-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
+}
+
+.zebra tfoot td {
+    border-bottom: 0;
+    border-top: 1px solid #fff;
+    background-color: #f1f1f1;  
+}
+
+.zebra tfoot td:first-child {
+    -moz-border-radius: 0 0 0 6px;
+    -webkit-border-radius: 0 0 0 6px;
+    border-radius: 0 0 0 6px;
+}
+
+.zebra tfoot td:last-child {
+    -moz-border-radius: 0 0 6px 0;
+    -webkit-border-radius: 0 0 6px 0;
+    border-radius: 0 0 6px 0;
+}
+
+.zebra tfoot td:only-child{
+    -moz-border-radius: 0 0 6px 6px;
+    -webkit-border-radius: 0 0 6px 6px
+    border-radius: 0 0 6px 6px
+}
+
+.a1{
+    background-color:white;
+}  
+.t3{
+    background-color:white;
+}
+</style>
+</head>
+
+<body>
+<table class = 'zebra'>
+    <tr><td><h2>实名认证</h2></td></tr>
+	{% for k,v in rs.valid_name_info.items %}
+        {% for kk,vv in v.items %}
+          <tr>
+            <td>{{ kk }}</td>
+            <td>{{ vv }}</td>
+          </tr>
+        {% endfor %}
+	{% endfor %}
+
+    <tr><td><h2>电商</h2></td></tr>
+    <tr><td><h3>基本信息</h3></td></tr>
+    {% for it in rs.online_shop_info.base_info %}
+        <tr>
+          {% for k,v in it.items %}
+            <td>{{ v }}</td>  
+          {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr><td>
+        <br/>
+        <br/>
+    </td></tr>
+    {% for k,v in rs.online_shop_info.baitiao_info.items %}
+        {% for kk,vv in v.items %}    
+          <tr>
+            <td>{{ kk }}</td>
+            <td>{{ vv }}</td>
+          </tr> 
+        {% endfor %}
+    {% endfor %}
+
+    <tr><td><h3>消费统计</h3></td></tr>
+    {% for it in rs.online_shop_info.consume_record %}
+        <tr>
+            {% for k,v in it.items %}
+               <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor%}
+    <tr><td><h3>京东收货人分析</h3></td></tr>
+    {% for it in rs.online_shop_info.host_goods.jd %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor %}
+
+    <tr><td><h3>淘宝收货人分析</h3></td></tr>
+    {% for it in rs.online_shop_info.host_goods.tb %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor %}
+
+   <tr><td><h3>京东订单记录</h3></td></tr> 
+   {% for it in rs.online_shop_info.order_record.jd %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+   {% endfor%}
+
+   <tr><td><h3>淘宝订单记录</h3></td></tr>
+   {% for it in rs.online_shop_info.order_record.tb %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+   {% endfor%}
+
+    <tr><td><h2>运营商</h2></td></tr>
+    <tr><td><h3>基本信息</h3></td></tr>
+    {% for k,v in rs.sp_info.basic_info.items %}
+        {% for kk,vv in v.items %}
+            <tr>
+                <td>{{ kk }}</td>
+                <td>{{ vv }}</td>
+            </tr>
+        {% endfor%}
+    {% endfor%}
+
+    <tr><td><h3>关键指标</h3></td></tr>
+    {% for k,v in rs.sp_info.key_level.items %}
+        {% for kk,vv in v.items %}
+            <tr>
+                <td>{{ kk }}</td>
+                <td>{{ vv }}</td>
+            </tr>
+        {% endfor%}
+    {% endfor%}
+
+    <tr><td><h3>人际交往密切程度</h3></td></tr>
+    {% for k,v in rs.sp_info.person_closeness.items %}
+        {% for kk,vv in v.items %}
+            <tr>
+                <td>{{kk}}</td>            
+                <td>{{vv}}</td>
+            </tr>
+        {% endfor %}
+    {% endfor%}
+
+    <tr><td><h3>近期消费水平</h3></td></tr>
+    {% for k,v in rs.sp_info.consume_month.items %}
+        {% for kk,vv in v.items%}   
+            <tr>
+                <td>{{ kk }}</td>
+                <td>{{ vv }}</td>
+            </tr>
+        {% endfor %}
+    {% endfor%}
+    <tr><td><h3>月消费汇总</h3></td></tr>
+    {% for it in rs.sp_info.sp_consume_month %}
+        <tr>
+            {% for k,v in it.items %}
+                <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr><td><h3>通话记录</h3></td></tr>
+    {% for it in rs.sp_info.call_info %}
+        <tr>    
+            {% for k,v in it.items%}
+               <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor%}
+
+    <tr><td><h2>通讯录</h2></td></tr>
+    <tr><td><h3>联系人归属地占比</h3></td></tr>
+    {% for it in rs.contact_info.part_contatcs %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor%}
+
+    <tr><td><h3>亲属号码（推测）</h3></td></tr>    
+    {% for it in rs.contact_info.relatives %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor %}
+
+    <tr><td><h3>通讯录总览（备注非空的号码置前）</h3></td></tr>
+    {% for it in rs.contact_info.view_contacts %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor%}
+
+<table>
+<br>
+    
+
+</body>
+</html>
