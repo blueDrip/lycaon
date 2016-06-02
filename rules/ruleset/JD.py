@@ -20,10 +20,10 @@ class JD(BaseRule):
             30002:self.is_valid_phone(basedata),#京东手机验证
             30003:self.get_huiyuanjibie(basedata),#京东会员等级
             30004:self.get_avg_login_integer_days(basedata),#京东半年内平均登陆时间间隔(登陆时间/次数)
-            30005:self.get_consume_amount_harf_year(),#京东半年内消费金额
-            30006:self.get_consume_times_harf_year(),#半年内消费次数
+            30005:self.get_consume_amount_harf_year(basedata),#京东半年内消费金额
+            30006:self.get_consume_times_harf_year(basedata),#半年内消费次数
             30007:self.owner_name_in_address(basedata),#收件人中有申请人
-            30008:self.get_address(),#收货地址个数
+            30008:self.get_address(basedata),#收货地址个数
             30009:self.address_phone_in_contact(basedata),#收件人电话号码出现在通讯录中
             30010:self.address_phone_in_sms(basedata),#收件人出现下短信中
             30011:self.address_phone_in_call(basedata),#收件人出现在通话记录中
@@ -37,7 +37,17 @@ class JD(BaseRule):
             30019:self.phone_bankinfo(basedata),#绑定银行卡中有申请人手机号
             30020:self.grp_consume_in_harf_year(basedata),#半年内是否出现消费断档
 
-        }        
+        }
+
+    #基本验证
+    def is_basic(self,basedata,r):
+        if not basedata.jd:
+            r.feature_val = u'unknown'
+            r.source = u'unknown'
+            r.value = u'unknown'
+            r.score = 10
+            return r
+
     def init_consume_map(self,consume_str,basedata):
         cl_str = consume_str.strip('##\*\*\*##').replace(u'￥','')
         cl = []
@@ -121,12 +131,10 @@ class JD(BaseRule):
     def is_valid_name(self,basedata):
         r=minRule()
         ispass=basedata.jd and basedata.jd.indentify_verified or u'unknown'
-        r.score=0
+        r.score=10
         r.source=ispass
         r.name=u'身份证认证'
-        if u'unknow' in ispass:
-            r.value = u'unknow'
-        elif u'验证通过' in ispass:
+        if u'验证通过' in ispass:
             r.value=u'验证通过'
             r.score=100
         elif u'验证失败' in ispass:
@@ -134,10 +142,11 @@ class JD(BaseRule):
             r.score=70
         elif u'未验证' in ispass:
             r.value=u'未验证'
-            r.score=20
+            r.score=30
         else:
             r.value=u'结果未知'
         r.feature_val = r.value
+        self.is_basic(basedata,r)
         return r
     '''手机验证'''
     def is_valid_phone(self,basedata):
@@ -146,9 +155,7 @@ class JD(BaseRule):
         r.score=0
         r.name=u'手机验证'        
         r.source=ispass
-        if u'unknow' in ispass:
-            r.value = u'unknow'
-        elif u'验证通过' in ispass:
+        if u'验证通过' in ispass:
             r.value=u'验证通过'
             r.score=100
         elif u'验证失败' in ispass:
@@ -160,6 +167,7 @@ class JD(BaseRule):
         else:
             r.value=u'结果未知'
         r.feature_val = r.value
+        self.is_basic(basedata,r)
         return r
     '''会员级别'''
     def get_huiyuanjibie(self,basedata):
@@ -169,15 +177,14 @@ class JD(BaseRule):
         r.score=0
         r.source=grade
         r.name=u'会员级别'
-        if u'unknow' in grade:
-            r.score = 0
-        elif u'钻石会员'==grade:
+        if u'钻石会员'==grade:
             r.score=100
         elif u'金牌会员'==grade:
             r.score=80
         elif u'银牌会员'==grade:
             r.score=60
         r.feature_val = grade
+        self.is_basic(basedata,r)
         return  r
     #京东平均登陆时间间隔(登陆时间/次数)
     def get_avg_login_integer_days(self,basedata):
@@ -196,7 +203,7 @@ class JD(BaseRule):
         r.name=u'平均登陆时间登陆间隔'
         r.feature_val = str(int(avg_days))+u'天/次'
         r.source = str(inter)
-        r.score=100
+        r.score=10
         if avg_days>0 and avg_days<=5:
             r.score=100
         elif avg_days>5 and avg_days<=15:
@@ -205,10 +212,11 @@ class JD(BaseRule):
             r.score=60
         elif avg_days>30:
             r.score=40
+        self.is_basic(basedata,r)
         return r
 
     #半年内消费金额
-    def get_consume_amount_harf_year(self):
+    def get_consume_amount_harf_year(self,basedata):
         consume_list=self.consume_list
         amount=0
         value = []
@@ -233,9 +241,11 @@ class JD(BaseRule):
             r.score=80
         elif amount>3000:
             r.score=100
+        self.is_basic(basedata,r)
+        r.source = str(amount)
         return r
     #半年内消费次数
-    def get_consume_times_harf_year(self):
+    def get_consume_times_harf_year(self,basedata):
         consume_list=self.consume_list
         times = len(consume_list)
         r = minRule()
@@ -251,9 +261,11 @@ class JD(BaseRule):
             r.score=80
         elif times>30:
             r.score=100
+        self.is_basic(basedata,r)
+        r.source = str(times)
         return r
     #不同的收货地址个数
-    def get_address(self):
+    def get_address(self,basedata):
         r=minRule()
         ss=''
         count_mp={}
@@ -273,6 +285,7 @@ class JD(BaseRule):
             r.score=70
         r.source=str( len(count_mp.keys()))
         r.feature_val = str(count_address)+u'个'
+        self.is_basic(basedata,r)
         return r
 
     #收件人电话号码出现在通讯录中
@@ -298,6 +311,7 @@ class JD(BaseRule):
             r.value = '\t'.join(value)
             r.score=100
             r.feature_val = u'出现个数:%s'%(str(len(value)))
+        self.is_basic(basedata,r)
         return r
     #收件人号码出现下短信中
     def address_phone_in_sms(self,basedata):
@@ -321,6 +335,8 @@ class JD(BaseRule):
             r.value = '\t'.join(value)
             r.score=100
             r.feature_val = u'出现个数:%s'%(str(len(value)))
+
+        self.is_basic(basedata,r)
         return r
     #收件人号码出现在通话记录中
     def address_phone_in_call(self,basedata):
@@ -344,6 +360,8 @@ class JD(BaseRule):
             r.score=100
             r.value='\t'.join(value) 
             r.feature_val = u'有%s联系'%(str(len(value)))
+
+        self.is_basic(basedata,r)
         return r
 
     #手机归属地中出现在收货地址中
@@ -365,6 +383,8 @@ class JD(BaseRule):
         if value:
             r.score=100
             r.feature_val = u'出现%s个'%(str(len(value)))
+
+        self.is_basic(basedata,r)
         return r
 
     #收件人中有申请人
@@ -384,6 +404,7 @@ class JD(BaseRule):
         r.source = str(len(value))
         if value:
             r.score=100
+        self.is_basic(basedata,r)
         return r
     #半年内相邻两次消费时间间隔
     def grp_consume_in_harf_year(self,basedata):
@@ -405,6 +426,8 @@ class JD(BaseRule):
             r.score = 100-avg*2
         r.feature_val=str(avg)
         r.source = str(days)
+
+        self.is_basic(basedata,r)
         return r  
     #邮箱认证
     def valid_email(self,basedata):
@@ -424,6 +447,7 @@ class JD(BaseRule):
             r.value=u'未验证'
             r.score=20
         r.feature_val = r.value
+        self.is_basic(basedata,r)
         return r
 
     #是否开通白条
@@ -442,6 +466,7 @@ class JD(BaseRule):
             r.score = 100
         r.source = str(flag)
         r.feature_val = r.value
+        self.is_basic(basedata,r)
         return r
 
     #白条额度
@@ -468,6 +493,7 @@ class JD(BaseRule):
             r.score = 100
         r.source = str(flag)
         r.feature_val = str(flag)
+        self.is_basic(basedata,r)
         return r                
 
     #可用京东白条额度
@@ -495,6 +521,7 @@ class JD(BaseRule):
             r.score = 100
         r.source = str(flag)
         r.feature_val = str(flag)
+        self.is_basic(basedata,r)
         return r
 
     #已用京东白条额度
@@ -522,6 +549,7 @@ class JD(BaseRule):
             r.score = 100
         r.source = str(flag)
         r.feature_val = str(flag)
+        self.is_basic(basedata,r)
         return r
 
     #一周内待还金额
@@ -569,6 +597,7 @@ class JD(BaseRule):
             r.score = 100
             r.feature_val = u'有'
         r.source = r.feature_val
+        self.is_basic(basedata,r)
         return r
 
     def get_score(self):

@@ -20,6 +20,7 @@ from rules.ruleset.creditCard import creditCard
 from rules.models import BaseRule
 from rules.base import BaseData
 from rules.ext_api import EXT_API
+from rules.util.utils import get_tb_info
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount
 from rules.raw_data import JdData,liantong,yidong
 from rules.raw_data import phonebook,cmbcc
@@ -28,6 +29,9 @@ from statistics.models import RulusDetailInfo
 from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
 cal_logger = logging.getLogger('django.cal')
 cal_logger.setLevel(logging.INFO)
+
+base_logger = logging.getLogger('django.rules')
+base_logger.setLevel(logging.INFO)
 
 def is_apix_basic(query_map={}):
     api_key = 'a8bbd3a565b04acf600e6b053beffea2'
@@ -133,26 +137,38 @@ def cal(minfo = {
 
     cal_logger.info(u'【start calculate score】　' + str(user_id))
     #规则计算
-    score,i=0,1
+    i=1
     for k,rule in rule_map.items():
         cal_logger.info( name_list[k] +'\t'+str(user_id)+'\t'+ str(datetime.now()) )
         detail_rule = DetailRule()
-        b=rule(bd)
-        for rd,min_rule in b.min_rule_map.items():
-            min_rule.ruleid = str(rd)
-            min_rule.value = min_rule.value.replace('\t','<br/>')
-            min_rule.save()
-            detail_rule.rules.append(min_rule)
-        detail_rule.name = name_list[k]
-        detail_rule.rule_id = i
-        detail_rule.score = int(b.get_score())*10
-        detail_rule.save()
+        b=None
+        try:
+            b=rule(bd)
+            for rd,min_rule in b.min_rule_map.items():
+                min_rule.ruleid = str(rd)
+                min_rule.value = min_rule.value.replace('\t','<br/>')
+                min_rule.save()
+                detail_rule.rules.append(min_rule)
+            detail_rule.name = name_list[k]
+            detail_rule.rule_id = i
+            detail_rule.score = int(b.get_score())*10
+            detail_rule.save()
+        except:
+            detail_rule.name = name_list[k]
+            detail_rule.rule_id = i
+            detail_rule.score = 0
+            detail_rule.save()
+            base_logger.error(get_tb_info())
+            base_logger.error("【error】"  + ",uid=" + user_id + ",datetime="+str(datetime.now()))
+            print 'an cal error happend'
+
         top_rule.rulelist.append(detail_rule)
         top_rule.score+=detail_rule.score*weight_map[k]
         cal_logger.info( name_list[k] + '\t'+ str(user_id)+'\t'+str(datetime.now())+'\t'+str(detail_rule.score))
         #加载模型
         rules_detail_map[k]=b
         i+=1
+
     top_rule.name = u'credit_score'
     top_rule.user_type = user_type
     top_rule.user_id = minfo['user_id']

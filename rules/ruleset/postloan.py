@@ -251,7 +251,7 @@ class PostLoanNewRule(BaseRule):
         self.load_data(basedata)
 
         self.min_rule_map={
-            50001:self.get_contact_len(),#通讯录长度
+            50001:self.get_contact_len(basedata),#通讯录长度
             50002:self.parents_len_in_contact(basedata),#父母个数
             50003:self.parents_location_same_with_idCard(basedata),#.父母在老家的个数比例
             50004:self.get_parent_call_duration(basedata),#父母通话时长
@@ -261,6 +261,16 @@ class PostLoanNewRule(BaseRule):
             50008:self.get_relative_call_duration(basedata),#亲属的通话时长
             50009:self.get_relative_call_times(basedata),#亲属通话次数
         }
+
+    #基本验证
+    def is_basic(self,basedata,r):
+        if not basedata.ucl:
+            r.feature_val = u'unknown'
+            r.source = u'unknown'
+            r.value = u'unknown'
+            r.score = 10
+            return r
+
 
     def init_post_loan_list(self,conf_file):
         post_loan_list=[]
@@ -337,7 +347,7 @@ class PostLoanNewRule(BaseRule):
                     self.r_relative_map[c.phone]=[c.name+'('+smap[c.source]+')'+":"+c.phone_location ]
 
 
-    def get_contact_len(self):
+    def get_contact_len(self,basedata):
         c=self.post_loan_good_contacts
         r=minRule()
         r.score=0
@@ -356,6 +366,7 @@ class PostLoanNewRule(BaseRule):
         r.name=u'通讯录长度'
         r.source = str(clen)
         r.feature_val = str(clen)
+        self.is_basic(basedata,r)
         return r
 
     def get_parent_call_duration(self,bd):
@@ -405,6 +416,7 @@ class PostLoanNewRule(BaseRule):
         r.name=u'父母通话时间'
         r.source = str(fd+md+hd)
         r.feature_val = str(fd+md+hd)+'s'
+        self.is_basic(bd,r)
         return r
 
     def get_score_by_duration(self,duration):
@@ -475,6 +487,7 @@ class PostLoanNewRule(BaseRule):
         r.name=u'父母通话次数'
         r.source = str(ft+mt+ht)
         r.feature_val = str(ft+mt+ht)+u'次'
+        self.is_basic(bd,r)
         return r
 
     def get_days_call_parents(self,bd):
@@ -511,6 +524,7 @@ class PostLoanNewRule(BaseRule):
         r.name=u'亲属通话次数'
         r.source = str(rt)
         r.feature_val = str(rt)+u'次'
+        self.is_basic(bd,r)
         return r
 
     def get_relative_call_duration(self,bd):
@@ -543,6 +557,7 @@ class PostLoanNewRule(BaseRule):
         r.name=u'亲属通话时间'
         r.source = str(duration)
         r.feature_val = str(duration)+'s'
+        self.is_basic(bd,r)
         return r
     #父母长度在老家比例
     def parents_location_same_with_idCard(self,bd):
@@ -574,6 +589,7 @@ class PostLoanNewRule(BaseRule):
         elif count>3:
             r.score = 100
         r.feature_val = str(count)+u'个'
+        self.is_basic(bd,r)
         return r
 
     def relative_location_same_with_idcard(self,bd):
@@ -598,6 +614,7 @@ class PostLoanNewRule(BaseRule):
             r.score = 100
         r.source = str(count)
         r.feature_val = str(count)+u'个'
+        self.is_basic(bd,r)
         return r
     def parents_len_in_contact(self,bd):
         pmap=self.father_mp
@@ -617,6 +634,7 @@ class PostLoanNewRule(BaseRule):
         elif plen>3:
             r.score=100
         r.feature_val = str(plen)+u'个'
+        self.is_basic(bd,r)
         return r
     def relative_len_in_contact(self,bd):
         rlen = len(self.r_relative_map.keys())
@@ -632,6 +650,7 @@ class PostLoanNewRule(BaseRule):
         elif rlen>6:
             r.score=100
         r.feature_val = str(rlen)+u'个'
+        self.is_basic(bd,r)
         return r
     def get_score(self):
         min_rmap = self.min_rule_map

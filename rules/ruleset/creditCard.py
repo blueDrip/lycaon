@@ -20,12 +20,23 @@ class creditCard(BaseRule):
             60001:self.get_all_credit_amount(basedata),#信用额度
             60002:self.get_can_user_credit_amount_current(basedata),#当前可用信用额度
             60003:self.get_repay_amount_before_3month(basedata),#近三个月内信用卡月还款金额
-            60004:self.get_avg_amount_by_month(),#三个月内月刷卡金额
-            60005:self.get_times_of_thress_month(),#三个月内刷卡频次
+            60004:self.get_avg_amount_by_month(basedata),#三个月内月刷卡金额
+            60005:self.get_times_of_thress_month(basedata),#三个月内刷卡频次
             60006:self.credit_card_location(basedata),#持卡人所在地去都市化程度
             60007:self.get_most_amount_times(basedata),#三个月内消费金额>=8000元次数
             60008:self.company_address_same_with_phone_location(basedata),#公司所在地址是否与手机归属地一致
         }
+
+    #基本验证
+    def is_basic(self,basedata,r):
+        if not basedata.cb:
+            r.feature_val = u'unknow'
+            r.source = u'unknow'
+            r.value = u'unknow'
+            r.score = 10
+            return r
+
+
 
     def init_cmbcc(self,basedata):
         cb_detail_map = basedata.cb and basedata.cb.detailBill or {}
@@ -90,6 +101,7 @@ class creditCard(BaseRule):
             r.score = 10
         r.feature_val = u'额度:'+amount
         r.source = str(amount_float)
+        self.is_basic(basedata,r)
         return r
 
     '''当前可用额度'''
@@ -115,6 +127,7 @@ class creditCard(BaseRule):
             r.score = 10
         r.feature_val = u'额度:'+can_use_amount
         r.source = str(amount_float)
+        self.is_basic(basedata,r)
         return r
 
     '''近三个月内信用卡月还款金额'''
@@ -149,9 +162,10 @@ class creditCard(BaseRule):
             r.score = 100
         r.feature_val = '月还款金额:'+'%.2f'%(avg_amount)
         r.source = str(r_amount)
+        self.is_basic(basedata,r)
         return r
     '''三个月内月刷卡金额'''
-    def get_avg_amount_by_month(self):
+    def get_avg_amount_by_month(self,basedata):
         cm_list = self.cm_detail_list
         amount = 0
         value = []
@@ -174,15 +188,16 @@ class creditCard(BaseRule):
             r.score = 50
         else:
             r.score = 100
+        self.is_basic(basedata,r)
         return r
 
     '''三个月内刷卡频次'''
-    def get_times_of_thress_month(self):
+    def get_times_of_thress_month(self,basedata):
         cm_list = self.cm_detail_list
         times = len(cm_list)
         r = minRule()
         r.name = u'三个月内刷卡频次'
-        avg_times = times>=3 and times/3 or  1 
+        avg_times = times>=3 and times/3 or  1
         r.feature_val = u'频次:'+str(avg_times) +u'次'
         r.score =10
         if avg_times<100:
@@ -195,6 +210,7 @@ class creditCard(BaseRule):
             r.score = 100
         r.value = u'暂不显示'
         r.source = str(times)
+        self.is_basic(basedata,r)
         return r
 
     #'''是否逾期记录（还款>30天）'''
@@ -236,6 +252,7 @@ class creditCard(BaseRule):
         r.value=flag+';'+bill_addr
         r.source=flag
         r.feature_val = flag or u'其他'
+        self.is_basic(basedata,r)
         return r
 
     '''三个月内单笔消费金额>=8000元的次数'''
@@ -257,17 +274,18 @@ class creditCard(BaseRule):
             r.score = mx_times<=10 and mx_times*10 or 100
         r.feature_val = u'次数:'+str(mx_times)
         r.source = str(mx_times)
+        self.is_basic(basedata,r)
         return r
 
     '''公司所在地址是否与手机归属地一致'''
     def company_address_same_with_phone_location(self,basedata):
         user_pl = basedata.user_plocation
-        bill_addr = basedata.cb and basedata.cb.billAddr.replace('\r\n','').replace(' ','') or u'unknow'
+        bill_addr = basedata.cb and basedata.cb.billAddr.replace('\r\n','').replace(' ','') or u'---'
         r = minRule()
         r.name = u'公司所在地址是否与手机归属地一致'
         r.value = bill_addr
-        r.source = u'是'
-        r.score = 100
+        r.source = u'unknown'
+        r.score = 10
         if user_pl not in bill_addr:
             r.source = u'否'
             r.score = 10
@@ -279,6 +297,7 @@ class creditCard(BaseRule):
             r.source = u'unknow'
 
         r.feature_val = r.source
+        self.is_basic(basedata,r)
         return r
 
     def get_score(self):

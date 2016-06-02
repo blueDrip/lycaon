@@ -74,9 +74,9 @@ class Sp(BaseRule):
     #基本验证
     def is_basic(self,basedata,r):
         if not basedata.sp:
-            r.feature_val = u'unknow'
-            r.source = u'unknow'
-            r.value = u'unknow'
+            r.feature_val = u'unknown'
+            r.source = u'unknown'
+            r.value = u'unknown'
             r.score = 10
             return r
 
@@ -547,11 +547,11 @@ class Sp(BaseRule):
             r.score=0
             r.feature_val = u'不一致'
             r.source = u'不一致' #0：不一致
+            self.is_basic(basedata,r)
             return r
         r.source = u'一致'
         r.score=100
         self.is_basic(basedata,r)
-
         return r
 
     '''与021,0755通话次数'''
