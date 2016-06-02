@@ -25,7 +25,7 @@ from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata
 from rules.raw_data import JdData,liantong,yidong
 from rules.raw_data import phonebook,cmbcc
 from rules.util.sms_email import MyEmail
-from statistics.models import RulusDetailInfo
+from statistics.models import RulesInfo
 from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
 cal_logger = logging.getLogger('django.cal')
 cal_logger.setLevel(logging.INFO)
@@ -177,7 +177,7 @@ def cal(minfo = {
     print '【successful!】'
 
     #try:
-    rule_detail = RulusDetailInfo()
+    rule_detail = RulesInfo()
     rule_detail.valid_name_info = init_valid_name_info(bd)
     rule_detail.online_shop_info = init_online_shop_info(bd,rules_detail_map['jd'])
     rule_detail.contact_info = init_contact_info(bd,rules_detail_map['postloan'])

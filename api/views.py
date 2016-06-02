@@ -9,7 +9,7 @@ from rules.ruleset.Sp import Sp
 from api.models import Profile
 from rules.raw_data import UserContact,topResult
 from datetime import datetime
-
+from statistics.models import RulesInfo
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
@@ -42,6 +42,9 @@ def credit_detail(request):
 def users_views(request):
     ulist = Profile.objects.all()
     return render(request,'api/users.html',{'users':ulist})
+def rules_detail_info(request):
+    rs = RulesInfo.objects.filter().first()
+    return render(request, 'api/detailinfo.html', {'rs': rs})
 
 '''数据分析admin'''
 def admin_login_views(request):

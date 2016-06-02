@@ -14,7 +14,7 @@ from django.db import models
 from django.conf import settings
 from rules.raw_data import minRule
 
-class RulusDetailInfo(Document):
+class RulesInfo(Document):
     valid_name_info = DictField()
     online_shop_info = DictField()
     contact_info = DictField()
