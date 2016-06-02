@@ -226,7 +226,7 @@ def is_uncle_aunt(name):
 class PostLoanNewRule(BaseRule):
     
     def __init__(self,basedata):
-        self.ext_api = EXT_API()
+        #self.ext_api = EXT_API()
         self.m_f_list = []
         self.relative_list =[]
         self.tongshi_list = []
