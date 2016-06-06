@@ -297,16 +297,36 @@ class JdData(Document):
     user_level = StringField(default = str)
     pay_passwd_verified = StringField(default = str)
     login_name = StringField(default = str)
-
-
-
-
-
-
     
 #淘宝
-class tabao(Document):
-    pass
+class TaoBao(Document):
+    taobao_name = StringField(default=str) #淘宝登录名
+    createTime = DateTimeField(default=str) #创建时间
+    huabeiCanUseMoney = FloatField(default=0) #花呗可用额度
+    creditLevel = StringField(default=str) #//淘宝信用等级
+    tianMaoAccountName = StringField(default=str) #天猫用户名
+    taobaoFastRefundMoney = IntField(default=0) #淘宝极速退款额度
+    buyerCreditPoint = StringField(default=str) #买家信用评分
+    aliPaymFund = StringField(default=str)      #余额宝金额
+    tianMaoPoints = StringField(default=str)    #天猫积分
+    taobaoLevel = StringField(default=str)      #天猫等级
+    aliPaymFundProfit = StringField(default=str) #余额宝总收益
+    aliPayRemainingAmount = StringField(default=str) #支付宝余额
+    huabeiTotalAmount = FloatField(default=0) #花呗总额度
+    growthValue = StringField(default=str) #淘宝成长值
+    tianmaoExperience = StringField(default=str) #天猫经验值
+    username = StringField(default=str) #用户名
+    pwdProtectedQuestion = StringField(default=str) #未设置密保
+    bindMobile = StringField(default=str) #绑定手机号
+    loginPasswdVerify = StringField(default=str) #登录密码验证开启
+    identityVerified = StringField(default = str) #实名认证是否完成
+    loginEmail = StringField(default=str) #登录邮箱
+    mobileVerified = StringField(default=str) #是否绑定手机号
+    safeLevel = StringField(default=str) 
+    addrs = ListField(default=[])
+    orderList = ListField(default=[])
+
+
 #移动chinaMobile
 class yidong(Document):
     base_info =StringField(default=str)

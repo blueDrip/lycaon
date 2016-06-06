@@ -1,7 +1,7 @@
 # coding=utf8
 from corelib.database import MongoDb
-from rules.raw_data import JdData
-
+from rules.raw_data import JdData,TaoBao
+from datetime import datetime
 def jd_orm(cnd={}):
     if not cnd:
         return
@@ -35,3 +35,89 @@ def jd_orm(cnd={}):
     jd.login_name = 'login_name' in c and c['login_name'] or ''
     
     jd.save()
+
+def tb_orm(cnd={}):
+    if not cnd:
+        return
+    d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    c=d.get_collection('taobao').find_one(cnd) or {}
+    
+    tb=TaoBao()
+    tb.taobao_name = 'taobao_name' in c and c['taobao_name'] or ''
+    tb.createTime=datetime.now()
+    if 'personalInfo' in c:
+        if 'huabeiCanUseMoney' in c['personalInfo']:
+            tb.huabeiCanUseMoney = c['personalInfo']['huabeiCanUseMoney']
+        if 'creditLevel' in c['personalInfo']:
+            tb.creditLevel = c['personalInfo']['creditLevel']
+        if 'tianMaoAccountName' in c['personalInfo']:
+            tb.tianMaoAccountName = c['personalInfo']['tianMaoAccountName']
+        if 'taobaoFastRefundMoney' in c['personalInfo']:
+            tb.taobaoFastRefundMoney = c['personalInfo']['taobaoFastRefundMoney']
+        if 'buyerCreditPoint' in c['personalInfo']:
+            tb.buyerCreditPoint = c['personalInfo']['buyerCreditPoint']
+        if 'aliPaymFund' in c['personalInfo']:
+            tb.aliPaymFund = c['personalInfo']['aliPaymFund']
+        if 'tianMaoPoints' in c['personalInfo']:
+            tb.tianMaoPoints=c['personalInfo']['tianMaoPoints']
+        if 'taobaoLevel' in c['personalInfo']:
+            tb.taobaoLevel=c['personalInfo']['taobaoLevel']
+        if 'aliPaymFundProfit' in c['personalInfo']:
+            tb.aliPaymFundProfit=c['personalInfo']['aliPaymFundProfit']
+        if 'aliPayRemainingAmount' in c['personalInfo']:
+            tb.aliPayRemainingAmount=c['personalInfo']['aliPayRemainingAmount']
+        if 'huabeiTotalAmount' in c['personalInfo']:
+            tb.huabeiTotalAmount=c['personalInfo']['huabeiTotalAmount']
+        if 'growthValue' in c['personalInfo']:
+            tb.growthValue = c['personalInfo']['growthValue']
+        if 'tianmaoExperience' in c['personalInfo']:
+            tb.tianmaoExperience=c['personalInfo']['tianmaoExperience']
+    if 'accountSafeInfo' in c:
+        if 'username' in c['accountSafeInfo']:
+            tb.username = c['accountSafeInfo']['username']
+        if 'pwdProtectedQuestion' in c['accountSafeInfo']:
+            tb.pwdProtectedQuestion = c['accountSafeInfo']['pwdProtectedQuestion']
+
+        if 'bindMobile' in c['accountSafeInfo']:
+            tb.bindMobile = c['accountSafeInfo']['bindMobile']
+        if 'loginPasswdVerify' in c['accountSafeInfo']:
+            tb.loginPasswdVerify = c['accountSafeInfo']['loginPasswdVerify']
+        if 'identityVerified' in c['accountSafeInfo']:
+            tb.identityVerified = c['accountSafeInfo']['identityVerified']
+        if 'loginEmail' in c['accountSafeInfo']:
+            tb.loginEmail = c['accountSafeInfo']['loginEmail']
+        if 'mobileVerified' in c['accountSafeInfo']:
+            tb.mobileVerified = c['accountSafeInfo']['mobileVerified']
+        if 'safeLevel' in c['accountSafeInfo']:
+            tb.safeLevel = c['accountSafeInfo']['safeLevel']
+    if 'addrs' in c:
+        tb.addrs = c['addrs']
+    if 'orderList' in c:
+        tb.orderList = c['orderList']
+    tb.save()
+    return tb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

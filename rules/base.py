@@ -20,7 +20,7 @@ from rules.util.utils import get_tb_info
 from rules.raw_data import JdData,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
 from rules.raw_data import phonebook,cmbcc
 from rules.ext_api import EXT_API
-
+from rules.orm import tb_orm
 
 base_logger = logging.getLogger('django.rules')
 base_logger.setLevel(logging.INFO)
@@ -112,6 +112,9 @@ class BaseData(object):
             '''JD info'''
             #self.jd=jingdong.objects.filter(jd_login_name=map_info['jd_login_name']).first()
             self.jd = map_info['jd']
+            #淘宝
+            self.tb = tb_orm(cnd={"taobao_name" : "tb122917_00"})
+
             '''contact info'''
             self.contacts = []
             self.good_contacts = []
