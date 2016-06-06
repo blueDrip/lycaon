@@ -21,4 +21,4 @@ class RulesInfo(Document):
     sp_info = DictField()
     credit_info = DictField()
     created_at = DateTimeField()
-    user_id = StringField()
+    user_id = StringField(required=True)
