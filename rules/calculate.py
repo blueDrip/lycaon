@@ -160,7 +160,6 @@ def cal(minfo = {
             detail_rule.save()
             base_logger.error(get_tb_info())
             base_logger.error("【 " + k +"  error 】" + "   datetime= "+str(datetime.now()))
-            print 'an cal error happend'
 
         top_rule.rulelist.append(detail_rule)
         top_rule.score+=detail_rule.score*weight_map[k]
