@@ -66,12 +66,43 @@ def get_token(str_token):
     bank_login_name = BankAccount.objects.using('django').filter(token='').first()
 
     '''user,sp,jd,phonecontact,cb'''
+    idcard,sp,jd,ucl,cb=None,None,None,None,None
     userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
-    idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
-    sp=yidong.objects.filter(phone_no = sp_phoneno).first()
-    jd=JdData.objects.filter(jd_login_name = e_commerce_loginname).first()
-    ucl = phonebook.objects.filter(user_id = u'111').first()
-    cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
+
+    try:
+        idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
+    except:
+        idcard=None
+        base_logger.error(get_tb_info())
+        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+    try:
+        sp=yidong.objects.filter(phone_no = sp_phoneno).first()
+    except:
+        sp=None
+
+        base_logger.error(get_tb_info())
+        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+
+    try:
+        jd=JdData.objects.filter(jd_login_name = e_commerce_loginname).first()
+    except:
+        jd=None
+        base_logger.error(get_tb_info())
+        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+
+    try:
+        ucl = phonebook.objects.filter(user_id = u'111').first()
+    except:
+        ucl=None
+        base_logger.error(get_tb_info())
+        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+
+    try:
+        cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
+    except:
+        cb=None
+        base_logger.error(get_tb_info())
+        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
 
     return {
         'user':userinfo,
@@ -91,7 +122,7 @@ def cal_by_message(msg):
     if user:
         user.trust_score=s
         user.save()
-        print '【save successful】'
+        #print '【save successful】'
 
 def cal(minfo = {
         'user':None,
@@ -139,7 +170,6 @@ def cal(minfo = {
     #规则计算
     i=1
     for k,rule in rule_map.items():
-        cal_logger.info( name_list[k] +'\t'+str(user_id)+'\t'+ str(datetime.now()) )
         detail_rule = DetailRule()
         b=None
         try:
@@ -163,7 +193,7 @@ def cal(minfo = {
 
         top_rule.rulelist.append(detail_rule)
         top_rule.score+=detail_rule.score*weight_map[k]
-        cal_logger.info( name_list[k] + '\t'+ str(user_id)+'\t'+str(datetime.now())+'\t'+str(detail_rule.score))
+        cal_logger.info( name_list[k] +'\t\t'+str(datetime.now())+'\t\t'+str(detail_rule.score))
         #加载模型
         rules_detail_map[k]=b
         i+=1
@@ -173,7 +203,7 @@ def cal(minfo = {
     top_rule.user_id = minfo['user_id']
     top_rule.save()
     cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(top_rule.score))
-    print '【successful!】'
+    #print '【successful!】'
 
     #try:
     rule_detail = RulesInfo()
