@@ -115,12 +115,10 @@ table {
    	{% for u in users%}
             <tr class = "{% cycle 'a1' 'aa' %}">
                   <td> {{ u.pid }}</td>                       
-			      <td> {{ u.user_id }} </td>
 			      <td> {{ u.is_certification }} </td>
 			      <td> {{ u.phone_place }}</td>
  			      <td> {{ u.phone_type }}</td>
-                  <!--<td> {{ u.trust_score}}</td> -->
-                  <!--<td><a href='/apix/detail/?uid={{ u.user_id }}'>查看</a>-->
+                  <td> {{ u.trust_score}}</td>
                   <td> <a href='/apix/detail/?uid=safasf2333333333r'>查看</a> </td>
                   <td> {{ u.created_at  | date:"Y,m,j"}}</td>
                   <td> {{ u.education }} </td>

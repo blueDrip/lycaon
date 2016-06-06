@@ -36,7 +36,7 @@ class JD(BaseRule):
             30018:self.repay_ious_amount_one_week(basedata),#一周内待还金额
             30019:self.phone_bankinfo(basedata),#绑定银行卡中有申请人手机号
             30020:self.grp_consume_in_harf_year(basedata),#半年内是否出现消费断档
-
+            30021:self.safe_level(basedata),#安全级别,ps常用用户安全级别高
         }
 
     #基本验证
@@ -599,10 +599,27 @@ class JD(BaseRule):
         r.source = r.feature_val
         self.is_basic(basedata,r)
         return r
+    #安全级别
+    def safe_level(self,basedata):
+        safe_level=basedata.jd and basedata.jd.safe_priority or u'unknown'
+        r = minRule()
+        r.name=u'账号安全级别'
+        r.score=20
+        r.value = safe_level
+        if u'低' in safe_level:
+            r.score = 40
+        elif u'较高' in safe_level:
+            r.score = 80
+        r.feature_val = r.value
+        r.source = r.value
+        self.is_basic(basedata,r)
+        return r
+
+
 
     def get_score(self):
         min_rmap = self.min_rule_map
-        valid_name = min_rmap[30001].score*0.1 #京东实名验证
+        valid_name = min_rmap[30001].score*0.07 #京东实名验证
         valid_phone = min_rmap[30002].score*0.06  #京东手机验证
         grade = min_rmap[30003].score*0.05 #京东会员等级
         avg_login_days = min_rmap[30004].score*0.05 #京东半年内平均登陆时间间隔(登陆时间/次数)
@@ -624,6 +641,7 @@ class JD(BaseRule):
         phone_bankinfo = min_rmap[30019].score*0.02 #绑定银行卡中有申请人手机号
 
         grp_consume_in_harf_year=min_rmap[30020].score*0.03 #半年内平均消费时间间隔     
+        safe_level = min_rmap[30021].score*0.03 #账号安全
 
         score=valid_name+valid_phone+grade+avg_login_days
         score+=consume_amount+consume_times+owner_name_in_address
@@ -632,7 +650,7 @@ class JD(BaseRule):
 
         score+=valid_email+open_ious+ious_amount
         score+=can_use_ious_amount+consume_ious_amount
-        score+=repay_ious_one_week+phone_bankinfo+grp_consume_in_harf_year
+        score+=repay_ious_one_week+phone_bankinfo+grp_consume_in_harf_year+safe_level
 
         return score  
 
