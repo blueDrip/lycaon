@@ -224,7 +224,7 @@ def cal(minfo = {
     rule_detail.sp_info = init_sp_record_info(bd, rules_detail_map['sp'],rules_detail_map['postloan'])
     rule_detail.credit_info = {}
     rule_detail.created_at = datetime.now()
-    rule_detail.user_id = user_id
+    rule_detail.user_id = user_id.upper()
     rule_detail.save()   
     #except:
         #print '【详情保存完成】'
