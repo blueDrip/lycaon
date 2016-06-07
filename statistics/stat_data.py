@@ -229,7 +229,7 @@ def init_online_shop_info(basedata,jd):
 
     #图标数据    
     map_info={}
-    month_map_info = {}
+    month_map_info = {'Jan':0,'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0}
     stage_map_info = { u'10001':0,u'':0,'10002':0,'1009':0,'1008':0,'1007':0,'1006':0,'1005':0,'1004':0,'1003':0,'1002':0,'1001':0 }
     ll=[]
     for it in consume_list:
@@ -364,18 +364,19 @@ def init_contact_info(basedata,postloan):
         if city not in lcmap:
             lcmap[city]=0
         lcmap[city]+=1
-        lcmap[city]=lcmap[city]*100/clen
+    lcmap={ k:v*100/clen for k,v in lcmap.items()}
     #排序
     tup=sorted(lcmap.items(), key=lambda lcmap: lcmap[1],reverse=True)
     same_with_pl_info = [
         {
             '1002':u'归属地',
             '1001':u'联系人归属地占比'
-        }
+        },
     ]
     for it in tup:
         same_with_pl_info.append({
-            it[0]:'%.2f'%(it[1]*1.0/clen)+str('%')
+            '1002':it[0],
+            '1001':'%.2f'%(it[1])+str('%')
         })
     if len(same_with_pl_info)<=1:
         same_with_pl_info.append({
@@ -389,7 +390,7 @@ def init_contact_info(basedata,postloan):
             '1003':u'电话',
             '1002':u'归属地',
             '1001':u'备注'
-        }
+        },
     ]
     contact_info = []
     relatives_map={}
@@ -406,7 +407,6 @@ def init_contact_info(basedata,postloan):
             '1001':u'备注'
         }
     ]
-
     for c in contact_list:
         temp_c={
             '1004' : c.name,#称呼
@@ -437,13 +437,13 @@ def init_contact_info(basedata,postloan):
             }
         )
 
-    clist=contact_info
+    clist=[]
     clist_none=[]
-
+    
     #根据name排序
-    if len(contact_info)>2:
+    if len(contact_info)>=2:
         for c in contact_info:
-            if c[1] != u'none':
+            if c['1004'] != u'none':
                 clist.append(c)
             else:
                 clist_none.append(c)
@@ -451,7 +451,7 @@ def init_contact_info(basedata,postloan):
     info = {
         u'part_contatcs':same_with_pl_info,#通讯录
         u'relatives' : relative_info,#亲属
-        u'view_contacts' : clist  #通讯录总览
+        u'view_contacts' : clist or contact_info #通讯录总览
     }
     return info
 
