@@ -243,33 +243,6 @@ class UserNetInfo(Document):
                 traceback.print_exc()
         return None
     
-#京东
-#class jingdong(Document):
-#    safe_priority = StringField(default = str)
-#    loginhistory = StringField(default = str)
-#    address = StringField(default = str)
-#    bankinfo = StringField(default = str)
-#    chengzhangzhi=StringField(default = str)
-#    huiyuanjibie=StringField(default=str)
-#    jd1_login_name = StringField(name=u'*登录名：',default=str)
-#    three_month_consume = StringField(name=u'3month_consume',default = str)
-#    three_month_before_consume = StringField(name=u'3month_before_consume',default = str)
-#    unknow = StringField(name=u' ',default=str)
-#    isrealname=StringField(name=u'实名认证',default=str)
-#    nickname= StringField(name=u'*昵称：',default=str)
-#    login_pwd=StringField(name=u'登录密码',default=str) 
-#    sex=StringField(name=u'*性别：',default=str)
-#    relname=StringField(name=u"*真实姓名：",default=str)
-#    isvalidphone=StringField(name=u'手机验证',default=str)
-#    hobbies=StringField(name=u'兴趣爱好：',default=str)
-#    numvalid=StringField(name=u'数字证书',default=str)
-#    jd_login_name = StringField(default=str)
-#    email = StringField(name=u'邮箱：',default=str)
-#    paypwd=StringField(name=u'支付密码',default=str)
-#    birthday=StringField(name=u'生日：',default=str)
-#    validemail = StringField(name=u'邮箱验证',default=str)
-#    vipchangehistory= StringField(default=str)    
-#    username=StringField(name=u'用户名：',default=str)
 
 #new
 class JdData(Document):
@@ -326,63 +299,23 @@ class TaoBao(Document):
     addrs = ListField(default=[])
     orderList = ListField(default=[])
 
+#移动
+class chinaMobile(Document):
 
-#移动chinaMobile
-class yidong(Document):
-    base_info =StringField(default=str)
-    phone_no = StringField(default= str)
-    yue = StringField(default = str)
-    recharge = ListField()
-    business = StringField(default = str)
-    fixed = ListField()
-    phonedetail = ListField()
-    smsdetail = ListField()
-    netdetail = ListField()
+    currRemainingAmount = DictField()
+    phonedetail = DictField()
+    personalInfo = DictField()
+    openBusiness = DictField()
+    currPoint = DictField()
+    smsdetail = DictField()
+    phone_no = StringField()
+    businessOrder = DictField()
+    netdetail = DictField()
+    fixed = DictField()
+    createTime = StringField()
+    recharge = DictField()
 
-    t1 = StringField(name='201605--fixed')
-    t2 = StringField(name='201605--phonedetail')
-    t3 = StringField(name='201605--netdetail')
-    t4 = StringField(name='201605--smsdetail')
-    
-    t11 = StringField(name='201604--fixed')
-    t21 = StringField(name='201604--phonedetail')
-    t31 = StringField(name='201604--netdetail')
-    t41 = StringField(name='201604--smsdetail')
 
-    t12 = StringField(name='201603--fixed')
-    t22 = StringField(name='201603--phonedetail')
-    t32 = StringField(name='201603--netdetail')
-    t42 = StringField(name='201603--smsdetail')
-
-    t13 = StringField(name='201602--fixed')
-    t23 = StringField(name='201602--phonedetail')
-    t33 = StringField(name='201602--netdetail')
-    t43 = StringField(name='201602--smsdetail')
-
-    t14 = StringField(name='201601--fixed')
-    t24 = StringField(name='201601--phonedetail')
-    t34 = StringField(name='201601--netdetail')
-    t44 = StringField(name='201601--smsdetail')
-
-    t15 = StringField(name='201512--fixed')
-    t25 = StringField(name='201512--phonedetail')
-    t35 = StringField(name='201512--netdetail')
-    t45 = StringField(name='201512--smsdetail')
-
-    t16 = StringField(name='201511--fixed')
-    t26 = StringField(name='201511--phonedetail')
-    t36 = StringField(name='201511--netdetail')
-    t46 = StringField(name='201511--smsdetail')
-
-    t17 = StringField(name='201510--fixed')
-    t27 = StringField(name='201510--phonedetail')
-    t37 = StringField(name='201510--netdetail')
-    t47 = StringField(name='201510--smsdetail')
-    meta = {
-        "indexes": [
-            'phone_no'
-        ]
-    }
 #联通chinaUnicom
 class liantong(Document):
     base_info =StringField(default=str)

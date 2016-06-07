@@ -58,8 +58,7 @@ class Sp(BaseRule):
 
     def init_recharge_map(self,basedata):
         recharge = basedata.sp and basedata.sp.recharge or '{}'
-        #mp=json.loads(basedata.sp.recharge)['data']
-        json_data = json.loads(recharge)
+        json_data = recharge
         mp = 'data' in json_data and json_data['data'] or {}
         charge_mp={}
         now=basedata.create_time
@@ -176,7 +175,7 @@ class Sp(BaseRule):
         now=basedata.create_time
         for call in basedata.sp_calls:
             if call.call_time>now-timedelta(180) and call.call_time<=now:
-                if call.call_type == u'主叫':
+                if u'主叫' in call.call_type:
                     times+=1
         r = minRule()
         if times>=0 and times<10:
@@ -201,7 +200,7 @@ class Sp(BaseRule):
         now = basedata.create_time
         for call in basedata.sp_calls:
             if call.call_time>=now-timedelta(180) and call.call_time<=now:
-                if call.call_type == u'主叫':
+                if u'主叫' in call.call_type:
                     duration+=call.call_duration
         r = minRule()
         r.name=u'半年内主叫时长'
@@ -229,7 +228,7 @@ class Sp(BaseRule):
         now = basedata.create_time
         for call in basedata.sp_calls:
             if call.call_time>=now-timedelta(180) and call.call_time<=now:
-                if call.call_type == u'被叫':
+                if u'被叫' in call.call_type:
                     times+=1
         r = minRule()
         r.name=u'半年内被叫次数'
@@ -251,7 +250,7 @@ class Sp(BaseRule):
         now = basedata.create_time
         for call in basedata.sp_calls:
             if call.call_time>=now-timedelta(180) and call.call_time<=now:
-                if call.call_type == u'被叫':
+                if u'被叫' in call.call_type:
                     duration+=call.call_duration
         r = minRule()
         avg=duration
