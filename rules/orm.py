@@ -1,6 +1,6 @@
 # coding=utf8
 from corelib.database import MongoDb
-from rules.raw_data import JdData,TaoBao
+from rules.raw_data import JdData,TaoBao,chinaMobile
 from datetime import datetime
 def jd_orm(cnd={}):
     if not cnd:
@@ -34,7 +34,8 @@ def jd_orm(cnd={}):
     jd.pay_passwd_verified = 'pay_passwd_verified' in c and c['pay_passwd_verified'] or ''
     jd.login_name = 'login_name' in c and c['login_name'] or ''
     
-    jd.save()
+    #jd.save()
+    return jd
 
 def tb_orm(cnd={}):
     if not cnd:
@@ -63,15 +64,15 @@ def tb_orm(cnd={}):
         if 'taobaoLevel' in c['personalInfo']:
             tb.taobaoLevel=c['personalInfo']['taobaoLevel']
         if 'aliPaymFundProfit' in c['personalInfo']:
-            tb.aliPaymFundProfit=c['personalInfo']['aliPaymFundProfit']
+            tb.aliPaymFundProfit=c['personalInfo']['aliPaymFundProfit'] or '0'
         if 'aliPayRemainingAmount' in c['personalInfo']:
-            tb.aliPayRemainingAmount=c['personalInfo']['aliPayRemainingAmount']
+            tb.aliPayRemainingAmount=c['personalInfo']['aliPayRemainingAmount'] or '0'
         if 'huabeiTotalAmount' in c['personalInfo']:
-            tb.huabeiTotalAmount=c['personalInfo']['huabeiTotalAmount']
+            tb.huabeiTotalAmount=c['personalInfo']['huabeiTotalAmount'] or '0'
         if 'growthValue' in c['personalInfo']:
-            tb.growthValue = c['personalInfo']['growthValue']
+            tb.growthValue = c['personalInfo']['growthValue'] or '0'
         if 'tianmaoExperience' in c['personalInfo']:
-            tb.tianmaoExperience=c['personalInfo']['tianmaoExperience']
+            tb.tianmaoExperience=c['personalInfo']['tianmaoExperience'] or '0'
     if 'accountSafeInfo' in c:
         if 'username' in c['accountSafeInfo']:
             tb.username = c['accountSafeInfo']['username']
@@ -94,15 +95,31 @@ def tb_orm(cnd={}):
         tb.addrs = c['addrs']
     if 'orderList' in c:
         tb.orderList = c['orderList']
-    tb.save()
+    #tb.save()
     return tb
 
 
+def china_mobile_orm(cnd={}):
+    if not cnd:
+        return
+    d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    c=d.get_collection('yidong').find_one(cnd) or {}
 
+    cmb=chinaMobile()
 
-
-
-
+    cmb.currRemainingAmount= c['currRemainingAmount']
+    cmb.phonedetail = c['phonedetail']
+    cmb.personalInfo = c['personalInfo']
+    cmb.openBusiness = c['openBusiness']
+    cmb.currPoint = c['currPoint']
+    cmb.smsdetail = c['smsdetail']
+    cmb.phone_no = c['phone_no']
+    cmb.businessOrder = c['businessOrder']
+    cmb.netdetail = c['netdetail']
+    cmb.fixed = c['fixed']
+    cmb.createTime = c['createTime']
+    cmb.recharge = c['recharge']
+    return cmb
 
 
 

@@ -91,9 +91,9 @@ def init_online_shop_info(basedata,jd):
     ]
     #白条
     baitiao_info_map = {
-        '1007':{ u'京东白条额度':bjd and bjd.baitiao[u'totalAmount'] or u'unknown' },#白条额度
-        '1006':{ u'剩余额度':bjd and bjd.baitiao[u'avaliableAmount'] or u'unknown' },#白条剩余额度
-        '1005':{ u'累积消费':bjd and bjd.baitiao[u'consumeAmount'] or u'unknown'},#白条可用额度
+        '1007':{ u'京东白条额度':bjd.baitiao and bjd.baitiao[u'totalAmount'] or u'unknown' },#白条额度
+        '1006':{ u'剩余额度':bjd.baitiao and bjd.baitiao[u'avaliableAmount'] or u'unknown' },#白条剩余额度
+        '1005':{ u'累积消费':bjd.baitiao and bjd.baitiao[u'consumeAmount'] or u'unknown'},#白条可用额度
         '1004':{ u'芝麻信用分数':u'unknown' },#芝麻信用分数
         '1003':{ u'花呗额度':u'unknown' },#花呗额度
         '1002':{ u'京东实名认证是否与美信生活实名认证一致' : u'---' },
@@ -459,7 +459,7 @@ def init_contact_info(basedata,postloan):
 def init_sp_record_info(basedata,sp,p):
 
     #基本信息
-    bas_info=json.loads(basedata.sp and basedata.sp.base_info or '{}')
+    bas_info=basedata.sp and basedata.sp.personalInfo or {}
     data=bas_info and bas_info['data'] or {}
     basic_info={
         '1007':{ u'运营商实名认证' : u'unknown' },#运营商实名认证

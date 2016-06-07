@@ -25,7 +25,7 @@ from rules.util.utils import get_tb_info
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount
 from rules.raw_data import JdData,liantong,yidong
 from rules.raw_data import phonebook,cmbcc
-from rules.orm import tb_orm
+from rules.orm import tb_orm,china_mobile_orm,jd_orm
 from rules.util.sms_email import MyEmail
 from statistics.models import RulesInfo
 from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
@@ -79,15 +79,16 @@ def get_token(str_token):
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        sp=yidong.objects.filter(phone_no = sp_phoneno).first()
+        #sp=yidong.objects.filter(phone_no = sp_phoneno).first()
+        sp=china_mobile_orm({ "phone_no" : sp_phoneno })
     except:
         sp=None
-
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
 
     try:
-        jd=JdData.objects.filter(jd_login_name = e_commerce_loginname).first()
+        #jd=JdData.objects.filter(jd_login_name = e_commerce_loginname).first()
+        jd = jd_orm({"jd_login_name" : e_commerce_loginname })
     except:
         jd=None
         base_logger.error(get_tb_info())
@@ -225,7 +226,8 @@ def cal(minfo = {
     rule_detail.credit_info = {}
     rule_detail.created_at = datetime.now()
     rule_detail.user_id = user_id.upper()
-    rule_detail.save()   
+    rule_detail.save()
+    print 'stat is finished'   
     #except:
         #print '【详情保存完成】'
     return top_rule.score

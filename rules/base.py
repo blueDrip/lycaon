@@ -20,7 +20,7 @@ from rules.util.utils import get_tb_info
 from rules.raw_data import JdData,liantong,yidong,UserCallPhone,UserShortMessage,UserNetInfo,UserContact
 from rules.raw_data import phonebook,cmbcc
 from rules.ext_api import EXT_API
-from rules.orm import tb_orm
+from rules.orm import china_mobile_orm
 
 base_logger = logging.getLogger('django.rules')
 base_logger.setLevel(logging.INFO)
@@ -79,11 +79,6 @@ class BaseData(object):
     def __init__(self,map_info={},ext=None):
         try:
             '''user info'''
-            #self.user=None
-            #self.user_plocation=u'北京'
-            #self.home_location = u'江西南昌市'
-            #self.user_phone=u'15600300721'
-            #self.username=u'李超'
             self.ext_api = ext or EXT_API()
             '''user info'''
             self.user = map_info['user']
@@ -103,14 +98,12 @@ class BaseData(object):
             self.ucl = map_info['ucl']
 
             '''sp info'''
-            #self.sp=yidong.objects.filter(phone_no=map_info['sp_login_name']).first()
             self.sp = map_info['sp']
             self.sp_calls=[]
             self.good_calls=[]
             self.sp_sms=[]
             self.sp_net=[]
             '''JD info'''
-            #self.jd=jingdong.objects.filter(jd_login_name=map_info['jd_login_name']).first()
             self.jd = map_info['jd']
             #淘宝
             self.tb = map_info['tb']
@@ -158,7 +151,7 @@ class BaseData(object):
             
     def init_sp_calldetail(self):
         phonedetail = self.sp and self.sp.phonedetail or {}
-        mp = self.load_sp_datadetail(phonedetail)
+        mp=self.load_sp_datadetail(phonedetail)
         cmap={ c.phone:c.name for c in self.contacts }
         for k,v in mp.items():
             for itt in v:
@@ -180,17 +173,17 @@ class BaseData(object):
                 uc.source=u'sp'
                 uc.call_type=itt['commMode']
                 self.sp_calls.append(uc)
-        try:
-            ul = UserCallPhone.objects.filter(user_id = self.user_id)
-            if ul:
-                self.sp_calls = ul
-                print 'calls_list exist!'
-            else:
-                UserCallPhone.create_calls(self.sp_calls)
-        except:
-            base_logger.error(get_tb_info())
-            base_logger.error("【init sp_calls error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
-            print 'init sp_calls error'
+        #try:
+        #    ul = UserCallPhone.objects.filter(user_id = self.user_id)
+        #    if ul:
+        #        self.sp_calls = ul
+        #        print 'calls_list exist!'
+        #    else:
+        #        UserCallPhone.create_calls(self.sp_calls)
+        #except:
+        #    base_logger.error(get_tb_info())
+        #    base_logger.error("【init sp_calls error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
+        #    print 'init sp_calls error'
             
     def init_sp_smsdetail(self):
         smsdetail = self.sp and self.sp.smsdetail or {}
@@ -215,17 +208,17 @@ class BaseData(object):
                 s.source=u'sp'
                 s.sms_type=itt['commMode']
                 self.sp_sms.append(s)
-        try:
-            sms_list = UserShortMessage.objects.filter(user_id = self.user_id)
-            if sms_list:
-                self.sp_sms = sms_list
-                print 'sp_sms exist'    
-            else:
-                UserShortMessage.create_smses(self.sp_sms)
-        except:
-            base_logger.error(get_tb_info())
-            base_logger.error("【init sp_sms error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
-            print 'init sp_sms error'
+        #try:
+        #    sms_list = UserShortMessage.objects.filter(user_id = self.user_id)
+        #    if sms_list:
+        #        self.sp_sms = sms_list
+        #        print 'sp_sms exist'    
+        #    else:
+        #        UserShortMessage.create_smses(self.sp_sms)
+        #except:
+        #    base_logger.error(get_tb_info())
+        #    base_logger.error("【init sp_sms error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
+        #    print 'init sp_sms error'
     def init_sp_netdetail(self):
         netdetail = self.sp and self.sp.netdetail or {}
         mp = self.load_sp_datadetail(netdetail)
@@ -246,28 +239,26 @@ class BaseData(object):
                 n.source=u'sp'
                 n.net_type=itt['netType']
                 self.sp_net.append(n)
-        try:
-            net_list = UserNetInfo.objects.filter(user_id = self.user_id)
-            if net_list:
-                self.sp_net = net_list
-                print 'net_list exist'
-            else:
-                UserNetInfo.create_nets(self.sp_net)
-        except:
-            base_logger.error(get_tb_info())
-            base_logger.error("【init sp_net error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
-            print 'init sp_net error'            
+        #try:
+        #    net_list = UserNetInfo.objects.filter(user_id = self.user_id)
+        #    if net_list:
+        #        self.sp_net = net_list
+        #        print 'net_list exist'
+        #    else:
+        #        UserNetInfo.create_nets(self.sp_net)
+        #except:
+        #    base_logger.error(get_tb_info())
+        #    base_logger.error("【init sp_net error】"  + ",uid=" + self.user_id + ",datetime="+str(datetime.now()))
+        #    print 'init sp_net error'            
 
     def load_sp_datadetail(self,sp_map):
         mp={}
         for k,v in sp_map.items():
-            d=re.findall(r"\((.+)\).*",v)
-            for it in d:
-                itmp=json.loads(it)['data']
-                for itt in itmp:
-                    if k not in mp:
-                        mp[k]=[]
-                    mp[k].append(itt)
+            itmp='data' in v and v['data'] or []
+            for itt in itmp:
+                if k not in mp:
+                    mp[k]=[]
+                mp[k].append(itt)
         return mp
 
             

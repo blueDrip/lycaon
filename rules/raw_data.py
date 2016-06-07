@@ -243,33 +243,6 @@ class UserNetInfo(Document):
                 traceback.print_exc()
         return None
     
-#京东
-#class jingdong(Document):
-#    safe_priority = StringField(default = str)
-#    loginhistory = StringField(default = str)
-#    address = StringField(default = str)
-#    bankinfo = StringField(default = str)
-#    chengzhangzhi=StringField(default = str)
-#    huiyuanjibie=StringField(default=str)
-#    jd1_login_name = StringField(name=u'*登录名：',default=str)
-#    three_month_consume = StringField(name=u'3month_consume',default = str)
-#    three_month_before_consume = StringField(name=u'3month_before_consume',default = str)
-#    unknow = StringField(name=u' ',default=str)
-#    isrealname=StringField(name=u'实名认证',default=str)
-#    nickname= StringField(name=u'*昵称：',default=str)
-#    login_pwd=StringField(name=u'登录密码',default=str) 
-#    sex=StringField(name=u'*性别：',default=str)
-#    relname=StringField(name=u"*真实姓名：",default=str)
-#    isvalidphone=StringField(name=u'手机验证',default=str)
-#    hobbies=StringField(name=u'兴趣爱好：',default=str)
-#    numvalid=StringField(name=u'数字证书',default=str)
-#    jd_login_name = StringField(default=str)
-#    email = StringField(name=u'邮箱：',default=str)
-#    paypwd=StringField(name=u'支付密码',default=str)
-#    birthday=StringField(name=u'生日：',default=str)
-#    validemail = StringField(name=u'邮箱验证',default=str)
-#    vipchangehistory= StringField(default=str)    
-#    username=StringField(name=u'用户名：',default=str)
 
 #new
 class JdData(Document):
@@ -325,6 +298,24 @@ class TaoBao(Document):
     safeLevel = StringField(default=str) 
     addrs = ListField(default=[])
     orderList = ListField(default=[])
+
+#移动
+class chinaMobile(Document):
+
+    currRemainingAmount = DictField()
+    phonedetail = DictField()
+    personalInfo = DictField()
+    openBusiness = DictField()
+    currPoint = DictField()
+    smsdetail = DictField()
+    phone_no = StringField()
+    businessOrder = DictField()
+    netdetail = DictField()
+    fixed = DictField()
+    createTime = StringField()
+    recharge = DictField()
+
+
 
 
 #移动chinaMobile
