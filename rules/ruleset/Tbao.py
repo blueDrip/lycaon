@@ -165,7 +165,6 @@ class Tbao(BaseRule):
         return r
     #余额总收益
     def profit_amount(self,basedata):
-        print '>>>>>>>>>>',basedata.tb.aliPaymFundProfit
         pa=basedata.tb and float(basedata.tb.aliPaymFundProfit) or u'unknown'
         r=minRule()
         r.name = u'余额宝总收益'

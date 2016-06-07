@@ -80,6 +80,7 @@ def get_token(str_token):
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
         #sp=yidong.objects.filter(phone_no = sp_phoneno).first()
+        print 'sp no',sp_phoneno
         sp=china_mobile_orm({ "phone_no" : sp_phoneno })
     except:
         sp=None

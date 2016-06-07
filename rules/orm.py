@@ -106,27 +106,32 @@ def china_mobile_orm(cnd={}):
     c=d.get_collection('yidong').find_one(cnd) or {}
 
     cmb=chinaMobile()
-
-    cmb.currRemainingAmount= c['currRemainingAmount']
-    cmb.phonedetail = c['phonedetail']
-    cmb.personalInfo = c['personalInfo']
-    cmb.openBusiness = c['openBusiness']
-    cmb.currPoint = c['currPoint']
-    cmb.smsdetail = c['smsdetail']
-    cmb.phone_no = c['phone_no']
-    cmb.businessOrder = c['businessOrder']
-    cmb.netdetail = c['netdetail']
-    cmb.fixed = c['fixed']
-    cmb.createTime = c['createTime']
-    cmb.recharge = c['recharge']
-    return cmb
-
-
-
+    if c:
+        cmb.currRemainingAmount= c['currRemainingAmount']
+        cmb.phonedetail = c['phonedetail']
+        cmb.personalInfo = c['personalInfo']
+        cmb.openBusiness = c['openBusiness']
+        cmb.currPoint = c['currPoint']
+        cmb.smsdetail = c['smsdetail']
+        cmb.phone_no = c['phone_no']
+        cmb.businessOrder = c['businessOrder']
+        cmb.netdetail = c['netdetail']
+        cmb.fixed = c['fixed']
+        cmb.createTime = c['createTime']
+        cmb.recharge = c['recharge']
+        return cmb
+    return None
 
 
 
 
+
+
+def phonebook_orm(cnd={}):
+    if not cnd:
+        return
+    d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    c=d.get_collection('phonebook').find_one(cnd) or {}
 
 
 

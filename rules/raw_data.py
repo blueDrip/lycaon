@@ -316,64 +316,6 @@ class chinaMobile(Document):
     recharge = DictField()
 
 
-
-
-#移动chinaMobile
-class yidong(Document):
-    base_info =StringField(default=str)
-    phone_no = StringField(default= str)
-    yue = StringField(default = str)
-    recharge = ListField()
-    business = StringField(default = str)
-    fixed = ListField()
-    phonedetail = ListField()
-    smsdetail = ListField()
-    netdetail = ListField()
-
-    t1 = StringField(name='201605--fixed')
-    t2 = StringField(name='201605--phonedetail')
-    t3 = StringField(name='201605--netdetail')
-    t4 = StringField(name='201605--smsdetail')
-    
-    t11 = StringField(name='201604--fixed')
-    t21 = StringField(name='201604--phonedetail')
-    t31 = StringField(name='201604--netdetail')
-    t41 = StringField(name='201604--smsdetail')
-
-    t12 = StringField(name='201603--fixed')
-    t22 = StringField(name='201603--phonedetail')
-    t32 = StringField(name='201603--netdetail')
-    t42 = StringField(name='201603--smsdetail')
-
-    t13 = StringField(name='201602--fixed')
-    t23 = StringField(name='201602--phonedetail')
-    t33 = StringField(name='201602--netdetail')
-    t43 = StringField(name='201602--smsdetail')
-
-    t14 = StringField(name='201601--fixed')
-    t24 = StringField(name='201601--phonedetail')
-    t34 = StringField(name='201601--netdetail')
-    t44 = StringField(name='201601--smsdetail')
-
-    t15 = StringField(name='201512--fixed')
-    t25 = StringField(name='201512--phonedetail')
-    t35 = StringField(name='201512--netdetail')
-    t45 = StringField(name='201512--smsdetail')
-
-    t16 = StringField(name='201511--fixed')
-    t26 = StringField(name='201511--phonedetail')
-    t36 = StringField(name='201511--netdetail')
-    t46 = StringField(name='201511--smsdetail')
-
-    t17 = StringField(name='201510--fixed')
-    t27 = StringField(name='201510--phonedetail')
-    t37 = StringField(name='201510--netdetail')
-    t47 = StringField(name='201510--smsdetail')
-    meta = {
-        "indexes": [
-            'phone_no'
-        ]
-    }
 #联通chinaUnicom
 class liantong(Document):
     base_info =StringField(default=str)
