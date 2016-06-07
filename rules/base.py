@@ -113,8 +113,7 @@ class BaseData(object):
             #self.jd=jingdong.objects.filter(jd_login_name=map_info['jd_login_name']).first()
             self.jd = map_info['jd']
             #淘宝
-            self.tb = tb_orm(cnd={"taobao_name" : "tb122917_00"})
-
+            self.tb = map_info['tb']
             '''contact info'''
             self.contacts = []
             self.good_contacts = []

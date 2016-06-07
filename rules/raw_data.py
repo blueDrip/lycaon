@@ -310,11 +310,11 @@ class TaoBao(Document):
     aliPaymFund = StringField(default=str)      #余额宝金额
     tianMaoPoints = StringField(default=str)    #天猫积分
     taobaoLevel = StringField(default=str)      #天猫等级
-    aliPaymFundProfit = StringField(default=str) #余额宝总收益
-    aliPayRemainingAmount = StringField(default=str) #支付宝余额
+    aliPaymFundProfit = StringField(default='0') #余额宝总收益
+    aliPayRemainingAmount = StringField(default='0') #支付宝余额
     huabeiTotalAmount = FloatField(default=0) #花呗总额度
-    growthValue = StringField(default=str) #淘宝成长值
-    tianmaoExperience = StringField(default=str) #天猫经验值
+    growthValue = StringField(default='0') #淘宝成长值
+    tianmaoExperience = StringField(default='0') #天猫经验值
     username = StringField(default=str) #用户名
     pwdProtectedQuestion = StringField(default=str) #未设置密保
     bindMobile = StringField(default=str) #绑定手机号
