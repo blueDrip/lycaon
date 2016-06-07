@@ -13,6 +13,7 @@ import json
 from datetime import datetime
 from rules.raw_data import topResult,DetailRule
 from rules.ruleset.JD import JD
+from rules.ruleset.Tbao import Tbao
 from rules.ruleset.PersonInfo import PersonInfo
 from rules.ruleset.Sp import Sp
 from rules.ruleset.postloan import PostLoanNewRule
@@ -24,6 +25,7 @@ from rules.util.utils import get_tb_info
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount
 from rules.raw_data import JdData,liantong,yidong
 from rules.raw_data import phonebook,cmbcc
+from rules.orm import tb_orm
 from rules.util.sms_email import MyEmail
 from statistics.models import RulesInfo
 from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
@@ -57,7 +59,8 @@ def is_apix_basic(query_map={}):
 def get_token(str_token):
 
     token_list = [ it for it in str_token.split(';') ]
-    sp_phoneno = Yunyinglogdata.objects.using('django').filter( uuid = str(token_list[2])).first().phoneno
+    sp = Yunyinglogdata.objects.using('django').filter( uuid = str(token_list[2])).first()
+    sp_phoneno = sp and sp.phoneno or str(None)
     e_commerce = Dianshanglogdata.objects.using('django').filter( 
         uuid = str(token_list[3])
     ).first()
@@ -66,7 +69,7 @@ def get_token(str_token):
     bank_login_name = BankAccount.objects.using('django').filter(token='').first()
 
     '''user,sp,jd,phonecontact,cb'''
-    idcard,sp,jd,ucl,cb=None,None,None,None,None
+    idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
     userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
 
     try:
@@ -89,7 +92,12 @@ def get_token(str_token):
         jd=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
-
+    try:
+        tb=tb_orm(cnd={"taobao_name" : e_commerce_loginname })
+    except:
+        tb=None
+        base_logger.error(get_tb_info())
+        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
         ucl = phonebook.objects.filter(user_id = u'111').first()
     except:
@@ -109,7 +117,7 @@ def get_token(str_token):
         'user_id':token_list[0].replace('-',''),
         'idcard':idcard,
         'jd' : jd,
-        'tb' : None,
+        'tb' : tb,
         'sp' : sp,
         'ucl': ucl,
         'cb' : cb
@@ -137,19 +145,22 @@ def cal(minfo = {
 
     rule_map={'personinfo':PersonInfo,
         'jd' : JD,
+        'tb' :Tbao,
         'sp' : Sp,
         'cb' : creditCard,
         'postloan' : PostLoanNewRule,
     }
     name_list={'personinfo':u'个人信息',
         'jd':u'京东',
+        'tb':u'淘宝',
         'sp':u'运营商',
         'cb':u'招商信用卡',
         'postloan':u'贷后',
     }
     weight_map={
         'personinfo':0.2,
-        'jd':0.3,
+        'jd':0.2,
+        'tb':0.1,
         'sp':0.2,
         'postloan':0.2,
         'cb':0.1,

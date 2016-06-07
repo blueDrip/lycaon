@@ -302,14 +302,14 @@ class creditCard(BaseRule):
 
     def get_score(self):
         min_map=self.min_rule_map
-        all_credit_amount_score = min_map[60001].score*0.15 #信用额度
-        amount_current = min_map[60002].score*0.15 #当前可用信用额度
+        all_credit_amount_score = min_map[60001].score*0.2 #信用额度
+        amount_current = min_map[60002].score*0.2 #当前可用信用额度
         repay_amount = min_map[60003].score*0.1 #近三个月内信用卡月还款金额
         avg_amount = min_map[60004].score*0.1 #三个月内月刷卡金额
         avg_times = min_map[60005].score*0.1  #三个月内刷卡频次
-        credit_card_location = min_map[60006].score*0.05 #持卡人所在地去都市化程度
-        most_amount_time = min_map[60007].score*0.05 #三个月内消费金额>=8000元次数
-        address_same = min_map[60008].score*0.05 #公司所在地址是否与手机归属地一致
+        credit_card_location = min_map[60006].score*0.1 #持卡人所在地去都市化程度
+        most_amount_time = min_map[60007].score*0.1 #三个月内消费金额>=8000元次数
+        address_same = min_map[60008].score*0.1 #公司所在地址是否与手机归属地一致
 
         score = all_credit_amount_score + amount_current
         score += repay_amount + avg_amount + avg_times

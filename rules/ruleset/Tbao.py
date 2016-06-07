@@ -13,9 +13,9 @@ class Tbao(BaseRule):
             40001:self.binding_phone(basedata),#是否绑定手机
             40002:self.real_name(basedata),#实名认证
             40003:self.repay_back_fast(basedata),#淘宝急速退款金额
-            40004:self.cat_grage(basedata),#天猫等级
+            40004:self.cat_level(basedata),#天猫等级
             40005:self.credit_grade(basedata),#淘宝信用等级
-            40006:self.cat_grage(basedata),#天猫积分
+            40006:self.cat_grade(basedata),#天猫积分
             40007:self.profit_amount(basedata),#余额总收益
             40008:self.hb_amount(basedata),#花呗总额度
             40009:self.consume_times(basedata),#淘宝消费次数
@@ -92,15 +92,15 @@ class Tbao(BaseRule):
             r.score = 40
         elif rt_money>5000 and rt_money<=8000:
             r.score = 20
-        r.value = rt_money
-        r.feature_val = rt_money
-        r.source = rt_money
+        r.value = str(rt_money)
+        r.feature_val = str(rt_money)
+        r.source = str(rt_money)
         self.is_basic(basedata,r)
         return r
 
 
     #天猫等级
-    def cat_grage(self,basedata):
+    def cat_level(self,basedata):
         cat_grade=basedata.tb and basedata.tb.taobaoLevel or u'unknown'
         r=minRule()
         r.name=u'天猫等级'
@@ -141,7 +141,7 @@ class Tbao(BaseRule):
         self.is_basic(basedata,r)
         return r
     #天猫积分
-    def cat_score(self,basedata):
+    def cat_grade(self,basedata):
         ss = basedata.tb and basedata.tb.tianMaoPoints or u'unknown'
         score=ss.replace(u'积分','').replace(' ','')
         r=minRule()
@@ -406,22 +406,28 @@ class Tbao(BaseRule):
 
     def get_score(self):
         min_map = self.min_rule_map 
-        binding_phone = min_map[40001].score #是否绑定手机
-        real_name = min_map[40002].score #实名认证
-        repay_back_fast = min_map[40003].score #淘宝急速退款金额
-        cat_grage = min_map[40004].score #天猫等级
-        credit_grade = min_map[40005].score #淘宝信用等级
-        cat_grage = min_map[40006].score #天猫积分
-        profit_amount = min_map[40007].score #余额总收益
-        hb_amount = min_map[40008].score #花呗总额度
-        consume_times = min_map[40009].score #淘宝消费次数
-        cat_exep_value = min_map[40010].score  #天猫经验值
-        bindp_same_with_owner_phone = min_map[40011].score #绑定手机号与申请号是否一致
-        safe_level = min_map[40012].score #账号安全级别
-        goods_nums_harf = min_map[40012].score #半年内购买商品件数
-        max_min_amount_diff = min_map[40013].score #半年内单件商品最大消费金额与最小消费差值
-        consume_hz = min_map[40014].score #消费频次
-        using_year = min_map[40015].score #淘宝使用年限
- 
+
+        binding_phone = min_map[40001].score*0.03 #是否绑定手机
+        real_name = min_map[40002].score*0.07 #实名认证
+        repay_back_fast = min_map[40003].score*0.05 #淘宝急速退款金额
+        cat_level = min_map[40004].score*0.05 #天猫等级
+        credit_grade = min_map[40005].score*0.1 #淘宝信用等级
+        cat_grade = min_map[40006].score*0.05 #天猫积分
+        profit_amount = min_map[40007].score*0.1 #余额总收益
+        hb_amount = min_map[40008].score*0.1 #花呗总额度
+        consume_times = min_map[40009].score*0.1 #淘宝消费次数
+        cat_exep_value = min_map[40010].score*0.05  #天猫经验值
+        bindp_same_with_owner_phone = min_map[40011].score*0.02 #绑定手机号与申请号是否一致
+        safe_level = min_map[40012].score*0.03 #账号安全级别
+        goods_nums_harf = min_map[40012].score*0.05 #半年内购买商品件数
+        max_min_amount_diff = min_map[40013].score*0.1 #半年内单件商品最大消费金额与最小消费差值
+        consume_hz = min_map[40014].score*0.05 #消费频次
+        using_year = min_map[40015].score*0.05 #淘宝使用年限
+    
+        score = binding_phone+real_name+repay_back_fast+cat_level
+        score += credit_grade+cat_grade+profit_amount+hb_amount+consume_times
+        score += cat_exep_value + bindp_same_with_owner_phone+safe_level
+        score += goods_nums_harf+max_min_amount_diff+consume_hz+using_year
         
+        return score
 

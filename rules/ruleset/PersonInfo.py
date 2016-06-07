@@ -88,7 +88,7 @@ class PersonInfo(BaseRule):
         r.source = marr
         r.score = 10
         if u'unknow' == marr:
-            r.score = 40
+            r.score = 10
             r.feature_val = marr
         if u'结婚' in marr:
             r.score = 80
@@ -117,7 +117,7 @@ class PersonInfo(BaseRule):
         elif p==u'金融业':
             r.score=40
         else:
-            r.score=20
+            r.score=10
         r.name=u'职业'
         r.source = p
         r.feature_val = p
