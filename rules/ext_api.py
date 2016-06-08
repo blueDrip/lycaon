@@ -16,6 +16,7 @@ import urllib
 import math
 import json
 import re
+import requests
 #from rules.base import *
 #固话归属地的文件
 tel_file = None
@@ -49,6 +50,20 @@ def judge(identifice):
         return ""
     #print "zzzz",rs
     return rs
+
+def get_geo_info(ip):
+
+    url = "http://e.apix.cn/apixlab/ipinfo/ipinfo"
+    querystring = {"ip":ip}
+    headers = {
+        'accept': "application/json",
+        'content-type': "application/json",
+        'apix-key': "a8bbd3a565b04acf600e6b053beffea2"
+    }
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    print(response.text)
+    
+
 
 class PhoneInfo():
     def __init__(self):
