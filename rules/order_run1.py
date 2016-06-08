@@ -52,13 +52,13 @@ def daemonize(stdin='/dev/null',stdout= '/dev/null', stderr= 'dev/null'):
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
 
-def _example_main():
-    sys.stdout.write('Daemon started with pid %d\n' % os.getpid())
-    sys.stdout.write('Daemon stdout output\n')
-    sys.stderr.write('Daemon stderr output\n')
+def example_main():
+    #sys.stdout.write('Daemon started with pid %d\n' % os.getpid())
+    #sys.stdout.write('Daemon stdout output\n')
+    #sys.stderr.write('Daemon stderr output\n')
     consumer = KafkaConsumer('event_deal',bootstrap_servers='101.200.193.228:9092,101.200.167.180:9092,123.56.249.148:9092')
     for message in consumer:
-        print message.value
+        #print message.value
         if message:
             try:
                 cal_by_message(message.value)
@@ -68,6 +68,6 @@ def _example_main():
         sys.stdout.write('【　conusmer an message　】'+'\n')
         sys.stdout.flush()
 if __name__ == "__main__":
-    daemonize('/dev/null','/home/sw/logs/lycaon/calculate.log','home/sw/daemon.log')
-    _example_main()
+    daemonize('/dev/null','/home/sw/logs/lycaon/calculate.log','home/sw/logs/daemon.log')
+    example_main()
 
