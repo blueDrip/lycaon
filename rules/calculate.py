@@ -58,23 +58,21 @@ def is_apix_basic(query_map={}):
 def get_token(str_token):
 
     token_list = [ it for it in str_token.split(';') ]
-    sp = Yunyinglogdata.objects.using('django').filter( uuid = str(token_list[2])).first()
+    sp = Yunyinglogdata.objects.filter( uuid = str(token_list[2])).first()
     sp_phoneno = sp and sp.phoneno or str(None)
-    e_commerce = Dianshanglogdata.objects.using('django').filter( 
-        uuid = str(token_list[3])
-    ).first()
-    e_commerce_loginname = e_commerce and e_commerce.loginname or str(None)
+    online_shop = Dianshanglogdata.objects.filter(uuid = str(token_list[3])).first()
+    e_commerce_loginname = online_shop and online_shop.loginname or str(None)
 
-    bank_login_name = BankAccount.objects.using('django').filter(token='').first()
+    #bank_login_name = BankAccount.objects.filter(token='').first()
 
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
-    userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
-    buser = Busers.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
+    userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
+    buser = Busers.objects.using('users').filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
     user_phone = buser and buser.name or str(None)
 
     try:
-        idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
+        idcard = Idcardauthlogdata.objects.filter( uuid=str(token_list[1] )).first()
     except:
         idcard=None
         base_logger.error(get_tb_info())
