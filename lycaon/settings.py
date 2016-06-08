@@ -87,7 +87,15 @@ CITY_CONF = BASE_DIR+'/data/city.conf'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'default':{
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'personalbill',
+        'USER': 'shiwei',
+        'HOST': '182.92.1.106',
+        'PORT': '3306',
+        'PASSWORD': 'apixheige@personalbill'
+    },
+    'users': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'qianbao',
         'USER': 'root',
@@ -96,14 +104,6 @@ DATABASES = {
         'PASSWORD': 'wangzhanghu123',
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-    'django':{
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
-        'USER': 'root',
-        'HOST': '182.92.71.136',
-        'PORT': '3306',
-        'PASSWORD': 'wangzhanghu123'
-    }
 }
 
 
