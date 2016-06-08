@@ -60,9 +60,14 @@ def _example_main():
     for message in consumer:
         print message.value
         if message:
-            cal_by_message(message.value)    
+            try:
+                cal_by_message(message.value)
+            except:
+                continue
+
         sys.stdout.write('【　conusmer an message　】'+'\n')
         sys.stdout.flush()
 if __name__ == "__main__":
     daemonize('/dev/null','/home/sw/logs/lycaon/calculate.log','home/sw/daemon.log')
     _example_main()
+
