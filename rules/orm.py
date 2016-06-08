@@ -1,6 +1,6 @@
 # coding=utf8
 from corelib.database import MongoDb
-from rules.raw_data import JdData,TaoBao,chinaMobile
+from rules.raw_data import JdData,TaoBao,chinaMobile,phonebook,chinaUnicom
 from datetime import datetime
 def jd_orm(cnd={}):
     if not cnd:
@@ -123,23 +123,41 @@ def china_mobile_orm(cnd={}):
     return None
 
 
+def china_unicom_orm(cnd={}):
+    if not cnd:
+        return None
+    d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    c=d.get_collection('liantong').find_one(cnd) or {}
 
-
+    cub=chinaUnicom()
+    if c:
+        cub.base_info = c['base_info']
+        cub.phone_no = c['phone_no']
+        cub.yue_jifen = c['yue_jifen'] 
+        cub.recharge = c['rechargedetail']
+        cub.phonedetail = c['phonedetail']
+        cub.smsdetail = c['smsdetail']
+        cub.netdetail = c['netdetail']
+        cub.others = c['others']
+        cub.personalInfo = {}
+        cub.createTime = c['createTime']
+        return cub    
+    return None
 
 
 def phonebook_orm(cnd={}):
     if not cnd:
-        return
+        return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('phonebook').find_one(cnd) or {}
 
-
-
-
-
-
-
-
-
-
+    pb = phonebook()
+    if c:
+        pb.user_id = 'xxx'
+        pb.name = c['name']
+        pb.phone = c['phone']
+        pb.linkmen = c['linkmen']
+        pb.device_id = c['device_id']
+        return pb
+    return None
 

@@ -57,19 +57,19 @@ class Sp(BaseRule):
         return ppmap
 
     def init_recharge_map(self,basedata):
-        recharge = basedata.sp and basedata.sp.recharge or '{}'
-        json_data = recharge
-        mp = 'data' in json_data and json_data['data'] or {}
-        charge_mp={}
-        now=basedata.create_time
-        for it in mp:
-            td=it['payDate']
-            key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),int(td[8:10]),int(td[10:12]),int(td[12:14]))
-            if key>now-timedelta(180) and key<=now:
-                charge_mp.update({
-                    key:it['payFee']
-                })
-        return charge_mp
+        #recharge = basedata.sp and basedata.sp.recharge or '{}'
+        #json_data = recharge
+        #mp = 'data' in json_data and json_data['data'] or {}
+        #charge_mp={}
+        #now=basedata.create_time
+        #for it in mp:
+        #    td=it['payDate']
+        #    key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),int(td[8:10]),int(td[10:12]),int(td[12:14]))
+        #    if key>now-timedelta(180) and key<=now:
+        #        charge_mp.update({
+        #            key:it['payFee']
+        #        })
+        return basedata.sp_recharge
     #基本验证
     def is_basic(self,basedata,r):
         if not basedata.sp:

@@ -22,10 +22,9 @@ from rules.models import BaseRule
 from rules.base import BaseData
 from rules.ext_api import EXT_API
 from rules.util.utils import get_tb_info
-from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount
-from rules.raw_data import JdData,liantong,yidong
+from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount,Busers
 from rules.raw_data import phonebook,cmbcc
-from rules.orm import tb_orm,china_mobile_orm,jd_orm
+from rules.orm import tb_orm,china_mobile_orm,jd_orm,china_unicom_orm
 from rules.util.sms_email import MyEmail
 from statistics.models import RulesInfo
 from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
@@ -71,6 +70,8 @@ def get_token(str_token):
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
     userinfo = Profile.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
+    buser = Busers.objects.filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
+    user_phone = buser and buser.name or str(None)
 
     try:
         idcard = Idcardauthlogdata.objects.using('django').filter( uuid=str(token_list[1] )).first()
@@ -79,16 +80,14 @@ def get_token(str_token):
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        #sp=yidong.objects.filter(phone_no = sp_phoneno).first()
-        print 'sp no',sp_phoneno
         sp=china_mobile_orm({ "phone_no" : sp_phoneno })
+        #sp=china_unicom_orm({ "phone_no" : sp_phoneno })
     except:
         sp=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
 
     try:
-        #jd=JdData.objects.filter(jd_login_name = e_commerce_loginname).first()
         jd = jd_orm({"jd_login_name" : e_commerce_loginname })
     except:
         jd=None
@@ -117,6 +116,7 @@ def get_token(str_token):
     return {
         'user':userinfo,
         'user_id':token_list[0].replace('-',''),
+        'user_phone':user_phone,
         'idcard':idcard,
         'jd' : jd,
         'tb' : tb,
@@ -137,6 +137,7 @@ def cal_by_message(msg):
 def cal(minfo = {
         'user':None,
         'user_id':str(None),
+        'user_phone':str(None),
         'idcard':None,
         'jd':None,
         'tb':None,
@@ -216,7 +217,6 @@ def cal(minfo = {
     top_rule.user_id = minfo['user_id']
     top_rule.save()
     cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(top_rule.score))
-    #print '【successful!】'
 
     #try:
     rule_detail = RulesInfo()

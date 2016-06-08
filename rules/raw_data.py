@@ -317,16 +317,17 @@ class chinaMobile(Document):
 
 
 #联通chinaUnicom
-class liantong(Document):
-    base_info =StringField(default=str)
-    phone_no = StringField(default= str)
-    yue = StringField(default = str)
-    recharge = StringField(default = str)
-    business = StringField(default = str)
-    fixed = ListField()
-    phonedetail = ListField()
-    smsdetail = ListField()
-    netdetail = ListField()
+class chinaUnicom(Document):
+    base_info = DictField()
+    phone_no = DictField()
+    yue_jifen = DictField
+    rechargedetail = DictField()
+    phonedetail = DictField()
+    personalInfo = DictField()
+    smsdetail = DictField()
+    netdetail = DictField()
+    others = DictField()
+    createTime = StringField()
 #电信
 class chinaTelecom(Document):
     base_info =StringField(default=str)
@@ -344,7 +345,7 @@ class phonebook(Document):
     user_id = StringField(default=str)
     name = StringField(default=str)
     phone = StringField(default=str)
-    linkmen = StringField(default=str) 
+    linkmen = DictField(default=str) 
     device_id=StringField(default=str)
 
 

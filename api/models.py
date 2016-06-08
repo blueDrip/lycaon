@@ -31,6 +31,21 @@ class Profile(models.Model):
         db_table = 'user_infos'
 
 
+class Busers(models.Model):
+    user_id = models.BinaryField(db_column='id',primary_key=True)
+    password_digest = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    token = models.CharField(max_length=255)
+    reg_location = models.CharField(max_length=255)
+    last_login_time = models.DateTimeField()
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+
+    class Meta:
+        db_table = 'users'
+
+
+
 '''order info'''
 '''
 class Loan(models.Model):
