@@ -129,7 +129,6 @@ def cal_by_message(msg):
     s=cal(minfo=rmap)
     user=rmap['user']
     if user:
-        print '得分',s
         user.trust_score=s
         user.save()
         #print '【save successful】'
