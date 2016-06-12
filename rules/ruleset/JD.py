@@ -120,8 +120,8 @@ class JD(BaseRule):
     def is_valid_name(self,basedata):
         r=minRule()
         ispass=basedata.jd and basedata.jd.indentify_verified.values() or []
-        r.score=10
-        r.source=ispass and ispass[1] or u'unknown'
+        r.score=20
+        r.source=ispass and ispass[0] or u'unknown'
         r.name=u'身份证认证'
         if u'YES' in ispass:
             r.value=ispass[1]
@@ -138,9 +138,9 @@ class JD(BaseRule):
     def is_valid_phone(self,basedata):
         r=minRule()
         ispass=basedata.jd and basedata.jd.phone_verifyied.values() or []
-        r.score=10
+        r.score=20
         r.name=u'手机验证'        
-        r.source=ispass and ispass[1] or u'unknown'
+        r.source=ispass and ispass[0] or u'unknown'
         if u'YES' in ispass:
             r.value=ispass[1]
             r.score=100
@@ -157,7 +157,7 @@ class JD(BaseRule):
         r=minRule()
         grade=basedata.jd and basedata.jd.user_level or u'unknow'
         r.value=grade
-        r.score=10
+        r.score=20
         r.source=grade
         r.name=u'会员级别'
         if u'钻石会员'==grade:
@@ -184,9 +184,10 @@ class JD(BaseRule):
         r.value = u'登陆时间:'+ '\t' +'\t'.join([ str(it) for it in login_his ])
         avg_days=inter*1.0/(len(login_his) or 1)
         r.name=u'平均登陆时间登陆间隔'
+       
         r.feature_val = str(int(avg_days))+u'天/次'
         r.source = str(inter)
-        r.score=10
+        r.score=20
         if avg_days>0 and avg_days<=5:
             r.score=100
         elif avg_days>5 and avg_days<=15:
@@ -209,7 +210,7 @@ class JD(BaseRule):
                 'order:'+it['orderid']+'; money:'+str(it['money'])+'; time:'+str(it['time'])
             )
         r=minRule()
-        r.score=0
+        r.score=10
         r.value='\t'.join(value)
         r.source=str(amount)
         r.name=u'半年内消费金额'
@@ -232,7 +233,7 @@ class JD(BaseRule):
         consume_list=self.consume_list
         times = len(consume_list)
         r = minRule()
-        r.score = 0
+        r.score = 10
         r.name = u'半年内消费次数'
         value=[ 'order:'+it['orderid']+ '; time:'+str(it['time']) +u'; 1次' for it in consume_list]
         r.value = '\t'.join(value)
@@ -259,7 +260,7 @@ class JD(BaseRule):
                 if it['dictr'] not in count_mp:
                     count_mp[it['dictr']]=0
         r.value=ss
-        r.score=0
+        r.score=10
         count_address = len(count_mp.keys())
         r.name=u'不同的收货地址个数'
         if count_address<=15:
@@ -287,7 +288,7 @@ class JD(BaseRule):
                     value.append(str_)
         r = minRule()
         r.name=u'收件人出现在通讯录中'
-        r.score = 0
+        r.score = 20
         r.source = str(len(value))
         r.feature_val = u'无'
         if value:
@@ -311,7 +312,7 @@ class JD(BaseRule):
                     value.append(str_)
         r = minRule()
         r.name=u'与收件人有短信联系'
-        r.score = 0
+        r.score = 20
         r.source = str(len(value))
         r.feature_val = u'无'
         if value:
@@ -336,7 +337,7 @@ class JD(BaseRule):
                     value.append(str_)
         r = minRule()
         r.name= u'与收件人有电话联系'
-        r.score=0
+        r.score=20
         r.source = str(len(value))
         r.feature_val = u'无'
         if value:
@@ -350,23 +351,22 @@ class JD(BaseRule):
     #手机归属地中出现在收货地址中
     def owner_phone_location_in_address(self,basedata):
         value=[]
-        user_phone_location=basedata.user_plocation
+        user_plocation=basedata.user_plocation
         for k,v in self.address_info_map.items():
             for it in v:
-                if user_phone_location in it['dictr']:
+                if user_plocation in it['dictr']:
                     value.append(
                         k+';'+it['phone']+';'+it['dictr']
                     )
         r = minRule()
         r.name=u'申请用户手机归属地出现在收货地址中'
         r.value = '\t'.join(value)
-        r.score = 0
+        r.score = 20
         r.feature_val = u'无'
         r.source = str(len(value))
         if value:
             r.score=100
             r.feature_val = u'出现%s个'%(str(len(value)))
-
         self.is_basic(basedata,r)
         return r
 
@@ -382,7 +382,7 @@ class JD(BaseRule):
         r = minRule()
         r.name=u'收件人中有申请人'
         r.value= '\t'.join(value)
-        r.score=0
+        r.score = 10
         r.feature_val = str(len(value))+'个'
         r.source = str(len(value))
         if value:
@@ -418,7 +418,7 @@ class JD(BaseRule):
         r = minRule()
         r.name=u'是否邮箱验证'
         r.score = 10
-        r.source=ispass and ispass[1] or u'unknown'
+        r.source=ispass and ispass[0] or u'unknown'
         if u'YES' in ispass:
             r.value=ispass[1]
             r.score=100
@@ -437,7 +437,7 @@ class JD(BaseRule):
         flag=False
         r = minRule()
         r.name = u'是否开通白条'
-        r.score = 30
+        r.score = 20
         if isopen:
             flag = u'isOpen' in isopen and isopen[u'isOpen'] or False
         if not flag:
