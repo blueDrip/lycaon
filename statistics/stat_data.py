@@ -167,11 +167,11 @@ def init_online_shop_info(basedata,jd):
 
     for k,v in jd_addr_info.items():
         for it in v:
-            if it['value'] not in flag_list:
+            if it['dictr'] not in flag_list:
                 jd_addr_detail_list.append({
                     '10001' : k,#收货人
-                    '10002' : u'---',#所在地区
-                    '1009' : it['value'],#地址
+                    '10002' : it['dictr'],#所在地区
+                    '1009' :  it['address'],#地址
                     '1008' : it['phone'],#手机
                     '1007' : it['tel_phone'] or '---',#固定手机
                     '1006' : it['email'] or '---',#电子邮箱
@@ -181,7 +181,7 @@ def init_online_shop_info(basedata,jd):
                     '1002' : u'---',#消费总额
                     '1001' : u'京东',#来源
                 })
-                flag_list.append(it['value'])
+                flag_list.append(it['dictr'])
     if len(jd_addr_detail_list)<=1:
         jd_addr_detail_list.append({
             '10001' : u'---',

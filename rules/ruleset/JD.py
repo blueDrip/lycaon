@@ -121,7 +121,7 @@ class JD(BaseRule):
         r=minRule()
         ispass=basedata.jd and basedata.jd.indentify_verified.values() or []
         r.score=10
-        r.source=ispass
+        r.source=ispass and ispass[1] or u'unknown'
         r.name=u'身份证认证'
         if u'YES' in ispass:
             r.value=ispass[1]
@@ -140,7 +140,7 @@ class JD(BaseRule):
         ispass=basedata.jd and basedata.jd.phone_verifyied.values() or []
         r.score=10
         r.name=u'手机验证'        
-        r.source=ispass
+        r.source=ispass and ispass[1] or u'unknown'
         if u'YES' in ispass:
             r.value=ispass[1]
             r.score=100
@@ -418,7 +418,7 @@ class JD(BaseRule):
         r = minRule()
         r.name=u'是否邮箱验证'
         r.score = 10
-        r.source=ispass
+        r.source=ispass and ispass[1] or u'unknown'
         if u'YES' in ispass:
             r.value=ispass[1]
             r.score=100
