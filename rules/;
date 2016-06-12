@@ -24,7 +24,7 @@ from rules.ext_api import EXT_API
 from rules.util.utils import get_tb_info
 from api.models import Profile,Idcardauthlogdata,Yunyinglogdata,Dianshanglogdata,BankAccount,Busers
 from rules.raw_data import phonebook,cmbcc
-from rules.orm import tb_orm,china_mobile_orm,jd_orm,china_unicom_orm,phonebook_orm
+from rules.orm import tb_orm,china_mobile_orm,jd_orm,china_unicom_orm
 from rules.util.sms_email import MyEmail
 from statistics.models import RulesInfo
 from statistics.stat_data import init_valid_name_info,init_online_shop_info,init_contact_info,init_sp_record_info
@@ -60,7 +60,7 @@ def get_token(str_token):
     token_list = [ it for it in str_token.split(';') ]
     sp = Yunyinglogdata.objects.filter( uuid = str(token_list[2])).first()
     sp_phoneno = sp and sp.phoneno or str(None)
-    online_shop = Dianshanglogdata.objects.filter(uuid = str(token_list[5])).first()
+    online_shop = Dianshanglogdata.objects.filter(uuid = str(token_list[3])).first()
     e_commerce_loginname = online_shop and online_shop.loginname or str(None)
 
     #bank_login_name = BankAccount.objects.filter(token='').first()
@@ -78,9 +78,8 @@ def get_token(str_token):
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        sp_mobile=china_mobile_orm({ "phone_no" : sp_phoneno })
-        sp_unicom=china_unicom_orm({ "phone_no" : sp_phoneno })
-        sp = sp_mobile or sp_unicom
+        sp=china_mobile_orm({ "phone_no" : sp_phoneno })
+        #sp=china_unicom_orm({ "phone_no" : sp_phoneno })
     except:
         sp=None
         base_logger.error(get_tb_info())
@@ -99,7 +98,7 @@ def get_token(str_token):
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        ucl = phonebook_orm({ "token" : str(token_list[3])})
+        ucl = phonebook.objects.filter(user_id = u'111').first()
     except:
         ucl=None
         base_logger.error(get_tb_info())
