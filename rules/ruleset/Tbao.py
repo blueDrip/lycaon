@@ -378,12 +378,13 @@ class Tbao(BaseRule):
         order_list=basedata.tb and basedata.tb.orderList or []
         now=basedata.create_time
         min_dt=now
+        value=''
         for o in order_list:
             dt=o['businessDate'].split('-')
             d=datetime(int(dt[0]),int(dt[1]),int(dt[2]))
             if d<min_dt:
                 min_dt = d
-
+                value = o['businessDate']
 
         y=(now-min_dt).days/365
         r = minRule()
@@ -398,7 +399,7 @@ class Tbao(BaseRule):
             r.score = 80
         elif y>=10:
             r.score = 100
-        r.value = str(y)
+        r.value = value
         r.feature_val = str(y)
         r.source = str(y)
         self.is_basic(basedata,r)
