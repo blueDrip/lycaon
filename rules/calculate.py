@@ -220,7 +220,7 @@ def cal(minfo = {
     #try:
     rule_detail = RulesInfo()
     rule_detail.valid_name_info = init_valid_name_info(bd)
-    rule_detail.online_shop_info = init_online_shop_info(bd,rules_detail_map['jd'])
+    rule_detail.online_shop_info = init_online_shop_info(bd,rules_detail_map['jd'],rules_detail_map['tb'])
     rule_detail.contact_info = init_contact_info(bd,rules_detail_map['postloan'])
     rule_detail.sp_info = init_sp_record_info(bd, rules_detail_map['sp'],rules_detail_map['postloan'])
     rule_detail.credit_info = {}

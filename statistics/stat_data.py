@@ -51,8 +51,9 @@ def init_valid_name_info(basedata):
     }
 
 '''电商分析'''
-def init_online_shop_info(basedata,jd):
+def init_online_shop_info(basedata,jd,tb):
     bjd = basedata and basedata.jd or None
+    btb = basedata and basedata.tb or None
     login_his = jd and jd.login_his_map.keys() or []
     login_his.sort()
 
@@ -73,18 +74,18 @@ def init_online_shop_info(basedata,jd):
             '1007':bjd and bjd.jd_login_name or u'unknown',#会员名    
             '1006':bjd and bjd.user_level or u'unknown',#会员等级
             '1005':jd and jd.min_rule_map[30001].feature_val or u'unknown',#是否通过姓名验证
-            '1004':u'unknown',#绑定手机号
+            '1004':bjd and bjd.phone_verifyied and bjd.phone_verifyied.values()[1] or u'unknown',#绑定手机号
             '1003':bjd and bjd.email_host.replace('\r\n','') or u'unknown',#登陆邮箱
             '1002':len(login_his)>0 and login_his[-1] or u'unknown',#最后一次登陆时间
             '1001':u'unknown' #使用时间
         },
         {
             '1008':u'淘宝',
-            '1007':u'---',
-            '1006':u'---',
-            '1005':u'---',
-            '1004':u'---',
-            '1003':u'---',
+            '1007':btb and btb.username or u'uknown',
+            '1006':btb and btb.creditLevel or u'unknown',
+            '1005':tb and tb.min_rule_map[40002].feature_val or u'unknown',
+            '1004':btb and btb.bindMobile or u'unknown',
+            '1003':btb and btb.loginEmail or u'unknown',
             '1002':u'---',
             '1001':u'---'
         },
@@ -95,7 +96,7 @@ def init_online_shop_info(basedata,jd):
         '1006':{ u'剩余额度':bjd and bjd.baitiao and bjd.baitiao[u'avaliableAmount'] or u'unknown' },#白条剩余额度
         '1005':{ u'累积消费':bjd and bjd.baitiao and bjd.baitiao[u'consumeAmount'] or u'unknown'},#白条可用额度
         '1004':{ u'芝麻信用分数':u'unknown' },#芝麻信用分数
-        '1003':{ u'花呗额度':u'unknown' },#花呗额度
+        '1003':{ u'花呗额度':btb and btb.huabeiTotalAmount or u'unknown'},#花呗额度
         '1002':{ u'京东实名认证是否与美信生活实名认证一致' : u'---' },
         '1001':{ u'淘宝实名认证是否与美信生活实名认证一致' : u'---' },
     }
@@ -137,18 +138,17 @@ def init_online_shop_info(basedata,jd):
             '1009' : u'---',
             '1008' : u'---',
             '1007' : u'---',
-            '1006' : u'unknown',
-            '1005' : u'unknown',
-            '1004' : u'unknown',
-            '1003' : u'unknown',
-            '1002' : u'unknown',
-            '1001' : u'unknown',
+            '1006' : u'---',
+            '1005' : u'---',
+            '1004' : u'---',
+            '1003' : u'---',
+            '1002' : u'---',
+            '1001' : u'---',
         }
     ]
     
     #京东收货人分析
     jd_addr_info = jd and jd.init_info_mp(basedata) or {}
-    jd_addr_detail_list = []
     flag_list=[]
     
     jd_addr_detail_list=[{
@@ -198,6 +198,8 @@ def init_online_shop_info(basedata,jd):
         })
 
     #淘宝收货人分析
+    tb_addr_info = tb and tb.address_map or {}
+    flag_list = []
     tb_addr_detail_list = [
         {
             '10001' : u'收货人',
@@ -211,8 +213,27 @@ def init_online_shop_info(basedata,jd):
             '1003' : u'订单数',
             '1002' : u'消费总额',
             '1001' : u'来源'
-        },
-        {
+        }
+    ]
+    for k,v in tb_addr_info.items():
+        for it in v:
+            if it['dictr'] not in flag_list:
+                tb_addr_detail_list.append({
+                    '10001' : k,#收货人
+                    '10002' : it['dictr'],#所在地区
+                    '1009' :  it['address'],#地址
+                    '1008' : it['phone'],#手机
+                    '1007' : it['tel_phone'] or '---',#固定手机
+                    '1006' : it['email'] or '---',#电子邮箱
+                    '1005' : u'---',#第一次送货时间
+                    '1004' : u'---',#最后一个送货时间
+                    '1003' : u'---',#订单数
+                    '1002' : u'---',#消费总额
+                    '1001' : u'淘宝',#来源
+                })
+                flag_list.append(it['dictr'])
+    if len(tb_addr_detail_list)<=1:
+        tb_addr_detail_list.append({
             '10001' : u'---',
             '10002' : u'---',
             '1009' : u'---',
@@ -224,8 +245,7 @@ def init_online_shop_info(basedata,jd):
             '1003' : u'---',
             '1002' : u'---',
             '1001' : u'淘宝'
-        }
-    ]
+        })
 
     #图标数据    
     map_info={}
@@ -303,6 +323,8 @@ def init_online_shop_info(basedata,jd):
             }
         )
 
+
+    hl = tb and tb.harf_order_list or []
     tb_order_info = [
         {
             '1007' : u'订单日期',
@@ -312,17 +334,32 @@ def init_online_shop_info(basedata,jd):
             '1003' : u'支付方式',
             '1002' : u'收货人地址',
             '1001' : u'收货人',
-        }, 
-        {
-            '1007': u'---',
-            '1006' : u'---',
-            '1005' : u'---',
-            '1004' : u'---',
-            '1003' : u'---',
-            '1002' : u'---',
-            '1001' : u'---'
         }
     ]
+    for it in hl:
+        for p in it['orderProducts']:
+            tb_order_info.append({
+                '1007': it['businessDate'],
+                '1006' : p['productName'],
+                '1005' : u'1',
+                '1004' : p['productPrice'],
+                '1003' : u'---',
+                '1002' : u'---',
+                '1001' : u'---'
+            } 
+        )
+    if len(tb_order_info)<=1:
+        tb_order_info.append({
+                '1007' : u'---',
+                '1006' : u'---',
+                '1005' : u'---',
+                '1004' : u'---',
+                '1003' : u'---',
+                '1002' : u'---',
+                '1001' : u'---'
+            }
+        )
+
     #汇集
     info = {
         u'base_info' : basic_info_list,#基本信息
