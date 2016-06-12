@@ -49,29 +49,24 @@ class JD(BaseRule):
             return r
 
     def init_consume_map(self,consume_str,basedata):
-        cl_str = consume_str.strip('##\*\*\*##').replace(u'￥','')
-        cl = []
-        if '##***##' in cl_str:
-            cl = cl_str.split('##***##')
+        cl = consume_str
         clist=[]
         now=basedata.create_time
         for c in cl:
-            cc = c.split('###$$$')
-            kk=get_right_datetime(cc[0])
+            cc = c.split('|')
+            kk=get_right_datetime(cc[0].strip(' '))
             if not kk:
                 continue
             if kk>now-timedelta(180) and kk<=now:
                 clist.append({
                     'time':kk,
                     'orderid':cc[1],
-                    'money':float(cc[3])   
+                    'money':float(cc[2].replace('￥',''))   
                 })
         return clist
+
     def init_login_history_list(self,consume_str):
-        login_his_str=consume_str.strip('##\*\*\*##')
         login_his = []
-        if '##***##' in login_his_str:
-            login_his = login_his_str.split('##***##')
         cmap={}
         for his in login_his:
             h=his.split('###$$$')
@@ -87,27 +82,23 @@ class JD(BaseRule):
             })
         return cmap
     def init_info_mp(self,basedata):
-        sub_str = re.sub('\t|\n|\r|\s+','',basedata.jd and basedata.jd.address or '')
-        sub_list_str = sub_str.strip('#***#')
-        sub_list = []
-
-        if '#***#' in sub_list_str:
-            sub_list = sub_list_str.split('#***#')
-
+        address_list = basedata.jd and basedata.jd.address or []
         infomp={}
-        for adr in sub_list:
-            info = adr.replace('###','').split('$$$')
-            key=len(info)>2 and  info[1] or None
-            value=len(info)>3 and info[3] or None
-            phone=len(info)>7 and info[7] or None
-            tel_phone=len(info)>9 and info[9] or None
-            email=len(info)>11 and info[11] or None
+        for adr in address_list:
+            info = adr.strip('|').split('|')
+            key = len(info)>=1 and info[0].split(u'：')[1] or None
+            dictr = len(info)>=2 and info[1].split(u'：')[1] or None
+            address = len(info)>=3 and info[2].split(u'：')[1] or None
+            phone=len(info)>=4 and info[3].split(u'：')[1] or None
+            tel_phone=len(info)>=5 and info[4].split(u'：')[1] or None
+            email=len(info)>=6 and info[5].split(u'：')[1] or None
             if not key:
                 continue
             if key and key not in infomp:
                 infomp[key]=[]
             infomp[key].append({
-                'value':value,
+                'dictr':dictr,
+                'address' : address,
                 'phone' :str(phone),
                 'tel_phone':tel_phone,
                 'email':email
@@ -116,12 +107,10 @@ class JD(BaseRule):
         return infomp
 
     def load_data(self,basedata):
-        three_month_before_consume = basedata.jd and basedata.jd.three_month_before_consume or ''
-        self.consume_list = self.init_consume_map(three_month_before_consume,basedata)
 
-        three_month_consume = basedata.jd and basedata.jd.three_month_consume or ''
-        self.consume_list.extend(self.init_consume_map(three_month_consume,basedata))
-         
+        consume_list = basedata.jd and basedata.jd.consume_list or ''
+        self.consume_list = self.init_consume_map(consume_list,basedata)
+
         loginhistory = basedata.jd and basedata.jd.login_history or ''
         self.login_his_map= self.init_login_history_list(loginhistory)
 
@@ -130,19 +119,16 @@ class JD(BaseRule):
     '''身份证认证'''
     def is_valid_name(self,basedata):
         r=minRule()
-        ispass=basedata.jd and basedata.jd.indentify_verified or u'unknown'
+        ispass=basedata.jd and basedata.jd.indentify_verified.values() or []
         r.score=10
         r.source=ispass
         r.name=u'身份证认证'
-        if u'验证通过' in ispass:
-            r.value=u'验证通过'
+        if u'YES' in ispass:
+            r.value=ispass[1]
             r.score=100
-        elif u'验证失败' in ispass:
-            r.value=u'验证失败'
+        elif u'NO' in ispass:
+            r.value=ispass[1]
             r.score=70
-        elif u'未验证' in ispass:
-            r.value=u'未验证'
-            r.score=30
         else:
             r.value=u'结果未知'
         r.feature_val = r.value
@@ -151,19 +137,16 @@ class JD(BaseRule):
     '''手机验证'''
     def is_valid_phone(self,basedata):
         r=minRule()
-        ispass=basedata.jd and basedata.jd.phone_verifyied or u'unknown'
-        r.score=0
+        ispass=basedata.jd and basedata.jd.phone_verifyied.values() or []
+        r.score=10
         r.name=u'手机验证'        
         r.source=ispass
-        if u'验证通过' in ispass:
-            r.value=u'验证通过'
+        if u'YES' in ispass:
+            r.value=ispass[1]
             r.score=100
-        elif u'验证失败' in ispass:
-            r.value =u'验证失败'
+        elif u'NO' in ispass:
+            r.value =ispass[1]
             r.score=70
-        elif u'未验证' in ispass:
-            r.value =u'未验证'
-            r.score=20
         else:
             r.value=u'结果未知'
         r.feature_val = r.value
@@ -174,7 +157,7 @@ class JD(BaseRule):
         r=minRule()
         grade=basedata.jd and basedata.jd.user_level or u'unknow'
         r.value=grade
-        r.score=0
+        r.score=10
         r.source=grade
         r.name=u'会员级别'
         if u'钻石会员'==grade:
@@ -272,9 +255,9 @@ class JD(BaseRule):
         for k,v in self.address_info_map.items():
             ss+=u'收件人:'+k+'\t'
             for it in v:
-                ss+=u'地址:'+it['value']+'\t'
-                if it['value'] not in count_mp:
-                    count_mp[it['value']]=0
+                ss+=u'地址:'+it['dictr']+'\t'
+                if it['dictr'] not in count_mp:
+                    count_mp[it['dictr']]=0
         r.value=ss
         r.score=0
         count_address = len(count_mp.keys())
@@ -370,9 +353,9 @@ class JD(BaseRule):
         user_phone_location=basedata.user_plocation
         for k,v in self.address_info_map.items():
             for it in v:
-                if it['value'] in user_phone_location:
+                if user_phone_location in it['dictr']:
                     value.append(
-                        k+';'+it['phone']+';'+it['value']
+                        k+';'+it['phone']+';'+it['dictr']
                     )
         r = minRule()
         r.name=u'申请用户手机归属地出现在收货地址中'
@@ -394,7 +377,7 @@ class JD(BaseRule):
         for k,v in self.address_info_map.items():
             if k == owner_name:
                 value.append(
-                    k+';'+'\t'.join([ it['phone']+';'+it['value'] for it in v])
+                    k+';'+'\t'.join([ it['phone']+';'+it['dictr'] for it in v])
                 )
         r = minRule()
         r.name=u'收件人中有申请人'
@@ -431,21 +414,19 @@ class JD(BaseRule):
         return r  
     #邮箱认证
     def valid_email(self,basedata):
-        ispass=basedata.jd and basedata.jd.email_verified or u'unknown'
+        ispass=basedata.jd and basedata.jd.email_verified.values() or []
         r = minRule()
         r.name=u'是否邮箱验证'
+        r.score = 10
         r.source=ispass
-        if u'unknown' in ispass:
-            r.value = u'unknown'
-        elif u'验证通过' in ispass:
-            r.value=u'验证通过'
+        if u'YES' in ispass:
+            r.value=ispass[1]
             r.score=100
-        elif u'验证失败' in ispass:
-            r.value=u'验证失败'
+        elif u'NO' in ispass:
+            r.value=ispass[1]
             r.score=70
         else:
-            r.value=u'未验证'
-            r.score=20
+            r.value=u'结果未知'
         r.feature_val = r.value
         self.is_basic(basedata,r)
         return r
@@ -583,19 +564,20 @@ class JD(BaseRule):
 
     #绑定银行卡中有申请人手机号
     def phone_bankinfo(self,basedata):
-        bankinfo=basedata.jd and basedata.jd.bankinfo or u'unknown'
+        bankinfo=basedata.jd and basedata.jd.bankinfo or []
         up=basedata.user_phone
         bank_phone =  up[:3]+'****'+up[7:]
         r=minRule()
         r.name=u'绑定银行卡中有申请人手机号'
-        r.score = 20
-        r.value = bankinfo
-        if u'unknown' in bankinfo:
-            r.score = 10
-            r.feature_val = u'unknown'
-        elif bank_phone in bankinfo:
+        r.score = 10
+        value = []
+        for bk in bankinfo:
+            if bank_phone in bk:
+                value.append(bk)
+        if value:        
             r.score = 100
             r.feature_val = u'有'
+        r.value='\t'.join(value)
         r.source = r.feature_val
         self.is_basic(basedata,r)
         return r
