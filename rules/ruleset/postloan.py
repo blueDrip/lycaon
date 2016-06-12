@@ -382,20 +382,20 @@ class PostLoanNewRule(BaseRule):
                 if c.phone not in fvalue_mp:
                     fvalue_mp[c.phone]=0
                 else:
-                    fvalue_mp[c.phone]+=c.duration
-                fd+=c.duration
+                    fvalue_mp[c.phone]+=c.call_duration
+                fd+=c.call_duration
             elif c.phone in self.mather_mp:
                 if c.phone not in mvalue_mp:
                     mvalue_mp[c.phone]=0
                 else:
-                    mvalue_mp[c.phone]+=c.duration
-                md+=c.duration                            
+                    mvalue_mp[c.phone]+=c.call_duration
+                md+=c.call_duration                            
             elif c.phone in self.home_mp:
                 if c.phone not in hvalue_mp:
                     hvalue_mp[c.phone]=0
                 else:
-                    hvalue_mp[c.phone]+=c.duration
-                hd+=c.duration
+                    hvalue_mp[c.phone]+=c.call_duration
+                hd+=c.call_duration
         fvalue,mvalue,hvalue='','',''
         for k,v in fvalue_mp.items():
             fvalue+=self.father_mp[k]+u';通话时间:'+str(v)+'\n'
@@ -539,8 +539,8 @@ class PostLoanNewRule(BaseRule):
                 if c.phone not in rvalue_mp:
                     rvalue_mp[c.phone]=0
                 else:
-                    rvalue_mp[c.phone]+=c.duration
-                duration+=c.duration
+                    rvalue_mp[c.phone]+=c.call_duration
+                duration+=c.call_duration
         rvalue=''
         for k,v in rvalue_mp.items():
             rvalue+=self.r_relative_map[k]+u';通话时间:'+str(v)+'\t'
