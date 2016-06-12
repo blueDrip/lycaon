@@ -57,18 +57,6 @@ class Sp(BaseRule):
         return ppmap
 
     def init_recharge_map(self,basedata):
-        #recharge = basedata.sp and basedata.sp.recharge or '{}'
-        #json_data = recharge
-        #mp = 'data' in json_data and json_data['data'] or {}
-        #charge_mp={}
-        #now=basedata.create_time
-        #for it in mp:
-        #    td=it['payDate']
-        #    key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),int(td[8:10]),int(td[10:12]),int(td[12:14]))
-        #    if key>now-timedelta(180) and key<=now:
-        #        charge_mp.update({
-        #            key:it['payFee']
-        #        })
         return basedata.sp_recharge
     #基本验证
     def is_basic(self,basedata,r):
@@ -111,11 +99,11 @@ class Sp(BaseRule):
         r.name=u'半年内充值金额'
         r.feature_val = u'充值金额:'+str(amount)+u'元'
         r.source = str(amount)
-        if amount<=30:
-            r.score=10
-        elif amount>30 and amount<100:
+        if amount<=200:
+            r.score=20
+        elif amount>200 and amount<=400:
             r.score=50
-        elif amount>=100:
+        elif amount>=400:
             r.amount=100
         r.source = str(amount)
         return r
@@ -131,13 +119,12 @@ class Sp(BaseRule):
         r.name=u'半年内充值次数'
         r.feature_val = u'充值次数:'+str(times)+u'次'
         r.source = str(times)
-        if times<=30:
-            r.score=10
-        elif times>30 and times<100:
-            r.score=50
-        elif times>=100:
+        if times<=6:
+            r.score = times*5+10
+        elif times>6 and times<=12:
+            r.score=60
+        elif times>=12:
             r.amount=100
-        r.source = str(times)
         return r
 
     '''半年内平均每隔多少天充值一次'''
@@ -165,8 +152,7 @@ class Sp(BaseRule):
         elif avg>=10 and avg<15:
             r.score=60
         elif avg>=15:
-            r.score=0
-        r.source = str(avg)
+            r.score=20
         return r
 
     '''主叫次数'''
@@ -198,14 +184,17 @@ class Sp(BaseRule):
     def get_call_in_duration(self,basedata):
         duration=0
         now = basedata.create_time
+        value = []
         for call in basedata.sp_calls:
             if call.call_time>=now-timedelta(180) and call.call_time<=now:
                 if u'主叫' in call.call_type:
                     duration+=call.call_duration
+                    value.append(
+                        call.username + '-'+call.phone+'-'+call.call_type+'-'+str(call.call_duration)
+                    )
         r = minRule()
         r.name=u'半年内主叫时长'
-        r.score=0
-        r.source=str(duration)
+        r.score=10
         if duration>0 and duration<=500:
             r.score=20
         elif duration>500 and duration<=1000:
@@ -218,7 +207,7 @@ class Sp(BaseRule):
             r.score=80
         elif duration>10000:
             r.score=100
-        r.value = str(duration)
+        r.value = '\t'.join(value)
         r.source = str(duration)
         r.feature_val = str(duration)+'s'
         return r
@@ -233,7 +222,6 @@ class Sp(BaseRule):
         r = minRule()
         r.name=u'半年内被叫次数'
         r.score=0
-        r.source=str(times)
         if times<1000:
             r.score=20
         elif times>=1000 and times<3000:
@@ -248,24 +236,26 @@ class Sp(BaseRule):
     def get_call_out_duration(self,basedata):
         duration=0
         now = basedata.create_time
+        value = []
         for call in basedata.sp_calls:
             if call.call_time>=now-timedelta(180) and call.call_time<=now:
                 if u'被叫' in call.call_type:
                     duration+=call.call_duration
+                    value.append(
+                        call.username + '-'+call.phone+'-'+call.call_type+'-'+str(call.call_duration)
+                    )
         r = minRule()
-        avg=duration
         r.name=u'半年内被叫时长'
         r.score=0
-        r.source=str(avg)
-        if avg<1000:
+        if duration<1000:
             r.score=20
-        elif avg>=1000 and avg<3000:
+        elif duration>=1000 and duration<3000:
             r.score=30
-        elif avg>=3000 and avg<4000:
+        elif duration>=3000 and duration<4000:
             r.score=40
-        elif avg>=4000:
+        elif duration>=4000:
             r.score=100
-        r.value = str(avg)
+        r.value = '\t'.join(value)
         r.source = str(duration)
         r.feature_val = str(duration)+'s'
         return r
@@ -281,10 +271,9 @@ class Sp(BaseRule):
                 value.append(
                     it.name+';'+it.phone+';'+it.phone_location
                 )
-        radio=count*1.0/(conlen or 1)
         r = minRule()
-
         r.name = u'通话记录电话号码出现在通讯录的个数'
+        r.score = 10
         if count>=0 and count<40:
             r.score=40
         elif count>=40 and count<60:
@@ -295,7 +284,6 @@ class Sp(BaseRule):
             r.score = 100
         elif count>100:
             r.score = 100
-
         r.value = '\t'.join(value)
         r.source = str(count)
         r.feature_val = str(count)+u'个'
@@ -312,9 +300,9 @@ class Sp(BaseRule):
                 value.append(
                     it.name+';'+it.phone+';'+it.phone_location
                 )
-        radio = count*1/(conlen or 1)
         r = minRule()
         r.name = u'短信记录电话号码出现在通讯录个数'
+        r.score = 10
         if count>=0 and count<40:
             r.score=40
         elif count>=40 and count<60:
@@ -335,19 +323,21 @@ class Sp(BaseRule):
     def callsame_location_with_idcard(self,basedata):
         home_location = basedata.home_location
         count=0
-        value = ''
-        #for k,v in self.call_record_map.items():
+        value = []
         for it in basedata.sp_calls:
             location=it.phone_location.split('-')
             '''级别:省,市/县'''
             if location[0] in home_location or location[1] in home_location:
                 count+=1 
-                value +=it.username+';'+it.phone+';'+it.phone_location+';'
+                value.append(
+                    it.username+'-'+it.phone+'-'+it.phone_location
+                )
         call_len = len(basedata.sp_calls)
         radio = count*1.0/(call_len or 1)
         r = minRule()
         r.name = u'通话记录中电话号码在老家的个数'
-        r.value = value
+        r.score = 10
+        r.value = '\t'.join(value)
         if count>=0 and count<40:
             r.score=40
         elif count>=40 and count<60:
@@ -367,19 +357,19 @@ class Sp(BaseRule):
     def smssame_location_with_idcard(self,basedata):
         home_location = basedata.home_location
         count=0
-        value = ''
-        #for k,v in self.sms_record_map.items():
+        value = []
         for it in basedata.sp_sms:
             location=it.phone_location.split('-')
             '''级别:省,市/县'''
             if location[0] in home_location or location[1] in home_location:
                 count+=1
-                value+=it.username+';'+it.phone+';'+it.phone_location+'\t'
-        sms_len = len(basedata.sp_sms)
-        radio = count*1.0/(sms_len or 1)
+                value.append(
+                    it.username+'-'+it.phone+'-'+it.phone_location
+                )
         r = minRule()
         r.name = u'短信记录中电话号码在老家的个数'
-        r.value = value
+        r.score = 10
+        r.value = '\t'.join(value)
 
         if count>=0 and count<40:
             r.score=40
@@ -400,21 +390,20 @@ class Sp(BaseRule):
     def callsame_location_with_userphone(self,basedata):
         user_plocation = basedata.user_plocation
         count=0
-        value = ''
-        #for k,v in self.call_record_map.items():
+        value = []
         for it in basedata.sp_calls:
             location=it.phone_location.split('-')
             if location[1] in user_plocation or location[0] in user_plocation:
                 count+=1
-                value += it.username+';'+ it.phone+' ;'+it.phone_location + '\t'
-        call_len = len(basedata.sp_calls)
-        radio = count*1.0/(call_len or 1)
+                value.append(
+                    it.username+'-'+ it.phone+'-'+it.phone_location
+                )
         r = minRule()
         r.name = u'通话记录中电话号码与申请人同一手机归属地个数'
-        r.value = value
-
-        if count>=0 and count<40:
-            r.score=40
+        r.score = 10
+        r.value = '\t'.join(value)
+        if count>0 and count<40:
+            r.score=30
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
@@ -423,7 +412,6 @@ class Sp(BaseRule):
             r.score = 100
         elif count>100:
             r.score = 100
-
         r.source = str(count)
         r.feature_val = str(count)+u'个'
         return r
@@ -432,22 +420,20 @@ class Sp(BaseRule):
     def smssame_location_with_userphone(self,basedata):
         user_plocation = basedata.user_plocation
         count=0
-        value=''
-        #for k,v in self.sms_record_map.items():
+        value=[]
         for it in basedata.sp_sms:
             location=it.phone_location.split('-')
-            #value += it.username+';'+it.phone+';'+it.phone_location+'\t'
             if location[1] in user_plocation or location[0] in user_plocation:
                 count+=1
-                value += it.username+';'+it.phone+';'+it.phone_location+'\t'                
-        sms_len = len(basedata.sp_sms)
-        radio = count*1.0/(sms_len or 1)
+                value.append(
+                    it.username+'-'+it.phone+'-'+it.phone_location
+                )
         r = minRule()
         r.name = u'短信记录中电话号码与申请人同一手机归属地的个数'
-        r.value = value
-
-        if count>=0 and count<40:
-            r.score=40
+        r.score=10
+        r.value = '\t'.join(value)
+        if count>0 and count<40:
+            r.score=30
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
@@ -456,7 +442,6 @@ class Sp(BaseRule):
             r.score = 100
         elif count>100:
             r.score = 100
-
         r.source = str(count)
         r.feature_val = str(count)+u'个'
         return r
@@ -465,7 +450,7 @@ class Sp(BaseRule):
     def set_21(self,basedata):
         r=minRule()
         r.name=u'是否设置21呼叫转移'
-        r.score=0
+        r.score=10
         value = []
         for c in basedata.contacts:
             if c.phone[0:2] =='21' or c.phone[0:3] =='*21' or c.phone[0:3]=='#21':
@@ -473,9 +458,8 @@ class Sp(BaseRule):
                     c.name+';'+c.phone+';'+c.phone_location
                 )
 
-
         if value:
-            r.score = 10
+            r.score = 20
             r.value = '\t'.join(value)
             r.feature_val = str(len(value))+u'个号码被设置'
             return r
@@ -537,15 +521,16 @@ class Sp(BaseRule):
         r=minRule()
         r.name = u'手机归属地与上网所在地一致'
         user_plocation=basedata.user_plocation
+        
         for net in basedata.sp_net:
             if net.net_location not in net_map:
                 net_map[net.net_location]=0
             net_map[net.net_location] += 1
-        r.value = '\t'.join([k+u';出现次数:'+ str(v) +u'次' for k,v in net_map.items()])
+        r.value = '\t'.join([ k+u';出现次数:'+ str(v) +u'次' for k,v in net_map.items() ])
         if user_plocation not in net_map:
-            r.score=0
+            r.score=10
             r.feature_val = u'不一致'
-            r.source = u'不一致' #0：不一致
+            r.source = u'不一致'
             self.is_basic(basedata,r)
             return r
         r.source = u'一致'
@@ -576,39 +561,33 @@ class Sp(BaseRule):
 
         r = minRule()
         r.name = u'与021,0755通话次数'
-
-        if not basedata.sp:
-            r.feature_val = u'unknow'
-            r.source = u'unknow'
-            r.value = u'unknow'
-            r.score = 5
-            return r
-
         if resmap:
             r.value='\t'.join([ k+''+'\t'.join(v)  for k,v in resmap.items()])
             r.feature_val = u'出现%s次'%(len(resmap.keys()))   
             r.score=10
             r.source = u'有'
+            self.is_basic(basedata,r)
             return r
         r.score=100
         r.feature_val = u'未出现'
         r.value = '0'
         r.source = u'无'
+        self.is_basic(basedata,r)
         return r
 
     '''申请号与他人有联系'''
     def userphone_in_calls_or_sms(self,basedata):
         user_phone=basedata.user_phone
         r = minRule()
-        r.score=10
-        r.value=''
         r.name = u'申请号与他人有联系'
+        r.score = 10
+        r.value = u'无联系'
         r.feature_val = u'无'
         r.source = u'无'
 
-        if user_phone in self.sms_record_map or user_phone in self.sms_record_map:
-            r.score=100
-            r.value+=user_phone+'\t'
+        if self.call_record_map or self.sms_record_map:
+            r.score = 100
+            r.value = user_phone+'\t'
             r.feature_val = u'有'
             r.source = u'有'
         self.is_basic(basedata,r)
@@ -617,7 +596,7 @@ class Sp(BaseRule):
     def call_record_len(self):
         call_len = len(self.call_record_map.keys())
         r = minRule()
-        r.name = u'通话记录长度'
+        r.name = u'半年内通话记录长度'
         r.feature_val = str(call_len)
         r.source = str(call_len)
         if call_len<30:
@@ -635,7 +614,7 @@ class Sp(BaseRule):
     def sms_record_len(self):
         sms_len = len(self.sms_record_map.keys())
         r = minRule()
-        r.name = u'短信记录长度'
+        r.name = u'半年内短信记录长度'
         r.feature_val = str(sms_len)
         r.source = str(sms_len)
         if sms_len<30:
