@@ -9,6 +9,7 @@ class Tbao(BaseRule):
 
     def __init__(self,basedata):
         self.harf_order_list = self.init_orderList(basedata)
+        self.address_map = self.init_info_mp(basedata)
         self.min_rule_map={
             40001:self.binding_phone(basedata),#是否绑定手机
             40002:self.real_name(basedata),#实名认证
@@ -40,6 +41,31 @@ class Tbao(BaseRule):
                 orderlist.append(it)
         return orderlist
 
+    #地址
+    def init_info_mp(self,basedata):
+        address_list = basedata.tb and basedata.tb.addrs or []
+        infomp={}
+        for adr in address_list:
+            info = adr.replace('\t','').replace('\n','').split('|')
+            key = len(info)>=1 and info[0] or None
+            dictr = len(info)>=2 and info[1]or None
+            address = len(info)>=3 and info[2] or None
+            phone=len(info)>=4 and info[4] or None
+            tel_phone=None
+            email=None
+            if not key:
+                continue
+            if key and key not in infomp:
+                infomp[key]=[]
+            infomp[key].append({
+                'dictr':dictr,
+                'address' : address,
+                'phone' :str(phone),
+                'tel_phone':tel_phone,
+                'email':email
+            })
+
+        return infomp
 
     #基本验证
     def is_basic(self,basedata,r):
