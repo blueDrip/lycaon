@@ -398,11 +398,11 @@ class PostLoanNewRule(BaseRule):
                 hd+=c.call_duration
         fvalue,mvalue,hvalue='','',''
         for k,v in fvalue_mp.items():
-            fvalue+=self.father_mp[k]+u';通话时间:'+str(v)+'\n'
+            fvalue+=self.father_mp[k][0]+u';通话时间:'+str(v)+'\n'
         for k,v in mvalue_mp.items():
-            mvalue+=self.mather_mp[k]+u';通话时间:'+str(v)+'\n'
+            mvalue+=self.mather_mp[k][0]+u';通话时间:'+str(v)+'\n'
         for k,v in hvalue_mp.items():
-            hvalue+=self.home_mp[k]+u';通话时间:'+str(v)+'\n'
+            hvalue+=self.home_mp[k][0]+u';通话时间:'+str(v)+'\n'
         if fd:
             r.value='Father:\t'+fvalue
         if md:
@@ -468,11 +468,11 @@ class PostLoanNewRule(BaseRule):
                 ht+=1
         fvalue,mvalue,hvalue='','',''
         for k,v in fvalue_mp.items():
-            fvalue+=self.father_mp[k]+u';通话次数:'+str(v)+'\n'
+            fvalue+=self.father_mp[k][0]+u';通话次数:'+str(v)+'\n'
         for k,v in mvalue_mp.items():
-            mvalue+=self.mather_mp[k]+u';通话次数:'+str(v)+'\n'
+            mvalue+=self.mather_mp[k][0]+u';通话次数:'+str(v)+'\n'
         for k,v in hvalue_mp.items():
-            hvalue+=self.home_mp[k]+u';通话次数:'+str(v)+'\n'
+            hvalue+=self.home_mp[k][0]+u';通话次数:'+str(v)+'\n'
         if ft:
             r.value='Father:\t'+fvalue
         if mt:
@@ -510,7 +510,7 @@ class PostLoanNewRule(BaseRule):
                 rt+=1
         rvalue=''
         for k,v in rvalue_mp.items():
-            rvalue+=self.r_relative_map[k]+u';通话次数:'+str(v)+'\t'
+            rvalue+=self.r_relative_map[k][0]+u';通话次数:'+str(v)+'\t'
         if rt:
             r.value='Relatives:\t'+rvalue
         score=0
@@ -543,7 +543,8 @@ class PostLoanNewRule(BaseRule):
                 duration+=c.call_duration
         rvalue=''
         for k,v in rvalue_mp.items():
-            rvalue+=self.r_relative_map[k]+u';通话时间:'+str(v)+'\t'
+            print self.r_relative_map[k]
+            rvalue+=self.r_relative_map[k][0]+u';通话时间:'+str(v)+'\t'
         if duration:
             r.value='Relatives:\t'+rvalue
         score=0
@@ -641,7 +642,7 @@ class PostLoanNewRule(BaseRule):
         clen = len(bd.contacts)
         r = minRule()
         r.name =u'亲属长度'
-        r.value = str(rlen)
+        r.value = '\t'.join([ k+'-'+ v[0] for k,v in self.r_relative_map.items() ])
         r.source = str(rlen)
         if rlen>0 and rlen<=3:
             r.score=40
