@@ -104,7 +104,7 @@ class Sp(BaseRule):
         elif amount>200 and amount<=400:
             r.score=50
         elif amount>=400:
-            r.amount=100
+            r.score=100
         r.source = str(amount)
         return r
 
@@ -124,7 +124,7 @@ class Sp(BaseRule):
         elif times>6 and times<=12:
             r.score=60
         elif times>=12:
-            r.amount=100
+            r.score=100
         return r
 
     '''半年内平均每隔多少天充值一次'''
@@ -142,7 +142,7 @@ class Sp(BaseRule):
             days+=(v_next-v).days
         avg=days/(len(re_list) or 1)
         r.value='\t'.join([u'登陆时间:'+str(it) for it in re_list])
-        r.name=u'半年内平均充值间隔'+str(avg)
+        r.name=u'半年内平均充值间隔'
         r.feature_val=str(avg)+u'天/次'
         r.source = str(days)
         if avg>0 and avg<5:
@@ -247,13 +247,13 @@ class Sp(BaseRule):
         r = minRule()
         r.name=u'半年内被叫时长'
         r.score=0
-        if duration<1000:
+        if duration<100:
             r.score=20
-        elif duration>=1000 and duration<3000:
+        elif duration>=100 and duration<300:
             r.score=30
-        elif duration>=3000 and duration<4000:
+        elif duration>=300 and duration<400:
             r.score=40
-        elif duration>=4000:
+        elif duration>=400:
             r.score=100
         r.value = '\t'.join(value)
         r.source = str(duration)
@@ -303,9 +303,9 @@ class Sp(BaseRule):
         r = minRule()
         r.name = u'短信记录电话号码出现在通讯录个数'
         r.score = 10
-        if count>=0 and count<40:
-            r.score=40
-        elif count>=40 and count<60:
+        if count>=0 and count<20:
+            r.score=30
+        elif count>=20 and count<40:
             r.score=60
         elif count>=60 and count<80:
             r.score = 80
@@ -339,7 +339,7 @@ class Sp(BaseRule):
         r.score = 10
         r.value = '\t'.join(value)
         if count>=0 and count<40:
-            r.score=40
+            r.score=20
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
@@ -372,7 +372,7 @@ class Sp(BaseRule):
         r.value = '\t'.join(value)
 
         if count>=0 and count<40:
-            r.score=40
+            r.score=20
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
