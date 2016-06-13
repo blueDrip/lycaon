@@ -363,6 +363,16 @@ def init_online_shop_info(basedata,jd,tb):
         )
     #淘宝订单记录
     hl = tb and tb.harf_order_list or []
+    hl_map = {}
+    for it in hl:
+        key=it['businessDate']
+        if key not in hl_map:
+            hl_map[key]=it
+        else:
+            hl_map[key]['orderProducts'].extend(it['orderProducts'])
+            price=float(hl_map[key]['orderTotalPrice']) + float(it['orderTotalPrice'])
+            hl_map[key]['orderTotalPrice'] = str(price)
+
     tb_order_info = [
         {
             '1007' : u'订单日期',
@@ -374,13 +384,12 @@ def init_online_shop_info(basedata,jd,tb):
             '1001' : u'收货人',
         }
     ]
-    for it in hl:
-        #for p in it['orderProducts']:
+    for k,v in hl_map.items():
         tb_order_info.append({
-                '1007': it['businessDate'],
-                '1006' : '<br/>'.join([ p['productName'] for p in it['orderProducts']]),
-                '1005' : len(it['orderProducts']),
-                '1004' : it['orderTotalPrice'],
+                '1007': k,
+                '1006' : '<br/>'.join([ p['productName'] for p in v['orderProducts']]),
+                '1005' : len(v['orderProducts']),
+                '1004' : v['orderTotalPrice'],
                 '1003' : u'---',
                 '1002' : u'---',
                 '1001' : u'---'
@@ -440,9 +449,9 @@ def init_contact_info(basedata,postloan):
         if city not in lcmap:
             lcmap[city]=0
         lcmap[city]+=1
-    lcmap={ k:v*100/clen for k,v in lcmap.items()}
+    lc={ k:v*100.0/clen for k,v in lcmap.items()}
     #排序
-    tup=sorted(lcmap.items(), key=lambda lcmap: lcmap[1],reverse=True)
+    tup=sorted(lc.items(), key=lambda lc:lc[1],reverse=True)
     same_with_pl_info = [
         {
             '1002':u'归属地',
@@ -591,22 +600,25 @@ def init_sp_record_info(basedata,sp,p):
             call_map[call.phone][u'call_in'] +=1
         call_map[call.phone][u'call_count'] += 1
         #按月统计
-        key=str(call.call_time.year)+'-'+str(call.call_time.month)
+        key=str(call.call_time.year)+'-'+str(call.call_time.month<10 and '0'+str(call.call_time.month) or call.call_time.month)
         if key not in month_info:
-            month_info[key]={u'call_out':0,
+            month_info[key]={
+                u'call_out':0,
                 u'call_in':0,
                 u'message':0,
-                u'consume':0
+                u'consume':0,
             }    
         if key in str(call.call_time):
-            month_info[key][u'call_out']+=1
-            month_info[key][u'call_in']+=1
-            
-    for msg in basedata and basedata.sp_sms or []:
-        key=str(msg.send_time.year)+'-'+str(msg.send_time.month)
+            if u'主叫' in call.call_type:
+                month_info[key][u'call_out']+=call.call_duration
+            elif u'被叫' in call.call_type:
+                month_info[key][u'call_in']+=call.call_duration
+
+    sms_list =  basedata and basedata.sp_sms or []            
+    for msg in sms_list:
+        key=str(msg.send_time.year)+'-'+str(msg.send_time.month<10 and '0'+str(msg.send_time.month) or msg.send_time.month)
         if key in month_info:
             month_info[key][u'message']+=1
-
 
     call_info=[
         {
@@ -659,7 +671,7 @@ def init_sp_record_info(basedata,sp,p):
     ]
     for k,v in month_info.items():
         basic_info_month.append({
-            '1005' : key,#月份
+            '1005' : k,#月份
             '1004' : str(v[u'call_out']/60),#主叫时间
             '1003' : str(v[u'call_in']/60),#被叫时间
             '1002' : str(v[u'message']),#短信数量
@@ -674,7 +686,6 @@ def init_sp_record_info(basedata,sp,p):
                 '1001':u'---',
             }
         )
-
     info = {
         u'basic_info' : basic_info,#基本信息
         u'key_level' : no_arrearage_info,#关键指标
@@ -683,6 +694,5 @@ def init_sp_record_info(basedata,sp,p):
         u'sp_consume_month' : basic_info_month ,#月消费汇总,
         u'call_info' : call_info,#通话记录
     }
-
     return info
 
