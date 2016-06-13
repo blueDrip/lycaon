@@ -124,10 +124,10 @@ class JD(BaseRule):
         r.source=ispass and ispass[0] or u'unknown'
         r.name=u'身份证认证'
         if u'YES' in ispass:
-            r.value=ispass[1]
+            r.value = r.source
             r.score=100
         elif u'NO' in ispass:
-            r.value=ispass[1]
+            r.value = r.source
             r.score=70
         else:
             r.value=u'结果未知'
@@ -142,10 +142,10 @@ class JD(BaseRule):
         r.name=u'手机验证'        
         r.source=ispass and ispass[0] or u'unknown'
         if u'YES' in ispass:
-            r.value=ispass[1]
+            r.value = r.source
             r.score=100
         elif u'NO' in ispass:
-            r.value =ispass[1]
+            r.value = r.source
             r.score=70
         else:
             r.value=u'结果未知'
@@ -403,15 +403,14 @@ class JD(BaseRule):
             days += (vnext-v).days
             r.value += '-'.join([str(v) for k,v in consume_list[i+1].items()])+'\t'
         avg=days/6
-        if avg>40:
+        if avg>40 or not avg:
             r.score = 20
         else:
             r.score = 100-avg*2
         r.feature_val=str(avg)
         r.source = str(days)
-
         self.is_basic(basedata,r)
-        return r  
+        return r
     #邮箱认证
     def valid_email(self,basedata):
         ispass=basedata.jd and basedata.jd.email_verified.values() or []
@@ -420,10 +419,10 @@ class JD(BaseRule):
         r.score = 10
         r.source=ispass and ispass[0] or u'unknown'
         if u'YES' in ispass:
-            r.value=ispass[1]
+            r.value = r.source
             r.score=100
         elif u'NO' in ispass:
-            r.value=ispass[1]
+            r.value = r.source
             r.score=70
         else:
             r.value=u'结果未知'
