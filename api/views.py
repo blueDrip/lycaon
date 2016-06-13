@@ -49,3 +49,7 @@ def rules_detail_info(request):
 '''数据分析admin'''
 def admin_login_views(request):
     return render(request,'admin/login.html')
+
+#testt
+def test(request):
+    return render(request,'api/tt.html',{'v':'sssssssss'})
