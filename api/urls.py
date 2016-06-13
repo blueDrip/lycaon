@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^userinfo/$',views.users_views),
     url(r'^login/$',views.admin_login_views),
     url(r'^rulesinfo/$',views.rules_detail_info),
+    url(r'^test/$',views.test),
 ]

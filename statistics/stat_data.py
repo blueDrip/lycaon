@@ -103,8 +103,13 @@ def init_online_shop_info(basedata,jd,tb):
 
     #消费统计
     consume_list = jd and jd.consume_list or []
-    cm_list = [ it['money'] for it in consume_list ]
-    cm_list.sort()
+    tb_consume_list = tb and tb.harf_order_list or []
+    jd_cm_list = [ it['money'] for it in consume_list ]
+    tb_cm_list = [ float(it['orderTotalPrice']) for it in tb_consume_list ]
+    tb_product_list = [ len(it['orderProducts']) for it in tb_consume_list]
+    #排序
+    jd_cm_list.sort()
+    tb_cm_list.sort()
     consume_info_list = [
         {
             '10001' : u'电商名',
@@ -121,12 +126,12 @@ def init_online_shop_info(basedata,jd,tb):
         },
         {
             '10001' : u'京东',
-            '10002' : jd and jd.min_rule_map[30005].feature_val or u'unknown',#累计消费总额
-            '1009' : jd and jd.min_rule_map[30006].feature_val or u'unknown',#累计消费笔数
-            '1008' : len(cm_list) and cm_list[-1] or u'unknown',#单笔最高消费
-            '1007' : len(cm_list) and cm_list[0] or u'unknown',#单笔最低消费
-            '1006' : (jd and float(jd.min_rule_map[30005].source) or 0)*1.0/(jd and float(jd.min_rule_map[30006].source) or 1),#平均每笔消费
-            '1005' : len(consume_list),#累计订单总数
+            '10002' : sum(jd_cm_list),#累计消费总额
+            '1009' : len(jd_cm_list),#累计消费笔数
+            '1008' : len(jd_cm_list) and jd_cm_list[-1] or u'---',#单笔最高消费
+            '1007' : len(jd_cm_list) and jd_cm_list[0] or u'---',#单笔最低消费
+            '1006' : sum(jd_cm_list)/(len(jd_cm_list) or 1),#平均每笔消费
+            '1005' : len(jd_cm_list),#累计订单总数
             '1004' : u'unknown',#商品总件数
             '1003' : u'unknown',#返修退换货比率
             '1002' : u'unknown',#评价总数
@@ -134,13 +139,13 @@ def init_online_shop_info(basedata,jd,tb):
         },
         {
             '10001' : u'淘宝',
-            '10002' : u'---',
-            '1009' : u'---',
-            '1008' : u'---',
-            '1007' : u'---',
-            '1006' : u'---',
-            '1005' : u'---',
-            '1004' : u'---',
+            '10002' : sum(tb_cm_list),
+            '1009' : len(tb_cm_list),
+            '1008' : len(tb_cm_list) and tb_cm_list[-1] or u'---',
+            '1007' : len(tb_cm_list) and tb_cm_list[0] or u'---',
+            '1006' : sum(tb_cm_list)/(len(tb_cm_list) or 1),
+            '1005' : len(tb_cm_list),
+            '1004' : sum(tb_product_list),
             '1003' : u'---',
             '1002' : u'---',
             '1001' : u'---',
@@ -249,9 +254,10 @@ def init_online_shop_info(basedata,jd,tb):
 
     #图标数据    
     map_info={}
-    month_map_info = {'Jan':0,'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0}
-    stage_map_info = { u'10001':0,u'':0,'10002':0,'1009':0,'1008':0,'1007':0,'1006':0,'1005':0,'1004':0,'1003':0,'1002':0,'1001':0 }
-    ll=[]
+    #jd_month_map_info = {'Jan':0,'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0}
+    jd_month_map_info = {}
+    jd_goods_cate_info = {}
+    jd_stage_map_info = { u'Jan':0,u'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0 }
     for it in consume_list:
         key=it['time'].date()
         key_str=str(key).split('-')
@@ -259,33 +265,66 @@ def init_online_shop_info(basedata,jd,tb):
         money=it['money']
 
         if money<=50:
-            stage_map_info[u'10002']+=1
+            jd_stage_map_info[u'Jan']+=1
         elif money>50 and money<=100:
-            stage_map_info[u'10001']+=1
+            jd_stage_map_info[u'Feb']+=1
         elif money>100 and money<=200:
-            stage_map_info[u'1009']+=1
+            jd_stage_map_info[u'Mar']+=1
         elif money>200 and money<=500:
-            stage_map_info[u'1008']+=1
+            jd_stage_map_info[u'Apr']+=1
         elif money>500 and money<=1000:
-            stage_map_info[u'1007']+=1
+            jd_stage_map_info[u'May']+=1
         elif money>1000 and money<=3000:
-            stage_map_info[u'1006']+=1
+            jd_stage_map_info[u'Jun']+=1
         elif money>3000 and money<=8000:
-            stage_map_info[u'1005']+=1
+            jd_stage_map_info[u'Jul']+=1
         elif money>8000:
-            stage_map_info[u'1004']+=1
+            jd_stage_map_info[u'Aug']+=1
 
-        if kk not in month_map_info:
-            month_map_info[kk]=0
+        if kk not in jd_month_map_info:
+            jd_month_map_info[kk]=0
         if kk in str(key):
-            month_map_info[kk]+=it['money']
+            jd_month_map_info[kk]+=it['money']
 
         if key not in map_info:
             map_info[key]={'amount':0,'pac_num':0}
         map_info[key]['amount']+=it['money']
         map_info[key]['pac_num']+=1
+    #淘宝图标数据
+    tb_month_map_info = {}
+    tb_goods_cate_info = {}
+    tb_stage_map_info = { u'Jan':0,u'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0 } 
+    for it in tb_consume_list:
+
+        key=it['businessDate']
+        key_str=key.split('-')
+        kk = key_str[0]+'-'+key_str[1]
+        money=float(it['orderTotalPrice'])
+
+        if money<=50:
+            tb_stage_map_info[u'Jan']+=1
+        elif money>50 and money<=100:
+            tb_stage_map_info[u'Feb']+=1
+        elif money>100 and money<=200:
+            tb_stage_map_info[u'Mar']+=1
+        elif money>200 and money<=500:
+            tb_stage_map_info[u'Apr']+=1
+        elif money>500 and money<=1000:
+            tb_stage_map_info[u'May']+=1
+        elif money>1000 and money<=3000:
+            tb_stage_map_info[u'Jun']+=1
+        elif money>3000 and money<=8000:
+            tb_stage_map_info[u'Jul']+=1
+        elif money>8000:
+            tb_stage_map_info[u'Aug']+=1
+
+        if kk not in tb_month_map_info:
+            tb_month_map_info[kk]=0
+        if kk in str(key):
+            tb_month_map_info[kk] += money
 
     #京东订单记录
+    ll = []
     jd_order_info=[
         {
             '1007' : u'订单日期',
@@ -322,8 +361,7 @@ def init_online_shop_info(basedata,jd,tb):
                 '1001' : u'---'
             }
         )
-
-
+    #淘宝订单记录
     hl = tb and tb.harf_order_list or []
     tb_order_info = [
         {
@@ -337,17 +375,16 @@ def init_online_shop_info(basedata,jd,tb):
         }
     ]
     for it in hl:
-        for p in it['orderProducts']:
-            tb_order_info.append({
+        #for p in it['orderProducts']:
+        tb_order_info.append({
                 '1007': it['businessDate'],
-                '1006' : p['productName'],
-                '1005' : u'1',
-                '1004' : p['productPrice'],
+                '1006' : '<br/>'.join([ p['productName'] for p in it['orderProducts']]),
+                '1005' : len(it['orderProducts']),
+                '1004' : it['orderTotalPrice'],
                 '1003' : u'---',
                 '1002' : u'---',
                 '1001' : u'---'
-            } 
-        )
+        })
     if len(tb_order_info)<=1:
         tb_order_info.append({
                 '1007' : u'---',
@@ -371,12 +408,14 @@ def init_online_shop_info(basedata,jd,tb):
         },
         u'graph':{  #图表
             u'jd':{
-                u'data1':stage_map_info,
-                u'data2':month_map_info,
+                u'order_amount':jd_stage_map_info,
+                u'goods_cate' : jd_goods_cate_info,
+                u'month_consume':jd_month_map_info,
             },
             u'tb':{
-                u'data1':{},
-                u'data2':{}
+                u'order_amount':tb_stage_map_info,
+                u'goods_cate':tb_goods_cate_info,
+                u'month_consume':tb_month_map_info,
             }
         },
         u'order_record':{   #订单记录
