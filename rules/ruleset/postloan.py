@@ -529,7 +529,7 @@ class PostLoanNewRule(BaseRule):
 
     def get_relative_call_duration(self,bd):
         r = minRule()
-        r.score=0
+        r.score=10
         r.value=''
         call_list=bd.sp_calls
         duration=0
@@ -543,17 +543,23 @@ class PostLoanNewRule(BaseRule):
                 duration+=c.call_duration
         rvalue=''
         for k,v in rvalue_mp.items():
-            print self.r_relative_map[k]
             rvalue+=self.r_relative_map[k][0]+u';通话时间:'+str(v)+'\t'
         if duration:
             r.value='Relatives:\t'+rvalue
+
         score=0
-        if duration<100:
+        if duration<1000:
             score=10
-        elif duration>=100 and duration<300:
+        elif duration>=1000 and duration<3000:
             score=20
-        elif duration>=300 and duration<500:
+        elif duration>=3000 and duration<5000:
             score=40
+        elif duration>=5000 and duration<8000:
+            score=60
+        elif duration>=8000 and duration<10000:
+            score=80
+        elif duration>=10000:
+            score=100
         r.score=0.3*score;
         r.name=u'亲属通话时间'
         r.source = str(duration)
@@ -582,7 +588,7 @@ class PostLoanNewRule(BaseRule):
         r.name=u'父母在老家的个数'
         r.value = value
         r.source = str(count)
-        r.score=0
+        r.score = 20
         if count>0 and count<=2:
             r.score=60
         elif count>2 and count<=3:
@@ -599,6 +605,7 @@ class PostLoanNewRule(BaseRule):
         value=''
         r=minRule()
         r.name=u'亲属在老家的个数'
+        r.score = 10
         for c in bd.contacts:
             location=c.phone_location.split('-')
             if c.phone in self.r_relative_map:   
