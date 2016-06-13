@@ -100,22 +100,23 @@ table {
 <table class = 'zebra'>
     <thead>
 	<tr>
-	      <th width="10%">用户id</th>
-	      <th width="10%">是否通过身份验证</th>
+	      <th width="7%">手机号</th>
+	      <th width="13%">是否通过身份验证</th>
 	      <th width="10%">手机归属地</th>
 	      <th width="10%">手机类型</th>
           <th width='10%' >信用分数</th>
           <th width='10%'>申请时间</th>
           <th width='10%' >教育程度</th>
           <th width='10%' >是否结婚</th>
-          <th width='10%'>职业</th>
-          <th width='10%'>统计</th>
+          <th width='6%'>职业</th>
+          <th width='7%'>统计</th>
+          <th width='7%'> 删除 </th> 
 	</tr>
     </thead>
         {% load selftag %}    
      	{% for u in users%}
             <tr class = "{% cycle 'a1' 'aa' %}">
-                  <td> {{ u.user_id | banary_to_str:" " }}</td>                       
+                  <td> {{ u.user.name }}  </td>                   
 	          <td> {{ u.is_certification }} </td>
 	          <td> {{ u.phone_place }}</td>
                   <td> {{ u.phone_type }}</td>
@@ -125,6 +126,8 @@ table {
                   <td> {{ u.marry_info }} </td>
                   <td> {{ u.profession }} </td>
 	          <td> <a href='/apix/rulesinfo/?uid={{ u.user_id | banary_to_str:" " }}'>查看</a></td>
+              <td> <a href='/apix/del/?uid={{ u.user_id | banary_to_str:" " }}' onclick='return confirm("确定删处?")'>删除</a></td>
+
 	    </tr>
 	{% endfor %}
 </table>

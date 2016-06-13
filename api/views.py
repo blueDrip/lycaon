@@ -1,16 +1,17 @@
 # encoding: utf-8
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseRedirect
 from rules.models import BaseRule
 from rules.ruleset.JD import JD
 from rules.ruleset.PersonInfo import PersonInfo
 from rules.base import BaseData
 from rules.ruleset.Sp import Sp
-from api.models import Profile
+from api.models import Profile,ucredit,Busers
 from rules.raw_data import UserContact,topResult
 from datetime import datetime
 from statistics.models import RulesInfo
 from django.views.decorators.csrf import csrf_exempt
+import binascii
 import json
 import logging
 logger = logging.getLogger('django.api')
@@ -46,6 +47,18 @@ def rules_detail_info(request):
     uid=request.GET['uid']
     rs = RulesInfo.objects.filter(user_id=uid).order_by('-created_time').first()
     return render(request, 'api/detailinfo.html', {'rs': rs})
+
+def delitem(request):
+    uid=request.GET['uid'].lower()
+    user_id = binascii.a2b_hex(uid)
+    Profile.objects.using('users').filter(user_id=user_id).delete()
+    Busers.objects.using('users').filter(user_id=user_id).delete()
+    ucredit.objects.using('users').filter(user_id=user_id).delete()
+    
+    #ulist = Profile.objects.using('users').all()
+    #return render(request,'api/users.html',{'users':ulist})
+    return HttpResponseRedirect('/apix/userinfo/')  #跳转到index界面
+
 
 '''数据分析admin'''
 def admin_login_views(request):

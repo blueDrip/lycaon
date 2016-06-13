@@ -13,23 +13,6 @@ from django.db import models
 #    class Meta:
 #        db_table='rules_question'
 
-class Profile(models.Model):
-    pid = models.IntegerField(db_column='id',primary_key=True)
-    user_id = models.BinaryField()
-    is_certification = models.IntegerField(default = 0)
-    phone_place = models.CharField(max_length = 255)
-    phone_type = models.CharField(max_length = 255)
-    trust_score = models.FloatField()
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
-    education = models.CharField(max_length= 255)
-    marry_info = models.CharField(max_length = 255)
-    profession = models.CharField(max_length = 255)
-    passwd = models.CharField(max_length = 255)
-
-    class Meta:
-        db_table = 'user_infos'
-
 
 class Busers(models.Model):
     user_id = models.BinaryField(db_column='id',primary_key=True)
@@ -44,7 +27,48 @@ class Busers(models.Model):
     class Meta:
         db_table = 'users'
 
+class Profile(models.Model):
+    pid = models.IntegerField(db_column='id',primary_key=True)
+    user_id = models.BinaryField()
+    is_certification = models.IntegerField(default = 0)
+    phone_place = models.CharField(max_length = 255)
+    phone_type = models.CharField(max_length = 255)
+    trust_score = models.FloatField()
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+    education = models.CharField(max_length= 255)
+    marry_info = models.CharField(max_length = 255)
+    profession = models.CharField(max_length = 255)
+    passwd = models.CharField(max_length = 255)
+    user = models.ForeignKey(Busers)
+    class Meta:
+        db_table = 'user_infos'
 
+class ucredit(models.Model):
+    uc_id = models.IntegerField(db_column='id',primary_key=True)
+    user_id = models.BinaryField()
+
+    is_idcard_auth = models.IntegerField(default = 1)
+    idcard_auth_token = models.CharField(max_length=255,default = '1111')
+
+    is_isp_auth = models.IntegerField()
+    isp_token = models.CharField(max_length=255)
+    
+    is_taobao_auth = models.IntegerField()
+    is_taobao_auth = models.CharField(max_length=255)
+
+    is_jingdong_auth = models.IntegerField()
+    jingdong_token = models.CharField(max_length=255)
+
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+
+    is_contact = models.IntegerField()
+    contact_token = models.CharField(max_length=255)
+    is_send = models.IntegerField()  
+  
+    class Meta:
+        db_table = 'user_credits'
 
 '''order info'''
 '''
