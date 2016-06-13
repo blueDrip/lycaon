@@ -176,7 +176,7 @@ def cal(minfo = {
     bd=BaseData(map_info=minfo,ext=ext_api)
     top_rule = topResult()
 
-    user_id=minfo['user_id']
+    user_id=minfo['user_id'].upper()
     rules_detail_map={}    
 
     cal_logger.info(u'【start calculate score】　' + str(user_id))
@@ -213,7 +213,7 @@ def cal(minfo = {
 
     top_rule.name = u'credit_score'
     top_rule.user_type = user_type
-    top_rule.user_id = minfo['user_id']
+    top_rule.user_id = user_id
     top_rule.save()
     cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(top_rule.score))
 
@@ -225,7 +225,7 @@ def cal(minfo = {
     rule_detail.sp_info = init_sp_record_info(bd, rules_detail_map['sp'],rules_detail_map['postloan'])
     rule_detail.credit_info = {}
     rule_detail.created_at = datetime.now()
-    rule_detail.user_id = user_id.upper()
+    rule_detail.user_id = user_id
     rule_detail.save()
     print 'stat is finished'   
     #except:
