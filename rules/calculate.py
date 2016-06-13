@@ -126,12 +126,7 @@ def get_token(str_token):
 
 def cal_by_message(msg):
     rmap=get_token(msg)
-    s=cal(minfo=rmap)
-    user=rmap['user']
-    if user:
-        user.trust_score=s
-        user.save()
-        #print '【save successful】'
+    cal(minfo=rmap)
 
 def cal(minfo = {
         'user':None,
@@ -215,7 +210,13 @@ def cal(minfo = {
     top_rule.user_type = user_type
     top_rule.user_id = user_id
     top_rule.save()
+    user=rmap['user']
+    if user:
+        user.trust_score=top_rule.score
+        user.save()
     cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(top_rule.score))
+
+
 
     #try:
     rule_detail = RulesInfo()
@@ -230,4 +231,4 @@ def cal(minfo = {
     print 'stat is finished'   
     #except:
         #print '【详情保存完成】'
-    return top_rule.score
+    return
