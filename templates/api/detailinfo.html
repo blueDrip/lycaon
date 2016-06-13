@@ -168,7 +168,12 @@ table {
    {% for it in rs.online_shop_info.order_record.tb %}
         <tr>
             {% for k,v in it.items%}
-                <td>{{ v }}</td>
+                <td>
+                  {% autoescape off %}
+                   {{ v }}
+		  {% endautoescape %}
+               </td>
+
             {% endfor %}
         </tr>
    {% endfor%}
