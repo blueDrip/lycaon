@@ -126,7 +126,7 @@ table {
                   <td> {{ u.marry_info }} </td>
                   <td> {{ u.profession }} </td>
 	          <td> <a href='/apix/rulesinfo/?uid={{ u.user_id | banary_to_str:" " }}'>查看</a></td>
-              <td> <a href='/apix/del/?uid={{ u.user_id | banary_to_str:" " }}' onclick='return confirm("确定删处?")'>删除</a></td>
+              <td> <a href='/apix/del/?uid={{ u.user_id | banary_to_str:" " }}' onclick='return confirm("确定删除?")'>删除</a></td>
 
 	    </tr>
 	{% endfor %}
