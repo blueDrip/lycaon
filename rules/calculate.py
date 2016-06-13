@@ -210,7 +210,7 @@ def cal(minfo = {
     top_rule.user_type = user_type
     top_rule.user_id = user_id
     top_rule.save()
-    user=rmap['user']
+    user=minfo['user']
     if user:
         user.trust_score=top_rule.score
         user.save()
