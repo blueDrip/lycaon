@@ -25,8 +25,10 @@ def jd_orm(cnd={}):
 
     if 'consumeHistroy' in c:
         jd.consume_list= 'record' in c['consumeHistroy'] and c['consumeHistroy']['record'] or []   
+    if 'baitiaoInfo' in c:
+        if u'未开通' not in c['baitiaoInfo']:  
+            jd.baitiao = 'baitiaoInfo' in c and c['baitiaoInfo'] or {}
 
-    jd.baitiao = 'baitiaoInfo' in c and c['baitiaoInfo'] or {}
     jd.small_credit = 'xiaobaixinyong' in c and c['xiaobaixinyong'] or {}
     jd.login_history = 'loginHistory' in c and c['loginHistory'] or ''
     if 'accountSafeInfo' in c:
