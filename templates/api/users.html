@@ -100,7 +100,6 @@ table {
 <table class = 'zebra'>
     <thead>
 	<tr>
-	      <th width="10%">编号</th>
 	      <th width="10%">用户id</th>
 	      <th width="10%">是否通过身份验证</th>
 	      <th width="10%">手机归属地</th>
@@ -110,21 +109,23 @@ table {
           <th width='10%' >教育程度</th>
           <th width='10%' >是否结婚</th>
           <th width='10%'>职业</th>
+          <th width='10%'>统计</th>
 	</tr>
     </thead>
-   	{% for u in users%}
+        {% load selftag %}    
+     	{% for u in users%}
             <tr class = "{% cycle 'a1' 'aa' %}">
-                  <td> {{ u.pid }}</td>                       
-			      <td> {{ u.is_certification }} </td>
-			      <td> {{ u.phone_place }}</td>
- 			      <td> {{ u.phone_type }}</td>
-                  <td> {{ u.trust_score}}</td>
-                  <td> <a href='/apix/detail/?uid=safasf2333333333r'>查看</a> </td>
+                  <td> {{ u.user_id | banary_to_str:" " }}</td>                       
+	          <td> {{ u.is_certification }} </td>
+	          <td> {{ u.phone_place }}</td>
+                  <td> {{ u.phone_type }}</td>
+                  <td> <a href='/apix/detail/?uid={{ u.user_id | banary_to_str:" " }}'> {{ u.trust_score}} </a></td>
                   <td> {{ u.created_at  | date:"Y,m,j"}}</td>
                   <td> {{ u.education }} </td>
                   <td> {{ u.marry_info }} </td>
                   <td> {{ u.profession }} </td>
-			</tr>
+	          <td> <a href='/apix/rulesinfo/?uid={{ u.user_id | banary_to_str:" " }}'>查看</a></td>
+	    </tr>
 	{% endfor %}
 </table>
 <br>

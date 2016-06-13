@@ -40,10 +40,11 @@ def credit_detail(request):
     return render(request, 'api/detail.html', {'tp': top_rs})
 
 def users_views(request):
-    ulist = Profile.objects.all()
+    ulist = Profile.objects.using('users').all()
     return render(request,'api/users.html',{'users':ulist})
 def rules_detail_info(request):
-    rs = RulesInfo.objects.filter().first()
+    uid=request.GET['uid']
+    rs = RulesInfo.objects.filter(user_id=uid).order_by('-created_time').first()
     return render(request, 'api/detailinfo.html', {'rs': rs})
 
 '''数据分析admin'''
