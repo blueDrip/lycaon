@@ -85,7 +85,7 @@ class JD(BaseRule):
         address_list = basedata.jd and basedata.jd.address or []
         infomp={}
         for adr in address_list:
-            info = adr.strip('|').split('|')
+            info = adr.replace('默认收货地址 : ','').strip('|').split('|')
             key = len(info)>=1 and info[0].split(u'：')[1] or None
             dictr = len(info)>=2 and info[1].split(u'：')[1] or None
             address = len(info)>=3 and info[2].split(u'：')[1] or None
