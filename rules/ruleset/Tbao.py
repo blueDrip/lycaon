@@ -94,8 +94,8 @@ class Tbao(BaseRule):
         rname = basedata.tb and basedata.tb.identityVerified or u'unknown'
         r=minRule()
         r.name=u'实名验证'
-        r.score=40
-        if u'已完成':
+        r.score=20
+        if u'已完成' in rname:
             r.score = 100
         r.value = rname
         r.feature_val = rname
@@ -151,16 +151,22 @@ class Tbao(BaseRule):
         credit_level = basedata.tb and basedata.tb.creditLevel or u'unknown'
         r=minRule()
         r.name = u'淘宝信用等级'
-        r.score = 20
-        if u'V2' in credit_level:
+        r.score = 10
+        if u'V0' in credit_level:
+            r.score = 30
+        elif u'V1' in credit_level:
+            r.score = 50
+        elif u'V2' in credit_level:
             r.score = 60
         elif u'V3' in credit_level:
-            r.score = 80        
+            r.score = 70        
         elif u'V4' in credit_level:
+            r.score = 80
+        elif u'V5' in credit_level:
             r.score = 90
-        else:
+        elif u'V6' in credit_level:
             r.score = 100
-        
+
         r.value = credit_level
         r.feature_val = credit_level
         r.source = credit_level
@@ -172,7 +178,7 @@ class Tbao(BaseRule):
         score=ss.replace(u'积分','').replace(' ','')
         r=minRule()
         r.name=u'天猫积分'
-        r.score = 0 
+        r.score = 10 
         if u'unknown' in str(score):
             r.score = 10
         elif score>0 and score<=200:
