@@ -3,10 +3,11 @@
 import sys
 import os
 reload(sys)
+
 sys.setdefaultencoding('utf8')
 homedir = os.getcwd()
-
 sys.path.append(homedir)
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'lycaon.settings'
 from django.conf import settings
 
@@ -17,51 +18,53 @@ import math
 import json
 import re
 import requests
+from rules.util.utils import get_tb_info
+import xml.etree.ElementTree as Etree
 #from rules.base import *
 #固话归属地的文件
 tel_file = None
 phone_file = settings.PHONE_FILE
 id_location_file = settings.ID_FILE
 import logging
-#base_logger = logging.getLogger('django.rules')
-#base_logger.setLevel(logging.INFO)
+base_logger = logging.getLogger('django.rules')
+base_logger.setLevel(logging.INFO)
 
-def judge(identifice):
-    for line in open(id_location_file,"r"):
-        flist = line.strip().split('\t')
-        if len(flist) < 3:
-            continue
-        id=identifice[0:6];
-        ##print id,flist[1]
-        if id==flist[1]:
-            #print "xxxx",flist[2]
-            return flist[2]
-            #return getArea(line[7:]);
-    #调用api
-    key='c9323635da814c6eeba0814fecfaf7be';
-    url='http://apis.juhe.cn/idcard/index?key='+key+'&cardno='+identifice;
-    try:
-        idinfo=crawl_timeout(url,10,3);
-        idstr=json.JSONDecoder().decode(idinfo);
-        #print idstr
-        rs=idstr['result']['area'].encode("utf-8");
-    except:
-        #print get_tb_info()
-        return ""
-    #print "zzzz",rs
-    return rs
+#def judge(identifice):
+#    for line in open(id_location_file,"r"):
+#        flist = line.strip().split('\t')
+#        if len(flist) < 3:
+#            continue
+#        id=identifice[0:6];
+#        ##print id,flist[1]
+#        if id==flist[1]:
+#            #print "xxxx",flist[2]
+#            return flist[2]
+#            #return getArea(line[7:]);
+#    #调用api
+#    key='c9323635da814c6eeba0814fecfaf7be';
+#    url='http://apis.juhe.cn/idcard/index?key='+key+'&cardno='+identifice;
+#    try:
+#        idinfo=crawl_timeout(url,10,3);
+#        idstr=json.JSONDecoder().decode(idinfo);
+#        #print idstr
+#        rs=idstr['result']['area'].encode("utf-8");
+#    except:
+#        #print get_tb_info()
+#        return ""
+#    #print "zzzz",rs
+#    return rs
 
-def get_geo_info(ip):
-
-    url = "http://e.apix.cn/apixlab/ipinfo/ipinfo"
-    querystring = {"ip":ip}
-    headers = {
-        'accept': "application/json",
-        'content-type': "application/json",
-        'apix-key': "a8bbd3a565b04acf600e6b053beffea2"
-    }
-    response = requests.request("GET", url, headers=headers, params=querystring)
-    print(response.text)
+#def get_geo_info(ip):
+#
+#    url = "http://e.apix.cn/apixlab/ipinfo/ipinfo"
+#    querystring = {"ip":ip}
+#    headers = {
+#        'accept': "application/json",
+#        'content-type': "application/json",
+#        'apix-key': "a8bbd3a565b04acf600e6b053beffea2"
+#    }
+#    response = requests.request("GET", url, headers=headers, params=querystring)
+#    print(response.text)
     
 
 
@@ -184,27 +187,27 @@ class EXT_API():
                     index +=1
                     index = index % 2
         self.tel_map = tel_map
-    def get_info_by_id(self,id_str):
+    #def get_info_by_id(self,id_str):
 
-        #file = settings.ID_FILE
-        info = judge(id_str)
-        #location = info['province'] +info['city'] +info['discrict']
-        location = info
-        sex = ""
-        birthday = ""
-        if len(id_str) ==15:
-            birthday = "19"+id_str[6:6+6]
-            if int (id_str[-1]) %2 ==0:
-                sex = '女'
-            else:
-                sex = '男'
-        else:
-            birthday = id_str[6:6+8]
-            if int (id_str[-2]) %2 ==0:
-                sex = '女'
-            else:
-                sex = '男'
-        return sex,location,birthday
+    #    #file = settings.ID_FILE
+    #    info = judge(id_str)
+    #    #location = info['province'] +info['city'] +info['discrict']
+    #    location = info
+    #    sex = ""
+    #    birthday = ""
+    #    if len(id_str) ==15:
+    #        birthday = "19"+id_str[6:6+6]
+    #        if int (id_str[-1]) %2 ==0:
+    #            sex = '女'
+    #        else:
+    #            sex = '男'
+    #    else:
+    #        birthday = id_str[6:6+8]
+    #        if int (id_str[-2]) %2 ==0:
+    #            sex = '女'
+    #        else:
+    #            sex = '男'
+    #    return sex,location,birthday
 
     #查询通讯录归属地
     def get_phone_location(self,num):
@@ -233,45 +236,34 @@ class EXT_API():
                 ff = self.tel_map[n2].split('-')
                 g['province'] = ff[0]
                 g['city'] = ff[1]
-
+        if g['province'] == 'none' and g['city'] == 'none':
+            return self.get_phone_location_online(num)
         return g
 
-    def get_gps_location_new(self,latitude,longitude):
+    #def get_gps_location_new(self,latitude,longitude):
 
 
-        gps = {}
-        gps ['formatted_address']=''
+    #    gps = {}
+    #    gps ['formatted_address']=''
+    #
+    #    url = "http://api.map.baidu.com/geocoder?location=%s,%s&output=xml"
+    #    turl = url %(latitude,longitude)
+    #    page = crawl_timeout(turl,20,3)
+    #    if page== None:
+    #        #print "gps api get error"
+    #        base_logger.error("gps api get error")
+    #        return gps
+    #    else:
+    #        s = page
+    #        gps['formatted_address'] = s.split("<formatted_address>")[1].split("</formatted_address>")[0]
+    #        gps['city'] = s.split("<city>")[1].split("</city>")[0]
+    #        gps['province'] = s.split("<province>")[1].split("</province>")[0]
+    #        gps['streetNumber'] = s.split("<streetNumber>")[1].split("</streetNumber>")[0]
+    #        gps['street'] = s.split("<street>")[1].split("</street>")[0]
+    #        gps['district'] = s.split("<district>")[1].split("</district>")[0]
+    #
+    #        return gps
 
-        url = "http://api.map.baidu.com/geocoder?location=%s,%s&output=xml"
-        turl = url %(latitude,longitude)
-        page = crawl_timeout(turl,20,3)
-        if page== None:
-            #print "gps api get error"
-            base_logger.error("gps api get error")
-            return gps
-        else:
-            s = page
-            gps['formatted_address'] = s.split("<formatted_address>")[1].split("</formatted_address>")[0]
-            gps['city'] = s.split("<city>")[1].split("</city>")[0]
-            gps['province'] = s.split("<province>")[1].split("</province>")[0]
-            gps['streetNumber'] = s.split("<streetNumber>")[1].split("</streetNumber>")[0]
-            gps['street'] = s.split("<street>")[1].split("</street>")[0]
-            gps['district'] = s.split("<district>")[1].split("</district>")[0]
-
-            return gps
-
-
-    def get_ip_location(self,ip):
-        g = {}
-
-        res = get_geo_info(ip)
-        if len(res)>=3:
-            g['country'] = res[0]
-            g['province'] = res[1]
-            g['city'] = res[2]
-            return g
-        else:
-            return None
     #判断电话号码
     def is_normal_phonenum(self,phonenum):
         normal_phone_flag=[3,5,7,8]
@@ -288,6 +280,58 @@ class EXT_API():
             if phonenum_prefix_4 or phonenum_prefix_3:
                 return True
         return False
+
+    def get_phone_location_online(self,phonenum):
+        g ={}
+        g['province'] = "none"
+        g['city'] = "none"
+        g['supplier'] = "none"
+
+
+        url = "http://a.apix.cn/apixlife/phone/phone"
+        querystring = {"phone":phonenum}
+        headers = {
+            'accept': "application/json",
+            'content-type': "application/json",
+            'apix-key': "3b3d4504863841597e53a4c62eb4e46a"
+        }
+        try:
+            response = requests.request("GET", url, headers=headers, params=querystring)
+            rs = json.loads(response.text)
+            
+            if not rs['error_code']:
+                g['province'] = 'province' in rs['data'] and rs['data']['province'] or 'none'
+                g['city'] = 'city' in rs['data'] and rs['data']['city'] or 'none'
+                g['supplier'] = 'operator' in rs['data'] and rs['data']['operator'] or 'none'
+        except:
+            pass
+        return g
+    
+    def get_ip_location(self,ip):
+        key='221db561ad454a6c7000f12057596e16'
+        g={}
+        g['province'] = "none"
+        g['city'] = "none"
+        g['country'] = "none"
+
+        url = "http://e.apix.cn/apixlab/ipinfo/ipinfo"
+        querystring = {"ip":ip}
+        headers = {
+            'accept': "application/json",
+            'content-type': "application/json",
+            'apix-key': key
+        }
+        try:
+            response = requests.request("GET", url, headers=headers, params=querystring)
+            rs = json.loads(response.text)
+            if not rs['code']:
+                g['country'] = 'country' in rs['data'] and rs['data']['country'] or 'none'
+                g['province'] = 'prov' in rs['data'] and rs['data']['prov'] or 'none'
+                g['city'] = 'city' in rs['data'] and rs['data']['city'] or 'none'
+        except:
+            pass
+        return g
+
 
 if __name__ == '__main__':
     api = EXT_API()
