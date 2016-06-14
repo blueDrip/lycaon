@@ -547,19 +547,19 @@ def init_sp_record_info(basedata,sp,p):
     bas_info=basedata.sp and basedata.sp.personalInfo or {}
     data = bas_info and bas_info['data'] or {}
     basic_info={
-        '1007':{ u'运营商实名认证' : u'unknown' },#运营商实名认证
-        '1006':{ u'运营商实名与美信生活实名是否一致':u'unknown' },#运营商实名与自有实名是否一致
-        '1005':{ u'入网时间' : u'unknown' },#入网时间
-        '1004':{ u'地址' : data and data['address'] or u'unknown' },#地址
-        '1003':{ u'网龄' : data and data['netAge'] or u'unknown' }, #网龄
-        '1002':{ u'最早一次通话时间':u'unknown' },#最早一次通话时间
-        '1001':{ u'最后一次通话时间' : u'unknown' } #最后一次通话时间
+        '1007':{ u'运营商实名认证' : u'---' },#运营商实名认证
+        '1006':{ u'运营商实名与美信生活实名是否一致':u'---' },#运营商实名与自有实名是否一致
+        '1005':{ u'入网时间' : u'---' },#入网时间
+        '1004':{ u'地址' : data and data['address'] or u'---' },#地址
+        '1003':{ u'网龄' : data and data['netAge'] or u'---' }, #网龄
+        '1002':{ u'最早一次通话时间':u'---' },#最早一次通话时间
+        '1001':{ u'最后一次通话时间' : u'---' } #最后一次通话时间
     }
     #关键指标
     no_arrearage_info = {
-        '1003':{ u'长时间关机（连续3天无数据、无通话、无短信记录)':u'unknown' },
-        '1002':{ u'呼叫法院相关号码': u'unknown' },
-        '1001':{ u'申请人号码是否出现在网贷黑名单上':u'unknown' },
+        '1003':{ u'长时间关机（连续3天无数据、无通话、无短信记录)':u'---' },
+        '1002':{ u'呼叫法院相关号码': u'---' },
+        '1001':{ u'申请人号码是否出现在网贷黑名单上':u'---' },
     }
 
     #人际交往密切程度
@@ -593,12 +593,13 @@ def init_sp_record_info(basedata,sp,p):
 
     for call in sp_calls:
         if call.phone not in call_map:
-            call_map[call.phone]={u'call_in':0,u'call_out':0,u'call_count':0}
+            call_map[call.phone]={u'call_in':0,u'call_out':0,u'call_count':0,u'call_duration':0}
         if u'主叫' in call.call_type:
             call_map[call.phone][u'call_out'] +=1
         elif u'被叫' in call.call_type:
             call_map[call.phone][u'call_in'] +=1
         call_map[call.phone][u'call_count'] += 1
+        call_map[call.phone][u'call_duration'] += call.call_duration
         #按月统计
         key=str(call.call_time.year)+'-'+str(call.call_time.month<10 and '0'+str(call.call_time.month) or call.call_time.month)
         if key not in month_info:
@@ -631,22 +632,26 @@ def init_sp_record_info(basedata,sp,p):
             '1001':u'主叫次数'
         }
     ]
-
+    call_info_content =[]
+    flag_list = []
     for call in sp_calls:
         key=call.phone
-        call_info.append({
-            '1007' : call.username !=u'none' and u'匹配' or u'未匹配',#通讯录匹配
-            '1006' : key,#号码
-            '1005' : str(call.call_duration),#通话时间
-            '1004' : str(call_map[key][u'call_count']),#通话次数
-            '1003' : call.phone_location,#归属地
-            '1002' : str(call_map[key][u'call_in']),#被叫次数
-            '1001' : str(call_map[key][u'call_out']) #主叫次数
-        })
+        if key not in flag_list:
+            call_info_content.append({
+                '1007' : call.username,#通讯录匹配
+                '1006' : key,#号码
+                '1005' : str(call_map[key][u'call_duration']),#通话时间
+                '1004' : str(call_map[key][u'call_count']),#通话次数
+                '1003' : str(call.phone_location),#归属地
+                '1002' : str(call_map[key][u'call_in']),#被叫次数
+                '1001' : str(call_map[key][u'call_out']) #主叫次数
+            })
+            flag_list.append(key)
     #自定义排序　通话时间，通话次数，主叫次数排序    
     def _key_of_sort(dic):
-        return dic['1005'],dic['1004'],dic['1001']
-    call_info.sort(key=_key_of_sort,reverse=True)
+        return int(dic['1005']),int(dic['1004']),int(dic['1001'])
+    call_info_content.sort(key=_key_of_sort,reverse=True)
+    call_info.extend( call_info_content )
     if len(call_info)<=1:
         call_info.append({
             '1007':u'---',
@@ -658,7 +663,6 @@ def init_sp_record_info(basedata,sp,p):
             '1001':u'---'
         })
 
-    
     #月消费汇总
     basic_info_month=[
         {
