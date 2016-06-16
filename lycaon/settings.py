@@ -82,6 +82,26 @@ SMS_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sms_badword.txt"
 SENSE_BAD_WORD_FILE= BASE_DIR + "/rules/conf/sense_word.txt"
 CITY_CONF = BASE_DIR+'/data/city.conf'
 
+MYSQL_DEFAULT_DB = 'personalbill'
+MYSQL_DEFAULT_USER = 'shiwei'
+MYSQL_DEFAULT_HOST = '182.92.1.106'
+MYSQL_DEFAULT_PORT = '3306'
+MYSQL_DEFAULT_PWD = 'apixheige@personalbill'
+
+MYSQL_DB = 'qianbao'
+MYSQL_USER = 'root'
+MYSQL_HOST = '123.56.93.103'
+MYSQL_PORT = '3306'
+MYSQL_PWD = 'qwert'
+
+MONGO_DBNAME='app_grant_data'
+MONGO_HOST='101.201.78.139'
+MONGO_USER_NAME='app_data'
+MONGO_PWD='heigeMeixin'
+
+
+if os.path.exists('lycaon/local_settings.py'):
+    from .local_settings import *
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -89,19 +109,19 @@ CITY_CONF = BASE_DIR+'/data/city.conf'
 DATABASES = {
     'default':{
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'personalbill',
-        'USER': 'shiwei',
-        'HOST': '182.92.1.106',
-        'PORT': '3306',
-        'PASSWORD': 'apixheige@personalbill'
+        'NAME': MYSQL_DEFAULT_DB,
+        'USER': MYSQL_DEFAULT_USER,
+        'HOST': MYSQL_DEFAULT_HOST,
+        'PORT': MYSQL_DEFAULT_PORT,
+        'PASSWORD': MYSQL_DEFAULT_PWD
     },
     'users': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'qianbao',
-        'USER': 'root',
-        'HOST': '123.56.93.103',
-        'PORT': '3306',
-        'PASSWORD': 'qwert',
+        'NAME': MYSQL_DB,
+        'USER': MYSQL_USER,
+        'HOST': MYSQL_HOST,
+        'PORT': MYSQL_PORT,
+        'PASSWORD': MYSQL_PWD,
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
 }
@@ -230,4 +250,5 @@ LOGGING = {
 # from mongoengine import DEFAULT_CONNECTION_NAME
 from mongoengine import  connect
 #connect('api_plus_plus',host='182.92.71.136',username='test',password='test')
-connect('app_grant_data',host='101.201.78.139',username='app_data',password='heigeMeixin')
+connect(MONGO_DBNAME,host=MONGO_HOST,username=MONGO_USER_NAME,password=MONGO_PWD)
+
