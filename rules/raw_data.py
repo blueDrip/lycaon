@@ -264,10 +264,10 @@ class JdData(Document):
     license_verified = DictField(default = {})
     nickname = StringField(default = str)
     jd_login_name = StringField(default = str,required=True)
-    email_verified = StringField(default = str)
+    email_verified = DictField(default = {})
     real_name = StringField(default=str)
     user_level = StringField(default = str)
-    pay_passwd_verified = StringField(default = str)
+    pay_passwd_verified = DictField(default = {})
     login_name = StringField(default = str)
     
 #淘宝

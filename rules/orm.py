@@ -35,17 +35,18 @@ def jd_orm(cnd={}):
         detail_list='detail' in c['accountSafeInfo'] and c['accountSafeInfo']['detail'] or []
         for it in detail_list:
             if 'loginNameVerified' in it:
-                jd.login_name_varifyied = it
+                jd.login_name_varifyied = it or {}
             elif 'emailVerified' in it:
-                jd.email_verified = it
+                print it
+                jd.email_verified = it or {}
             elif 'phoneVerified' in it:
-                jd.phone_verifyied = it
+                jd.phone_verifyied = it or {}
             elif 'payPasswdVerified' in it:
-                jd.payPasswdVerified = it
+                jd.payPasswdVerified = it or {}
             elif 'indentifyVerified' in it:
-                jd.indentify_verified = it
+                jd.indentify_verified = it or {}
             elif 'licenseVerified' in it:
-                jd.license_verified = it 
+                jd.license_verified = it or {}
     jd.bankinfo = 'bindBankCards' in c and c['bindBankCards'] or []
     jd.address = 'orderAddress' in c and c['orderAddress'] or ''
     jd.jd_login_name = 'jd_login_name' in c and c['jd_login_name'] or ''
