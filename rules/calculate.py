@@ -126,7 +126,7 @@ def get_token(str_token):
 
 def cal_by_message(msg):
     rmap=get_token(msg)
-    cal(minfo=rmap)
+    return cal(minfo=rmap)
 
 def cal(minfo = {
         'user':None,
@@ -231,4 +231,4 @@ def cal(minfo = {
     print 'stat is finished'   
     #except:
         #print '【详情保存完成】'
-    return
+    return top_rule.score

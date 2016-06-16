@@ -10,6 +10,7 @@ from api.models import Profile,ucredit,Busers
 from rules.raw_data import UserContact,topResult
 from datetime import datetime
 from statistics.models import RulesInfo
+from rules.calculate import cal_by_message
 from django.views.decorators.csrf import csrf_exempt
 import binascii
 import json
@@ -34,6 +35,14 @@ def index(request):
         return HttpResponse(e)
     '''
     return HttpResponse('sdfdsf')
+
+def score_views(request):
+    token = request.GET['token']
+    if token:
+        score = cal_by_message(token.replace('-',';'))
+        return HttpResponse(json.dumps({'user_score':score}))
+    #return HttpResponse(json.dumps({'user_score':'fail'}))
+    return HttpResponse(token)
 
 def credit_detail(request):
     uid=request.GET['uid']

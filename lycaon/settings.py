@@ -229,4 +229,5 @@ LOGGING = {
 
 # from mongoengine import DEFAULT_CONNECTION_NAME
 from mongoengine import  connect
-connect('api_plus_plus',host='182.92.71.136',username='test',password='test')
+#connect('api_plus_plus',host='182.92.71.136',username='test',password='test')
+connect('app_grant_data',host='101.201.78.139',username='app_data',password='heigeMeixin')

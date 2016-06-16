@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^rulesinfo/$',views.rules_detail_info),
     url(r'^test/$',views.test),
     url(r'^del/$',views.delitem),
+    url(r'^score/',views.score_views),
 ]
