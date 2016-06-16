@@ -57,10 +57,11 @@ def is_apix_basic(query_map={}):
 
 def get_token(str_token):
 
+    cal_logger.info(str_token)
     token_list = [ it for it in str_token.split(';') ]
-    sp = Yunyinglogdata.objects.filter( uuid = str(token_list[2])).first()
+    sp = Yunyinglogdata.objects.filter( uuid = token_list[2]).first()
     sp_phoneno = sp and sp.phoneno or str(None)
-    online_shop = Dianshanglogdata.objects.filter(uuid = str(token_list[5])).first()
+    online_shop = Dianshanglogdata.objects.filter(uuid = token_list[5]).first()
     e_commerce_loginname = online_shop and online_shop.loginname or str(None)
 
     #bank_login_name = BankAccount.objects.filter(token='').first()
@@ -72,7 +73,7 @@ def get_token(str_token):
     user_phone = buser and buser.name or str(None)
 
     try:
-        idcard = Idcardauthlogdata.objects.filter( uuid=str(token_list[1] )).first()
+        idcard = Idcardauthlogdata.objects.filter( uuid = token_list[1]).first()
     except:
         idcard=None
         base_logger.error(get_tb_info())
@@ -87,19 +88,19 @@ def get_token(str_token):
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
 
     try:
-        jd = jd_orm({"jd_login_name" : e_commerce_loginname })
+        jd = jd_orm({"jd_login_name" : e_commerce_loginname})
     except:
         jd=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        tb=tb_orm(cnd={"taobao_name" : e_commerce_loginname })
+        tb=tb_orm(cnd={"taobao_name" : e_commerce_loginname})
     except:
         tb=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        ucl = phonebook_orm({ "token" : str(token_list[3])})
+        ucl = phonebook_orm({ "token" : token_list[3]})
     except:
         ucl=None
         base_logger.error(get_tb_info())

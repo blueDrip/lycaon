@@ -260,13 +260,17 @@ class JD(BaseRule):
                 if it['dictr'] not in count_mp:
                     count_mp[it['dictr']]=0
         r.value=ss
-        r.score=10
         count_address = len(count_mp.keys())
         r.name=u'不同的收货地址个数'
-        if count_address<=15:
+        r.score = 10
+        if count_address==0:
+            r.score = 10
+        elif count_address>0 and  count_address<=7:
             r.score=100
-        elif count_address>15 and count_address<=30:
+        elif count_address>7 and count_address<=10:
             r.score=70
+        elif count_address>10:
+            r.score = 30
         r.source=str( len(count_mp.keys()))
         r.feature_val = str(count_address)+u'个'
         self.is_basic(basedata,r)
