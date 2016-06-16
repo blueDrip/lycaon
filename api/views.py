@@ -39,10 +39,9 @@ def index(request):
 def score_views(request):
     token = request.GET['token']
     if token:
-        score = cal_by_message(token.replace('-',';'))
+        score = cal_by_message(token)
         return HttpResponse(json.dumps({'user_score':score}))
-    #return HttpResponse(json.dumps({'user_score':'fail'}))
-    return HttpResponse(token)
+    return HttpResponse(json.dumps({'user_score':-3}))
 
 def credit_detail(request):
     uid=request.GET['uid']
