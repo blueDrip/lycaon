@@ -3,8 +3,8 @@ from corelib.database import MongoDb
 from rules.raw_data import JdData,TaoBao,chinaMobile,phonebook,chinaUnicom
 from datetime import datetime
 def jd_orm(cnd={}):
-    if not cnd:
-        return
+    if 'None' in cnd.values():
+        return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('jingdong').find_one(cnd) or {}
     jd=JdData()
@@ -53,8 +53,8 @@ def jd_orm(cnd={}):
     return jd
 
 def tb_orm(cnd={}):
-    if not cnd:
-        return
+    if 'None' in cnd.values():
+        return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('taobao').find_one(cnd) or {}
     
@@ -115,8 +115,9 @@ def tb_orm(cnd={}):
 
 
 def china_mobile_orm(cnd={}):
-    if not cnd:
-        return
+    if 'None' in cnd.values():
+        return None
+
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('yidong').find_one(cnd) or {}
 
@@ -139,7 +140,7 @@ def china_mobile_orm(cnd={}):
 
 
 def china_unicom_orm(cnd={}):
-    if not cnd:
+    if 'None' in cnd.values():
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('liantong').find_one(cnd) or {}
