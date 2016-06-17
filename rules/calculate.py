@@ -59,26 +59,23 @@ def get_token(str_token):
 
     cal_logger.info(str_token)
     token_list = [ it for it in str_token.split(';') ]
-    sp = Yunyinglogdata.objects.filter( uuid = token_list[2]).first()
-    sp_phoneno = sp and sp.phoneno or str(None)
-    online_shop = Dianshanglogdata.objects.filter(uuid = token_list[5]).first()
-    e_commerce_loginname = online_shop and online_shop.loginname or str(None)
-
-    #bank_login_name = BankAccount.objects.filter(token='').first()
-
+    #token
+    user_id_token = token_list[0]
+    idcard_token = token_list[1]
+    user_phone_token = token_list[2]
+    sp_phone_no_token = token_list[3]
+    phone_book_token = token_list[4]
+    taobao_name_token = token_list[5]
+    jd_name_token = token_list[6]
+    
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
-    userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
-    buser = Busers.objects.using('users').filter(user_id = binascii.a2b_hex(token_list[0].replace('-',''))).first()
-    user_phone = buser and buser.name or str(None)
+    userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(user_id_token.replace('-',''))).first()
 
     try:
-        idcard = Idcardauthlogdata.objects.filter( uuid = token_list[1]).first()
-    except:
-        idcard=None
-        base_logger.error(get_tb_info())
-        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
-    try:
+        sp = Yunyinglogdata.objects.filter( uuid = sp_phone_no_token).first()
+        sp_phoneno = sp and sp.phoneno or str(None)
+
         sp_mobile=china_mobile_orm({ "phone_no" : sp_phoneno })
         sp_unicom=china_unicom_orm({ "phone_no" : sp_phoneno })
         sp = sp_mobile or sp_unicom
@@ -88,26 +85,32 @@ def get_token(str_token):
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
 
     try:
-        jd = jd_orm({"jd_login_name" : e_commerce_loginname})
+        online_shop = Dianshanglogdata.objects.filter(uuid = jd_name_token).first()
+        jd_loginname = online_shop and online_shop.loginname or str(None)
+        jd = jd_orm({"jd_login_name" : jd_loginname})
     except:
         jd=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        tb=tb_orm(cnd={"taobao_name" : e_commerce_loginname})
+        online_shop = Dianshanglogdata.objects.filter(uuid = taobao_name_token).first()
+        tb_loginname = online_shop and online_shop.loginname or str(None)
+        tb=tb_orm(cnd={"taobao_name" : tb_loginname})
     except:
         tb=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
     try:
-        ucl = phonebook_orm({ "token" : token_list[3]})
+        ucl = phonebook_orm({ "token" : phone_book_token})
     except:
         ucl=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
 
     try:
-        cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
+        #cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
+        #bank_login_name = BankAccount.objects.filter(token='').first()
+        cb=None
     except:
         cb=None
         base_logger.error(get_tb_info())
@@ -115,9 +118,9 @@ def get_token(str_token):
 
     return {
         'user':userinfo,
-        'user_id':token_list[0].replace('-',''),
-        'user_phone':user_phone,
-        'idcard':idcard,
+        'user_id':user_id_token.replace('-',''),
+        'user_phone':user_phone_token,
+        'idcard':idcard_token,
         'jd' : jd,
         'tb' : tb,
         'sp' : sp,
@@ -210,6 +213,7 @@ def cal(minfo = {
     top_rule.name = u'credit_score'
     top_rule.user_type = user_type
     top_rule.user_id = user_id
+    top_rule.created_time = datetime.now()
     top_rule.save()
     user=minfo['user']
     if user:

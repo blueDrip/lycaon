@@ -150,10 +150,10 @@ class BaseData(object):
             'idcard':u'unknow'
         }
         #print self.idcard.cardno
-        if not self.idcard or self.idcard == u'unknow':
+        if not self.idcard or self.idcard == u'None':
             self.idcard_info = idcard_info_map
             return
-        info = self.ext_api.get_info_by_id(self.idcard.cardno)
+        info = self.ext_api.get_info_by_id(self.idcard)
         b = info[2]
         age = (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365
         self.idcard_info={
@@ -161,7 +161,7 @@ class BaseData(object):
             'home_location':info[1],
             'birthday':info[2],
             'age':age,
-            'idcard':self.idcard.cardno
+            'idcard':self.idcard
         }
             
     def init_sp_calldetail(self):
