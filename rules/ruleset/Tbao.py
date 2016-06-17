@@ -23,10 +23,11 @@ class Tbao(BaseRule):
             40010:self.cat_exep_value(basedata),#天猫经验值
             40011:self.bindp_same_with_owner_phone(basedata),#绑定手机号与申请号是否一致
             40012:self.safe_level(basedata),#账号安全级别
-            40013:self.goods_nums_harf(basedata),#半年内购买商品件数
+            40013:self.goods_nums_harf(basedata),#半年内成功交易的商品件数
             40014:self.max_min_amount_diff(basedata),#半年内单件商品最大消费金额与最小消费差值
             40015:self.consume_hz(basedata),#消费频次
             40016:self.using_year(basedata),#淘宝使用年限
+            40017:self.close_order_times(basedata),#半年内关闭的订单数
         }
 
 
@@ -328,10 +329,11 @@ class Tbao(BaseRule):
         count=0
         r = minRule()
         for it in order_list:
-            count+=len(it['orderProducts'])
-            r.value += '\t'.join([v[u'productName']+'-'+v[u'productPrice'] for v in it['orderProducts'] ])    
+            if u'成功' in it['orderStatus']:
+                count+=len(it['orderProducts'])
+                r.value += '\t'.join([v[u'productName']+'-'+v[u'productPrice'] for v in it['orderProducts'] ])    
 
-        r.name = u'半年内购买商品件数'
+        r.name = u'半年内交易成功的商品件数'
         r.score = 10 
         if count>0 and count<10:
             r.score = 20
@@ -377,6 +379,33 @@ class Tbao(BaseRule):
         r.source = str(diff)
         self.is_basic(basedata,r)
         return r
+
+    #半年内关闭的订单数
+    def close_order_times(self,basedata):
+        order_list = self.harf_order_list
+        corder_list =[ it for it in order_list if u'关闭' in it['orderStatus']]
+        times=len(corder_list)
+
+        r = minRule()
+        r.name = u'半年内关闭的订单数'
+        r.value = '\t'.join([ it['orderId']+'-'+ it['orderTotalPrice']+'-'+ it['businessDate']  for it in corder_list])
+        r.score = 10
+        times=len(corder_list)
+        if corder_list:
+            if times>=0 and times<=10:
+                r.score = 100
+            elif times>10 and times<=20:
+                r.score = 80
+            elif times>20 and times<=40:
+                r.score = 60
+            elif times>40:
+                r.score = 30
+        r.feature_val = str(times)
+        r.source = str(times)
+        self.is_basic(basedata,r)
+        return r
+
+
 
     #半年内购买单件商品金额众数
     def most_times_amount(self,basedata):
@@ -452,15 +481,16 @@ class Tbao(BaseRule):
         cat_exep_value = min_map[40010].score*0.05  #天猫经验值
         bindp_same_with_owner_phone = min_map[40011].score*0.02 #绑定手机号与申请号是否一致
         safe_level = min_map[40012].score*0.03 #账号安全级别
-        goods_nums_harf = min_map[40012].score*0.05 #半年内购买商品件数
-        max_min_amount_diff = min_map[40013].score*0.1 #半年内单件商品最大消费金额与最小消费差值
-        consume_hz = min_map[40014].score*0.05 #消费频次
-        using_year = min_map[40015].score*0.05 #淘宝使用年限
-    
+        goods_nums_harf = min_map[40013].score*0.05 #半年内购买商品件数
+        max_min_amount_diff = min_map[40014].score*0.06 #半年内单件商品最大消费金额与最小消费差值
+        consume_hz = min_map[40015].score*0.05 #消费频次
+        using_year = min_map[40016].score*0.05 #淘宝使用年限
+        close_times = min_map[40017].score*0.04
+
         score = binding_phone+real_name+repay_back_fast+cat_level
         score += credit_grade+cat_grade+profit_amount+hb_amount+consume_times
         score += cat_exep_value + bindp_same_with_owner_phone+safe_level
-        score += goods_nums_harf+max_min_amount_diff+consume_hz+using_year
+        score += goods_nums_harf+max_min_amount_diff+consume_hz+using_year+close_times
         
         return score
 
