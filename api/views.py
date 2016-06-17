@@ -53,7 +53,7 @@ def users_views(request):
     return render(request,'api/users.html',{'users':ulist})
 def rules_detail_info(request):
     uid=request.GET['uid']
-    rs = RulesInfo.objects.filter(user_id=uid).order_by('-created_time').first()
+    rs = RulesInfo.objects.filter(user_id=uid).order_by('-created_at').first()
     return render(request, 'api/detailinfo.html', {'rs': rs})
 
 def delitem(request):
