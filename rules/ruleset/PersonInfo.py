@@ -32,7 +32,7 @@ class PersonInfo(BaseRule):
         elif age>40:
             r.score=70
         r.value = str(age)+u'岁;出生年月日:'+basedata.idcard_info['birthday']
-        r.feature_value=str(age)+u'岁'
+        r.feature_val=str(age)+u'岁'
         r.name=u'年龄'
         return r
     def get_sex(self,basedata):

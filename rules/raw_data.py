@@ -380,5 +380,5 @@ class topResult(Document):
     rulelist=ListField(ReferenceField(DetailRule))
     value=StringField(default = str)
     name = StringField(default = str)
-    created_time = datetime.datetime.now()
+    created_time = DateTimeField()
     user_type = StringField(default = '正常用户') #黑名单用户
