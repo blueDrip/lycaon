@@ -5,8 +5,11 @@ from datetime import datetime
 def jd_orm(cnd={}):
     if 'None' in cnd.values():
         return None
+
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('jingdong').find_one(cnd) or {}
+    c=d.get_collection('jingdong').find_one(cnd,sort=[('createTime',-1)]) or {}
+    if not c:
+        return None
     jd=JdData()
     if 'accountSafeInfo' in c:
         jd.safe_priority = 'safeLevel' in c['accountSafeInfo'] and c['accountSafeInfo']['safeLevel'] or ''
@@ -56,8 +59,9 @@ def tb_orm(cnd={}):
     if 'None' in cnd.values():
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('taobao').find_one(cnd) or {}
-    
+    c=d.get_collection('taobao').find_one(cnd,sort=[('createTime',-1)]) or {}
+    if not c:
+        return None
     tb=TaoBao()
     tb.taobao_name = 'taobao_name' in c and c['taobao_name'] or ''
     tb.createTime=datetime.now()
@@ -119,7 +123,7 @@ def china_mobile_orm(cnd={}):
         return None
 
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('yidong').find_one(cnd) or {}
+    c=d.get_collection('yidong').find_one(cnd,sort=[('createTime',-1)]) or {}
 
     cmb=chinaMobile()
     if c:
@@ -143,7 +147,7 @@ def china_unicom_orm(cnd={}):
     if 'None' in cnd.values():
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('liantong').find_one(cnd) or {}
+    c=d.get_collection('liantong').find_one(cnd,sort=[('createTime',-1)]) or {}
 
     cub=chinaUnicom()
     if c:
@@ -165,7 +169,7 @@ def phonebook_orm(cnd={}):
     if not cnd:
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('phonebook').find_one(cnd) or {}
+    c=d.get_collection('phonebook').find_one(cnd,sort=[('createTime',-1)]) or {}
 
     pb = phonebook()
     if c:

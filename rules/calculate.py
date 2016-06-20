@@ -159,12 +159,12 @@ def cal(minfo = {
         'postloan':u'贷后',
     }
     weight_map={
-        'personinfo':0.2,
-        'jd':0.2,
+        'personinfo':0.15,
+        'jd':0.1,
         'tb':0.1,
-        'sp':0.2,
-        'postloan':0.2,
-        'cb':0.1,
+        'sp':0.3,
+        'postloan':0.3,
+        'cb':0.05,
     }
 
     user_type = u'正常用户'
