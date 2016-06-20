@@ -56,14 +56,14 @@ class PersonInfo(BaseRule):
         r.source=edu
         r.name=u'教育程度'
         r.score=10
-        if edu==u'本科':
-            r.score=80
-        elif edu in [u'研究生',u'博士']:
-            r.score=100
-        elif edu==u'高中':
-            r.score=60
-        elif edu==u'初中':
-            r.score=40
+        if edu in u'中专/高中及一下':
+            r.score = 50
+        elif edu in u'专科':
+            r.score = 70
+        elif edu in u'本科':
+            r.score = 90
+        elif edu in u'硕士及以上':
+            r.score = 100
         r.feature_val = edu
         return r
     def get_residenza(self,basedata):
@@ -73,10 +73,10 @@ class PersonInfo(BaseRule):
         r.name=u'老家住址(市/县)'
         r.score = 10
         if u'县' in home_location:
-            r.score = 60
+            r.score = 70
             r.source=u'县'
         elif u'市' in home_location:
-            r.score = 80
+            r.score = 100
             r.source=u'市'
         r.feature_val = home_location
         return r
@@ -90,13 +90,20 @@ class PersonInfo(BaseRule):
         if u'unknow' == marr:
             r.score = 10
             r.feature_val = marr
-        if u'结婚' in marr:
-            r.score = 80
-            r.feature_val = u'结婚' 
-        elif u'未婚' in marr:
+        if u'未婚' in marr:
+            r.score = 70
+            r.feature_val = u'未婚' 
+        elif u'已婚，无子女' in marr:
+            r.score = 90
+            r.feature_val = u'已婚，无子女'
+        elif u'已婚，有子女' in marr:
+            r.score = 100
+            r.feature_val = u'已婚，有子女'
+        elif u'离异' in marr:
             r.score = 60
-            r.feature_val = u'未婚'
-        
+        elif u'丧妻' in marr:
+            r.score = 80
+            r.feature_val = u'丧妻'
         return r
 
     def get_profession(self,basedata):
@@ -104,18 +111,14 @@ class PersonInfo(BaseRule):
         r=minRule()
         r.value = p
         r.score=10
-        if p==u'信息产业':
-            r.score=90
-        elif p==u'农业':
-            r.score=80
-        elif p==u'渔业':
-            r.score=70
-        elif p==u'林业':
-            r.score=60
-        elif p==u'畜牧业':
-            r.score=50
-        elif p==u'金融业':
-            r.score=40
+        if p == u'企业主':
+            r.score = 90
+        elif p == u'上班族':
+            r.score = 80
+        elif p == u'自由职业':
+            r.score = 60
+        elif p == u'学生':
+            r.score = 70
         else:
             r.score=10
         r.name=u'职业'
@@ -144,7 +147,7 @@ class PersonInfo(BaseRule):
         sex_score=min_rule_map[10002].score*0.2
         edu_score=min_rule_map[10003].score*0.1
         residenza_score=min_rule_map[10004].score*0.2
-        profession_score=min_rule_map[10006].score*0.2
-        phone_score=min_rule_map[10007].score*0.1
+        profession_score=min_rule_map[10006].score*0.1
+        phone_score=min_rule_map[10007].score*0.2
         score=age_score+sex_score+edu_score+profession_score+phone_score+residenza_score
         return score
