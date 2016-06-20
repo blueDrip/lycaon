@@ -277,11 +277,12 @@ class TaoBao(Document):
     huabeiCanUseMoney = FloatField(default=0) #花呗可用额度
     creditLevel = StringField(default=str) #//淘宝信用等级
     tianMaoAccountName = StringField(default=str) #天猫用户名
+    tianMaoLevel = StringField(default = str) #天猫等级
     taobaoFastRefundMoney = IntField(default=0) #淘宝极速退款额度
     buyerCreditPoint = StringField(default=str) #买家信用评分
     aliPaymFund = StringField(default=str)      #余额宝金额
     tianMaoPoints = StringField(default=str)    #天猫积分
-    taobaoLevel = StringField(default=str)      #天猫等级
+    taobaoLevel = StringField(default=str)      #淘宝等级
     aliPaymFundProfit = StringField(default='0') #余额宝总收益
     aliPayRemainingAmount = StringField(default='0') #支付宝余额
     huabeiTotalAmount = FloatField(default=0) #花呗总额度
