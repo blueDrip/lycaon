@@ -14,7 +14,7 @@ SECRET_KEY = 'r1-#py2)14i*82ae55w14n-4s##%lb(+l=5ffpyrk12agyae*%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['123.56.85.36']
+ALLOWED_HOSTS = ['123.56.85.36','*']
 
 LOG_DIR = '/home/sw/logs/lycaon/'
 
