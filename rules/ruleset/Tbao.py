@@ -128,7 +128,7 @@ class Tbao(BaseRule):
 
     #天猫等级
     def cat_level(self,basedata):
-        cat_grade=basedata.tb and basedata.tb.taobaoLevel or u'unknown'
+        cat_grade=basedata.tb and basedata.tb.tianMaoLevel or u'unknown'
         r=minRule()
         r.name=u'天猫等级'
         r.score = 20
@@ -149,10 +149,10 @@ class Tbao(BaseRule):
         return r
     #淘宝信用等级
     def credit_grade(self,basedata):
-        credit_level = basedata.tb and basedata.tb.creditLevel or u'unknown'
+        credit_level = basedata.tb and str(basedata.tb.creditLevel) or u'unknown'
         r=minRule()
         r.name = u'淘宝信用等级'
-        r.score = 10
+        r.score = 20
         if u'V0' in credit_level:
             r.score = 30
         elif u'V1' in credit_level:
@@ -198,11 +198,13 @@ class Tbao(BaseRule):
         return r
     #余额总收益
     def profit_amount(self,basedata):
-        pa=basedata.tb and float(basedata.tb.aliPaymFundProfit) or u'unknown'
+        pa = u'unknow'
+        if basedata.tb:
+            pa = float(basedata.tb.aliPaymFundProfit)
         r=minRule()
         r.name = u'余额宝总收益'
-        r.score = 10
-        if u'unknown' in str(pa):
+        r.score = 20
+        if u'unknow' in str(pa):
             pass
         elif pa>0 and pa<=10:
             r.score = 40
@@ -212,7 +214,7 @@ class Tbao(BaseRule):
             r.score = 80
         elif pa>60 and pa<=80:
             r.score = 90
-        else:
+        elif pa>80:
             r.score = 100
         r.value = str(pa)
         r.feature_val = str(pa)
@@ -453,12 +455,10 @@ class Tbao(BaseRule):
         if y<1:
             r.score = 10
         elif y>=1 and y<3:
-            r.score = 30
+            r.score = 40
         elif y>=3 and y<5:
-            r.score = 50
-        elif y>=5 and y<10:
             r.score = 80
-        elif y>=10:
+        elif y>=5:
             r.score = 100
         r.value = value
         r.feature_val = str(y)

@@ -92,6 +92,9 @@ def tb_orm(cnd={}):
             tb.growthValue = c['personalInfo']['growthValue'] or '0'
         if 'tianmaoExperience' in c['personalInfo']:
             tb.tianmaoExperience=c['personalInfo']['tianmaoExperience'] or '0'
+        if 'tianMaoLevel' in c['personalInfo']:
+            tb.tianMaoLevel = c['personalInfo']['tianMaoLevel'] or ''
+
     if 'accountSafeInfo' in c:
         if 'username' in c['accountSafeInfo']:
             tb.username = c['accountSafeInfo']['username']
