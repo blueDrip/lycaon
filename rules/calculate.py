@@ -115,7 +115,8 @@ def get_token(str_token):
         cb=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
-
+    #if not (idcard_token and sp and ucl and (jd or tb)):
+    #    return None
     return {
         'user':userinfo,
         'user_id':user_id_token.replace('-',''),
@@ -130,6 +131,8 @@ def get_token(str_token):
 
 def cal_by_message(msg):
     rmap=get_token(msg)
+    if not rmap:
+        return None
     return cal(minfo=rmap)
 
 def cal(minfo = {

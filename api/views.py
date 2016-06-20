@@ -40,6 +40,8 @@ def score_views(request):
     token = request.GET['token']
     if token:
         score = cal_by_message(token)
+        #if score:
+        #    return HttpResponse(json.dumps({'user_score':score}))
         return HttpResponse(json.dumps({'user_score':score}))
     return HttpResponse(json.dumps({'user_score':-3}))
 
