@@ -82,7 +82,7 @@ def init_online_shop_info(basedata,jd,tb):
         {
             '1008':u'淘宝',
             '1007':btb and btb.username or u'uknown',
-            '1006':btb and btb.creditLevel or u'unknown',
+            '1006':btb and str(btb.creditLevel) or u'unknown',
             '1005':tb and tb.min_rule_map[40002].feature_val or u'unknown',
             '1004':btb and btb.bindMobile or u'unknown',
             '1003':btb and btb.loginEmail or u'unknown',
