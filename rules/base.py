@@ -85,8 +85,11 @@ class BaseData(object):
             self.user = map_info['user']
             self.idcard = map_info['idcard']
             self.idcard_info={}
-            self.user_plocation=map_info['user'] and map_info['user'].phone_place or u'unknow'
-            self.user_phone= map_info['user_phone']
+            
+            self.user_phone = map_info['user_phone']
+            phone_info = self.ext_api.get_phone_location(self.user_phone)
+            self.user_plocation = map_info['user'] and map_info['user'].phone_place or phone_info['province']+phone_info['city']
+
             self.username = u'none'
             self.user_id = map_info['user_id']
 
@@ -119,20 +122,19 @@ class BaseData(object):
             self.cb = map_info['cb']
 
             self.init_contact()
-            ptype=self.ext_api.get_phone_location(self.user_phone)
-            if '移动' in ptype['supplier']:
+            if '移动' in phone_info['supplier']:
                 print '移动'
                 self.init_sp_calldetail()
                 self.init_sp_smsdetail()
                 self.init_sp_netdetail()
                 self.init_sp_recharege()
-            elif '联通' in ptype['supplier']:
+            elif '联通' in phone_info['supplier']:
                 print '联通'
                 self.init_sp_unicom_calldetail()
                 self.init_sp_unicom_smsdetail()
                 self.init_sp_unicom_netdetail()
                 self.init_sp_unicom_recharege()
-            elif '电信' in ptype['supplier']:
+            elif '电信' in phone_info['supplier']:
                 pass
             else:
                 pass
@@ -414,24 +416,3 @@ class BaseData(object):
 
 
       
-    def init(self):
-        base_logger.info("[  Init Begin ] orderid = "+self.order_id+",user_id = " +self.user_id)
-        #profile
-        self.sex, self.identity_location, self.identity_birth = self.ext_api.get_info_by_id(self.identity)
-        #self.profile_change_log_list = ProfileChangeLog.objects.filter(user=self.user_id)
-
-        self.self_phone_location = self.ext_api.get_phone_location(self.phone) 
-        print "contacts,calls ,sms1"
-        self.init_contact()
-        print "contacts,calls ,sms2"
-        self.init_calls()
-        print "contacts,calls ,sms3"
-        self.init_sms()
-
-        print "init_system_info"
-        self.init_system_info() 
-
-        #sos user
-        self.sos_user_list = self.get_sos_user()
-
-        return 

@@ -273,9 +273,9 @@ class Sp(BaseRule):
                 )
         r = minRule()
         r.name = u'通话记录电话号码出现在通讯录的个数'
-        r.score = 10
-        if count>=0 and count<40:
-            r.score=40
+        r.score = 20
+        if count>0 and count<40:
+            r.score=30
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
@@ -302,8 +302,8 @@ class Sp(BaseRule):
                 )
         r = minRule()
         r.name = u'短信记录电话号码出现在通讯录个数'
-        r.score = 10
-        if count>=0 and count<20:
+        r.score = 20
+        if count>0 and count<20:
             r.score=30
         elif count>=20 and count<40:
             r.score=60
@@ -324,22 +324,25 @@ class Sp(BaseRule):
         home_location = basedata.home_location
         count=0
         value = []
+        pmap={}
         for it in basedata.sp_calls:
             location=it.phone_location.split('-')
-            '''级别:省,市/县'''
-            if location[0] in home_location or location[1] in home_location:
-                count+=1 
-                value.append(
-                    it.username+'-'+it.phone+'-'+it.phone_location
-                )
+            if it.phone not in pmap:
+                '''级别:省,市/县'''
+                if location[0] in home_location or location[1] in home_location:
+                    count+=1 
+                    value.append(
+                        it.username+'-'+it.phone+'-'+it.phone_location
+                    )
+                pmap[it.phone]=[]
         call_len = len(basedata.sp_calls)
         radio = count*1.0/(call_len or 1)
         r = minRule()
         r.name = u'通话记录中电话号码在老家的个数'
-        r.score = 10
+        r.score = 20
         r.value = '\t'.join(value)
-        if count>=0 and count<40:
-            r.score=20
+        if count>0 and count<40:
+            r.score=30
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
@@ -358,21 +361,24 @@ class Sp(BaseRule):
         home_location = basedata.home_location
         count=0
         value = []
+        pmap={}
         for it in basedata.sp_sms:
             location=it.phone_location.split('-')
-            '''级别:省,市/县'''
-            if location[0] in home_location or location[1] in home_location:
-                count+=1
-                value.append(
-                    it.username+'-'+it.phone+'-'+it.phone_location
-                )
+            if it.phone not in pmap:
+                '''级别:省,市/县'''
+                if location[0] in home_location or location[1] in home_location:
+                    count+=1
+                    value.append(
+                        it.username+'-'+it.phone+'-'+it.phone_location
+                    )
+                pmap[it.phone]=[]
         r = minRule()
         r.name = u'短信记录中电话号码在老家的个数'
-        r.score = 10
+        r.score = 20
         r.value = '\t'.join(value)
 
-        if count>=0 and count<40:
-            r.score=20
+        if count>0 and count<40:
+            r.score=30
         elif count>=40 and count<60:
             r.score=60
         elif count>=60 and count<80:
@@ -391,16 +397,20 @@ class Sp(BaseRule):
         user_plocation = basedata.user_plocation
         count=0
         value = []
+        pmap = {}
         for it in basedata.sp_calls:
             location=it.phone_location.split('-')
-            if location[1] in user_plocation or location[0] in user_plocation:
-                count+=1
-                value.append(
-                    it.username+'-'+ it.phone+'-'+it.phone_location
-                )
+            if it.phone not in pmap:
+                if location[1] in user_plocation or location[0] in user_plocation:
+                    count+=1
+                    value.append(
+                        it.username+'-'+ it.phone+'-'+it.phone_location
+                    )
+                pmap[it.phone]=[]
+
         r = minRule()
         r.name = u'通话记录中电话号码与申请人同一手机归属地个数'
-        r.score = 10
+        r.score = 20
         r.value = '\t'.join(value)
         if count>0 and count<40:
             r.score=30
@@ -421,16 +431,20 @@ class Sp(BaseRule):
         user_plocation = basedata.user_plocation
         count=0
         value=[]
+        pmap={}
         for it in basedata.sp_sms:
             location=it.phone_location.split('-')
-            if location[1] in user_plocation or location[0] in user_plocation:
-                count+=1
-                value.append(
-                    it.username+'-'+it.phone+'-'+it.phone_location
-                )
+            if it.phone not in pmap:
+                if location[1] in user_plocation or location[0] in user_plocation:
+                    count+=1
+                    value.append(
+                        it.username+'-'+it.phone+'-'+it.phone_location
+                    )
+                pmap[it.phone] = []
+
         r = minRule()
         r.name = u'短信记录中电话号码与申请人同一手机归属地的个数'
-        r.score=10
+        r.score=20
         r.value = '\t'.join(value)
         if count>0 and count<40:
             r.score=30
@@ -450,7 +464,7 @@ class Sp(BaseRule):
     def set_21(self,basedata):
         r=minRule()
         r.name=u'是否设置21呼叫转移'
-        r.score=10
+        r.score=20
         value = []
         for c in basedata.contacts:
             if c.phone[0:2] =='21' or c.phone[0:3] =='*21' or c.phone[0:3]=='#21':
