@@ -38,12 +38,15 @@ def index(request):
 
 def score_views(request):
     token = request.GET['token']
-    if token:
-        score = cal_by_message(token)
-        #if score:
-        #    return HttpResponse(json.dumps({'user_score':score}))
-        return HttpResponse(json.dumps({'user_score':score}))
-    return HttpResponse(json.dumps({'user_score':-3}))
+    try:
+        if token:
+            score = cal_by_message(token)
+            #if score:
+            #    return HttpResponse(json.dumps({'user_score':score}))
+            return HttpResponse(json.dumps({'user_score':score}))
+        return HttpResponse(json.dumps({'user_score':-3}))
+    except:
+        return HttpResponse(json.dumps({'user_score':-3}))
 
 def credit_detail(request):
     uid=request.GET['uid']
