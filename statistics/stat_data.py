@@ -23,7 +23,8 @@ logger = logging.getLogger('django.rules')
 logger.setLevel(logging.INFO)
 import time
 from datetime import datetime, date, timedelta
-
+from rules.base import get_right_datetime 
+from rules.ruleset.post_loan_handler import PostLoanHandler
 def get_time_now(hours=0,minutes=0,seconds=0):
     today=time.localtime();
     year=today.tm_year;
@@ -41,22 +42,21 @@ def get_stop_time(dist=1):
 '''实名验证'''
 def init_valid_name_info(basedata):
     return {
-        '1007' : { u'是否实名认证' : u'unknown'},#是否实名认证
-        '1006' : { u'姓名' : u'unknown' },#姓名
+        '1007' : { u'是否实名认证' : u'---'},#是否实名认证
+        '1006' : { u'姓名' : basedata.username },#姓名
         '1005' : { u'身份证号' : basedata.idcard_info['idcard'] },#idcardno
         '1004' : { u'性别' : basedata.idcard_info['sex'] },#性别
         '1003' : { u'年龄' : basedata.idcard_info['age'] },#年龄
         '1002' : { u'身份证所在地' : basedata.idcard_info['home_location'] },#身份证所在地
-        '1001' : { u'申请人身份证号码是否出现在法院黑名单上' : u'unknown' } #申请人身份证号码是否出现在法院黑名单上
+        '1001' : { u'申请人身份证号码是否出现在法院黑名单上' : u'---' } #申请人身份证号码是否出现在法院黑名单上
     }
 
 '''电商分析'''
-def init_online_shop_info(basedata,jd,tb):
+def init_online_shop_info(basedata):
     bjd = basedata and basedata.jd or None
     btb = basedata and basedata.tb or None
-    login_his = jd and jd.login_his_map.keys() or []
-    login_his.sort()
-
+    #login_his = jd and jd.login_his_map.keys() or []
+    login_his = bjd and bjd.login_history or []
     #基本信息
     basic_info_list=[
         {
@@ -73,38 +73,48 @@ def init_online_shop_info(basedata,jd,tb):
             '1008':u'京东',
             '1007':bjd and bjd.jd_login_name or u'unknown',#会员名    
             '1006':bjd and bjd.user_level or u'unknown',#会员等级
-            '1005':jd and jd.min_rule_map[30001].feature_val or u'unknown',#是否通过姓名验证
-            '1004':bjd and bjd.phone_verifyied and bjd.phone_verifyied.values()[1] or u'unknown',#绑定手机号
-            '1003':bjd and bjd.email_host.replace('\r\n','') or u'unknown',#登陆邮箱
-            '1002':len(login_his)>0 and login_his[-1] or u'unknown',#最后一次登陆时间
+            #'1005':jd and jd.min_rule_map[30001].feature_val or u'unknown',#是否通过姓名验证
+            '1005':bjd and bjd.indentify_verified.values()[1] or u'---',#是否通过姓名验证
+            '1004':bjd and bjd.phone_verifyied and bjd.phone_verifyied.values()[1] or u'---',#绑定手机号
+            '1003':bjd and bjd.email_host.replace('\r\n','') or u'---',#登陆邮箱
+            '1002':len(login_his)>0 and login_his[0] or u'---',#最后一次登陆时间
             '1001':u'unknown' #使用时间
         },
         {
             '1008':u'淘宝',
-            '1007':btb and btb.username or u'uknown',
-            '1006':btb and str(btb.creditLevel) or u'unknown',
-            '1005':tb and tb.min_rule_map[40002].feature_val or u'unknown',
-            '1004':btb and btb.bindMobile or u'unknown',
-            '1003':btb and btb.loginEmail or u'unknown',
+            '1007':btb and btb.username or u'---',
+            '1006':btb and str(btb.creditLevel) or u'---',
+            '1005':btb and btb.identityVerified or u'---',
+            '1004':btb and btb.bindMobile or u'---',
+            '1003':btb and btb.loginEmail or u'---',
             '1002':u'---',
             '1001':u'---'
         },
     ]
     #白条
     baitiao_info_map = {
-        '1007':{ u'京东白条额度':bjd and bjd.baitiao and bjd.baitiao[u'totalAmount'] or u'unknown' },#白条额度
-        '1006':{ u'剩余额度':bjd and bjd.baitiao and bjd.baitiao[u'avaliableAmount'] or u'unknown' },#白条剩余额度
-        '1005':{ u'累积消费':bjd and bjd.baitiao and bjd.baitiao[u'consumeAmount'] or u'unknown'},#白条可用额度
-        '1004':{ u'芝麻信用分数':u'unknown' },#芝麻信用分数
-        '1003':{ u'花呗额度':btb and btb.huabeiTotalAmount or u'unknown'},#花呗额度
+        '1007':{ u'京东白条额度':bjd and bjd.baitiao and bjd.baitiao[u'totalAmount'] or u'---' },#白条额度
+
+        '1006':{ u'剩余额度':bjd and bjd.baitiao and bjd.baitiao[u'avaliableAmount'] or u'---' },#白条剩余额度
+        '1005':{ u'累积消费':bjd and bjd.baitiao and bjd.baitiao[u'consumeAmount'] or u'---'},#白条可用额度
+        '1004':{ u'芝麻信用分数':u'---' },#芝麻信用分数
+        '1003':{ u'淘宝花呗额度':btb and btb.huabeiTotalAmount or u'---'},#花呗额度
         '1002':{ u'京东实名认证是否与美信生活实名认证一致' : u'---' },
         '1001':{ u'淘宝实名认证是否与美信生活实名认证一致' : u'---' },
     }
 
     #消费统计
-    consume_list = jd and jd.consume_list or []
-    tb_consume_list = tb and tb.harf_order_list or []
-    jd_cm_list = [ it['money'] for it in consume_list ]
+    jd_origin_consume_list = bjd and bjd.consume_list or []
+    tb_origin_consume_list = btb and btb.orderList or []
+    #京东消费记录
+    jd_consume_list=map(lambda it:{
+            'time':get_right_datetime(it[0].strip(' ')),
+            'orderid':it[1],
+            'money':float(it[2].replace('￥',''))
+        },map(lambda x:x.split('|'),jd_origin_consume_list))
+    #淘宝消费记录    
+    tb_consume_list = tb_origin_consume_list
+    jd_cm_list = [ it['money'] for it in jd_consume_list ]
     tb_cm_list = [ float(it['orderTotalPrice']) for it in tb_consume_list ]
     tb_product_list = [ len(it['orderProducts']) for it in tb_consume_list]
     #排序
@@ -132,10 +142,10 @@ def init_online_shop_info(basedata,jd,tb):
             '1007' : len(jd_cm_list) and jd_cm_list[0] or u'---',#单笔最低消费
             '1006' : sum(jd_cm_list)/(len(jd_cm_list) or 1),#平均每笔消费
             '1005' : len(jd_cm_list),#累计订单总数
-            '1004' : u'unknown',#商品总件数
-            '1003' : u'unknown',#返修退换货比率
-            '1002' : u'unknown',#评价总数
-            '1001' : u'unknown',#差评比率
+            '1004' : u'---',#商品总件数
+            '1003' : u'--',#返修退换货比率
+            '1002' : u'---',#评价总数
+            '1001' : u'---',#差评比率
         },
         {
             '10001' : u'淘宝',
@@ -153,9 +163,16 @@ def init_online_shop_info(basedata,jd,tb):
     ]
     
     #京东收货人分析
-    jd_addr_info = jd and jd.init_info_mp(basedata) or {}
-    flag_list=[]
-    
+    jd_address = bjd and bjd.address or []
+    jd_addr_list = [{
+        'host_name' : it[0].split(u'：')[1],
+        'dictr' : it[1].split(u'：')[1],
+        'address' : it[2].split(u'：')[1],
+        'phone' : it[3].split(u'：')[1],
+        'tel_phone' : it[4].split(u'：')[1],
+        'email' : it[5].split(u'：')[1]
+    } for it in map(lambda x:x.replace('默认收货地址 : ','').strip('|').split('|'),jd_address)]
+            
     jd_addr_detail_list=[{
         '10001' : u'收货人',
         '10002' : u'所在地区',
@@ -169,24 +186,19 @@ def init_online_shop_info(basedata,jd,tb):
         '1002' : u'消费总额',
         '1001' : u'来源'
     }]
-
-    for k,v in jd_addr_info.items():
-        for it in v:
-            if it['dictr'] not in flag_list:
-                jd_addr_detail_list.append({
-                    '10001' : k,#收货人
-                    '10002' : it['dictr'],#所在地区
-                    '1009' :  it['address'],#地址
-                    '1008' : it['phone'],#手机
-                    '1007' : it['tel_phone'] or '---',#固定手机
-                    '1006' : it['email'] or '---',#电子邮箱
-                    '1005' : u'---',#第一次送货时间
-                    '1004' : u'---',#最后一个送货时间
-                    '1003' : u'---',#订单数
-                    '1002' : u'---',#消费总额
-                    '1001' : u'京东',#来源
-                })
-                flag_list.append(it['dictr'])
+    jd_addr_detail_list.extend([{
+            '10001' : it['host_name'],#收货人
+            '10002' : it['dictr'],#所在地区
+            '1009' :  it['address'],#地址
+            '1008' : it['phone'],#手机
+            '1007' : it['tel_phone'] or '---',#固定手机
+            '1006' : it['email'] or '---',#电子邮箱
+            '1005' : u'---',#第一次送货时间
+            '1004' : u'---',#最后一个送货时间
+            '1003' : u'---',#订单数
+            '1002' : u'---',#消费总额
+            '1001' : u'京东',#来源
+    } for it in jd_addr_list ])
     if len(jd_addr_detail_list)<=1:
         jd_addr_detail_list.append({
             '10001' : u'---',
@@ -203,8 +215,16 @@ def init_online_shop_info(basedata,jd,tb):
         })
 
     #淘宝收货人分析
-    tb_addr_info = tb and tb.address_map or {}
-    flag_list = []
+    tb_address = btb and btb.addrs or []
+    tb_addr_list = [{
+        'host_name' : it[0],
+        'dictr' : it[1],
+        'address' : it[2],
+        'phone' : it[4].replace('\t','').replace('\n',''),
+        'tel_phone' : u'---',
+        'email' : u'---'
+    } for it in map(lambda x:x.replace('默认收货地址 : ','').split('|'),tb_address)]
+
     tb_addr_detail_list = [
         {
             '10001' : u'收货人',
@@ -220,23 +240,19 @@ def init_online_shop_info(basedata,jd,tb):
             '1001' : u'来源'
         }
     ]
-    for k,v in tb_addr_info.items():
-        for it in v:
-            if it['dictr'] not in flag_list:
-                tb_addr_detail_list.append({
-                    '10001' : k,#收货人
-                    '10002' : it['dictr'],#所在地区
-                    '1009' :  it['address'],#地址
-                    '1008' : it['phone'],#手机
-                    '1007' : it['tel_phone'] or '---',#固定手机
-                    '1006' : it['email'] or '---',#电子邮箱
-                    '1005' : u'---',#第一次送货时间
-                    '1004' : u'---',#最后一个送货时间
-                    '1003' : u'---',#订单数
-                    '1002' : u'---',#消费总额
-                    '1001' : u'淘宝',#来源
-                })
-                flag_list.append(it['dictr'])
+    tb_addr_detail_list.extend([{
+            '10001' : it['host_name'],#收货人
+            '10002' : it['dictr'],#所在地区
+            '1009' :  it['address'],#地址
+            '1008' : it['phone'],#手机
+            '1007' : it['tel_phone'] or '---',#固定手机
+            '1006' : it['email'] or '---',#电子邮箱
+            '1005' : u'---',#第一次送货时间
+            '1004' : u'---',#最后一个送货时间
+            '1003' : u'---',#订单数
+            '1002' : u'---',#消费总额
+            '1001' : u'淘宝',#来源
+        } for it in tb_addr_list ])
     if len(tb_addr_detail_list)<=1:
         tb_addr_detail_list.append({
             '10001' : u'---',
@@ -254,11 +270,10 @@ def init_online_shop_info(basedata,jd,tb):
 
     #图标数据    
     map_info={}
-    #jd_month_map_info = {'Jan':0,'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0}
     jd_month_map_info = {}
     jd_goods_cate_info = {}
     jd_stage_map_info = { u'Jan':0,u'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0 }
-    for it in consume_list:
+    for it in jd_consume_list:
         key=it['time'].date()
         key_str=str(key).split('-')
         kk = key_str[0]+'-'+key_str[1]
@@ -336,7 +351,7 @@ def init_online_shop_info(basedata,jd,tb):
             '1001' : u'收货人',
         }
     ]
-    for it in consume_list:
+    for it in jd_consume_list:
         k=it['time'].date()
         if k not in ll:
             jd_order_info.append({
@@ -362,9 +377,8 @@ def init_online_shop_info(basedata,jd,tb):
             }
         )
     #淘宝订单记录
-    hl = tb and tb.harf_order_list or []
     hl_map = {}
-    for it in hl:
+    for it in tb_consume_list:
         key=it['businessDate']
         if key not in hl_map:
             hl_map[key]=it
@@ -437,9 +451,10 @@ def init_online_shop_info(basedata,jd,tb):
 
 
 '''通讯录'''
-def init_contact_info(basedata,postloan):
-
+def init_contact_info(basedata):
+    pl = PostLoanHandler(basedata and basedata.ext_api or None)
     contact_list = basedata and basedata.contacts or []
+    pl.init_map(contact_list)
     clen=len(contact_list) or 1
     upl=basedata and basedata.user_plocation or ''
     hl=basedata and basedata.home_location or ''
@@ -479,10 +494,11 @@ def init_contact_info(basedata,postloan):
     ]
     contact_info = []
     relatives_map={}
-    relatives_map.update(postloan and postloan.father_mp or {})
-    relatives_map.update(postloan and postloan.mather_mp or {})
-    relatives_map.update(postloan and postloan.home_mp or {})
-    relatives_map.update(postloan and postloan.r_relative_map or {})
+    relatives_map.update(pl.relative_map)
+    relatives_map.update(pl.lover_map)
+    relatives_map.update(pl.father_map)
+    relatives_map.update(pl.mather_map)
+    relatives_map.update(pl.home_map)
     
     contact_info=[
         {
@@ -541,19 +557,42 @@ def init_contact_info(basedata,postloan):
     return info
 
 '''通话记录'''
-def init_sp_record_info(basedata,sp,p):
+def init_sp_record_info(basedata):
 
+    #sp
+    sp_calls = basedata.sp and basedata.sp_calls or []
+    sp_sms = basedata.sp and basedata.sp_sms or []
+    sp_recharge = basedata.sp and basedata.sp_recharge or {}
+    spr_keys = sp_recharge.keys()
+    spr_keys.sort()
+    #contacts
+    pl = PostLoanHandler(basedata and basedata.ext_api or None)
+    contact_list = basedata and basedata.contacts or []
+    pl.init_map(contact_list)
+    #亲属
+    relatives_map={}
+    relatives_map.update(pl.relative_map)
+    relatives_map.update(pl.lover_map)
+    relatives_map.update(pl.father_map)
+    relatives_map.update(pl.mather_map)
+    relatives_map.update(pl.home_map)
+    #在老家的号码
+    rpl = [ it.phone_location.split('-') for it in contact_list if it.phone in relatives_map ]
+    hlocation = basedata.home_location
     #基本信息
     bas_info=basedata.sp and basedata.sp.personalInfo or {}
     data = bas_info and bas_info['data'] or {}
+    
+    calls_info = [ c.call_time for c in sp_calls ]
+    calls_info.sort()
     basic_info={
         '1007':{ u'运营商实名认证' : u'---' },#运营商实名认证
-        '1006':{ u'运营商实名与美信生活实名是否一致':u'---' },#运营商实名与自有实名是否一致
+        '1006':{ u'运营商实名与美信生活实名是否一致' : u'---' },#运营商实名与自有实名是否一致
         '1005':{ u'入网时间' : u'---' },#入网时间
         '1004':{ u'地址' : data and data['address'] or u'---' },#地址
         '1003':{ u'网龄' : data and data['netAge'] or u'---' }, #网龄
-        '1002':{ u'最早一次通话时间':u'---' },#最早一次通话时间
-        '1001':{ u'最后一次通话时间' : u'---' } #最后一次通话时间
+        '1002':{ u'最早一次通话时间' : calls_info and calls_info[0] or u'---'},#最早一次通话时间
+        '1001':{ u'最后一次通话时间' : calls_info and calls_info[-1] or u'---' } #最后一次通话时间
     }
     #关键指标
     no_arrearage_info = {
@@ -563,31 +602,29 @@ def init_sp_record_info(basedata,sp,p):
     }
 
     #人际交往密切程度
-
     contact_info ={
-        '10001':{ u'半年通话记录长度' : sp and sp.min_rule_map[20001].feature_val or u'unknown' },#通话记录长度
-        '1009':{ u'半年短信记录长度' : sp and sp.min_rule_map[20002].feature_val or u'unknown'},#短信记录长度
-        '1008':{ u'半年内主叫次数' : sp and sp.min_rule_map[20006].feature_val or u'unknown' },#半年内主叫次数
-        '1007':{ u'半年内主叫时长' : sp and sp.min_rule_map[20007].feature_val or u'unknown' },#半年内主叫时长
-        '1006':{ u'半年内被叫次数' : sp and sp.min_rule_map[20008].feature_val or u'unknown' },#半年内被叫次数
-        '1005':{ u'半年内被叫时长' : sp and sp.min_rule_map[20009].feature_val or u'unknown' },#半年内被叫时长
-        '1004':{ u'亲属长度' : p and p.min_rule_map[50006].feature_val or u'unknown' },#亲属长度
-        '1003':{ u'亲属在老家个数' : p and p.min_rule_map[50007].feature_val or u'unknown' },#亲属在老家的个数
-        '1002':{ u'半年亲属通话时长' : p and p.min_rule_map[50008].feature_val or u'unknown' },#亲属通话时长
-        '1001':{ u'半年亲属通话次数' : p and p.min_rule_map[50009].feature_val or u'unknown' }#亲属通话次数
+        '10001':{ u'通话记录长度' : len(sp_calls) or u'---' },#通话记录长度
+        '1009':{ u'短信记录长度' : len(sp_sms) or u'---'},#短信记录长度
+        '1008':{ u'内主叫次数' : sum( [ 1 for c in sp_calls if u'主叫' in c.call_type ] ) or u'---' },#主叫次数
+        '1007':{ u'内主叫时长' : sum( [ c.call_duration for c in sp_calls if u'主叫' in c.call_type]) or u'---' },#主叫时长
+        '1006':{ u'内被叫次数' : sum( [ 1 for c in sp_calls if u'被叫' in c.call_type ] ) or u'---' },#被叫次数
+        '1005':{ u'被叫时长' : sum( [ c.call_duration for c in sp_calls if u'被叫' in c.call_type]) or u'---' },#被叫时长
+        '1004':{ u'亲属长度' : len(relatives_map) or u'---' },#亲属长度
+        '1003':{ u'亲属在老家个数' : sum([ 1 for it in rpl if it[0] in hlocation or it[1] in hlocation]) or u'---' },#亲属在老家的个数
+        '1002':{ u'亲属通话时长' : sum([ c.call_duration for c in sp_calls if c.phone in relatives_map ]) or u'---' },#亲属通话时长
+        '1001':{ u'亲属通话次数' : sum([ 1 for c in sp_calls if c.phone in relatives_map ]) or u'---' }#亲属通话次数
     }
 
     #近期消费水平
+    consume_level_list = [ float(v) for v in sp_recharge.values()]
     consume_level_info={
-        '1004':{ u'半年内充实金额':sp and sp.min_rule_map[20003].feature_val or u'unknown'},#半年内充值金额
-        '1003':{ u'半年内充实次数':sp and sp.min_rule_map[20004].feature_val or u'unknown'},#半年内充值次数
-        '1002':{ u'半年内平均充值间隔':sp and sp.min_rule_map[20005].feature_val or u'unknown'},#半年内平均充值间隔
-        '1001':{ u'月均消费' : sp and float(sp.min_rule_map[20003].source)/6.0 or u'unknown' }#月均消费
+        '1004':{ u'半年充实金额' : sum(consume_level_list)},#半年内充值金额
+        '1003':{ u'半年充实次数' : len(sp_recharge) },#半年内充值次数
+        '1002':{ u'半年平均充值间隔': spr_keys and (spr_keys[-1]-spr_keys[0]).days/(len(sp_recharge) or 1) or 0 },#半年内平均充值间隔
+        '1001':{ u'半年月均消费' :  sum(consume_level_list)/6.0 }#月均消费
     }
 
-
     #通话记录
-    sp_calls = basedata and basedata.sp_calls or []
     call_map={}
     month_info={}
 
