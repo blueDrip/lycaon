@@ -90,7 +90,7 @@ class PersonInfo(BaseRule):
         if u'unknow' == marr:
             r.score = 10
             r.feature_val = marr
-        if u'未婚' in marr:
+        elif u'未婚' in marr:
             r.score = 70
             r.feature_val = u'未婚' 
         elif u'已婚，无子女' in marr:
@@ -101,6 +101,7 @@ class PersonInfo(BaseRule):
             r.feature_val = u'已婚，有子女'
         elif u'离异' in marr:
             r.score = 60
+            r.feature_val = u'离异'
         elif u'丧妻' in marr:
             r.score = 80
             r.feature_val = u'丧妻'
@@ -120,7 +121,7 @@ class PersonInfo(BaseRule):
         elif p == u'学生':
             r.score = 70
         else:
-            r.score=10
+            r.score=20
         r.name=u'职业'
         r.source = p
         r.feature_val = p
@@ -131,14 +132,13 @@ class PersonInfo(BaseRule):
         r.score = 10
         r.name=u'是否身份验证'
         if idsame==1:
-            r.source = u'验证通过'
+            r.value = u'验证通过'
             r.score = 100
         elif idsame ==0:
-            r.source = u'未通过'
-            r.score = 0
-        r.source = idsame
-        r.feature_val = r.source
-        r.value = idsame
+            r.value = u'未通过'
+            r.score = 10
+        r.source = str(idsame)
+        r.feature_val = r.value
         return r
 
     def get_score(self):
