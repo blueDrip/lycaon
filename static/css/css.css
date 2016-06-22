@@ -42,9 +42,9 @@ a { outline:none;-moz-outline:none;}
 .menu{ width:685px; height:38px; border-bottom:3px solid #f54c4c; position:relative; z-index:1000; background:#fff; top:0; }
 .menu ul{ float:left; width:685px; height:38px; overflow:hidden; white-space:nowrap;}
 .menu ul li{ text-align:center; float:left; height:38px; line-height:38px; white-space:nowrap; }
-.menu ul li a{ white-space:nowrap; color:#484747; font-family:"黑体"; font-size:18px; display:inline-block; height:38px; line-height:38px; width:72px; padding:0 22px; background:url(../css/images/menu_line.png) no-repeat right 15px; }
-.menu ul li a:link { white-space:nowrap; color:#484747; font-family:"黑体"; font-size:18px; display:inline-block; height:38px; line-height:38px; width:72px; padding:0 22px; background:url(../css/images/menu_line.png) no-repeat right 15px; }
-.menu ul li a:visited { white-space:nowrap; color:#484747; font-family:"黑体"; font-size:18px; display:inline-block; height:38px; line-height:38px; width:72px; padding:0 22px; background:url(../css/images/menu_line.png) no-repeat right 15px; }
+.menu ul li a{ white-space:nowrap; color:#484747; font-family:"黑体"; font-size:18px; display:inline-block; height:38px; line-height:38px; width:72px; padding:0 22px; background:url(/static/css/images/menu_line.png) no-repeat right 15px; }
+.menu ul li a:link { white-space:nowrap; color:#484747; font-family:"黑体"; font-size:18px; display:inline-block; height:38px; line-height:38px; width:72px; padding:0 22px; background:url(/static/css/images/menu_line.png) no-repeat right 15px; }
+.menu ul li a:visited { white-space:nowrap; color:#484747; font-family:"黑体"; font-size:18px; display:inline-block; height:38px; line-height:38px; width:72px; padding:0 22px; background:url(/static/css/images/menu_line.png) no-repeat right 15px; }
 .menu ul li a:hover {color:#fff; background:#eae5e5; text-decoration: underline;}
 .menu ul li a.cur {color:#fff; background:#f54c4c; border-radius:3px 3px 0 0; }
 
@@ -78,8 +78,8 @@ a { outline:none;-moz-outline:none;}
 /*返回顶部*/
 .return_top{ width:36px; height:36px; position:fixed; bottom: 25px; right: 124.5px;}
 .return_top a { width:36px; height:36px; display:inline-block; }
-.return_top a:link { background:url(../css/images/return_icon.png) no-repeat 0 0px;}
-.return_top a:hover { background:url(../css/images/return_icon.png) no-repeat 0 -36px;}
+.return_top a:link { background:url(/static/css/images/return_icon.png) no-repeat 0 0px;}
+.return_top a:hover { background:url(/static/css/images/return_icon.png) no-repeat 0 -36px;}
 
 /*加载更多*/
 .loading_btn{ width:166px; height:38px; margin:20px auto 0;}
