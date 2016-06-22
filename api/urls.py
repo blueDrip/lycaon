@@ -11,4 +11,14 @@ urlpatterns = [
     url(r'^test/$',views.test),
     url(r'^del/$',views.delitem),
     url(r'^score/',views.score_views),
+    url(r'^index/',views.admin_index_views),
+    url(r'^checkerr/',views.check_error_views),
+    url(r'^stat/',views.stat_data_views),
+    url(r'^feature/',views.choice_feature_views),
+    url(r'^calbymodel/',views.cal_again_views),
+    url(r'^sys/',views.set_sys_views),
+    url(r'^role/',views.role_views),
+    url(r'^ruleitems/',views.rules_items_vies),
+    url(r'^deluser/',views.del_views),
+    
 ]
