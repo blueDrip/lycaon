@@ -52,15 +52,83 @@
           <div class="templatemo-flex-row flex-content-row templatemo-overflow-hidden"> <!-- overflow hidden for iPad mini landscape view-->
 
             <div class="col-1 templatemo-overflow-hidden">
+
               <div class="templatemo-content-widget white-bg templatemo-overflow-hidden">
                 <div class="templatemo-flex-row flex-content-row">
-  　
-                                  <div id="container" style="width:100%; height:400px;"></div>
+
+                              <div id="container" style="width:100%; height:400px;"></div>
                                 <script type="text/javascript">
-                                  $(document).ready(
-                                    function () {
-                                      document.getElementById("h1").className="active"; 
-                                      $('#container').highcharts({
+                                  
+                                  function ajax_chars()
+                                  {
+                                                var mysqlQuestionsOptions = {
+                                                            chart: {
+                                                                renderTo: 'container',
+                                                                type: 'line'
+                                                            },
+                                                            title: {
+                                                                text: '用户注册-申请统计表',
+                                                            },
+                                                            subtitle: {
+                                                              text: '月份:2016,7'
+                                                            },                                                          
+                                                            xAxis: {
+                                                                title: {
+                                                                    text: '日期'
+                                                                },
+                                                                categories: ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
+                                                            },
+                                                            yAxis: {
+                                                              title: {
+                                                                  text: '人数'
+                                                                }
+                                                          },
+                                                          plotOptions: {
+                                                            line: {
+                                                                dataLabels: {
+                                                                    enabled: true
+                                                                },
+                                                                enableMouseTracking: false
+                                                               }
+                                                           },                                                          
+                                                            series: [{
+                                                                name: '注册人数折线图',
+                                                            },{
+                                                                name: '申请人数折线图',
+                                                            }]
+                                                        };
+                                                        /*ajax请求*/
+                                                        $.ajax({  
+                                                                type:'get',      
+                                                                url:'/apix/test/',  
+                                                                data:{"uid":1},   
+                                                                dataType:"json",
+                                                                 cache:true,   
+                                                                success:function(data){  
+                                                                /*  alert(data['02'])*/
+                                                                   xAxis_name_flag = []
+                                                                   register_nums_list = [ ]
+                                                                   for(var key in data){ 
+                                                                            xAxis_name_flag.push( key ) //x轴
+                                                                            register_nums_list.push(data[key]) //数据
+                                                                    }  
+                                                                    mysqlQuestionsOptions.xAxis.categories = xAxis_name_flag
+                                                                    mysqlQuestionsOptions.series[0].data = register_nums_list
+                                                                    mysqlQuestionsOptions.series[1].data=[11,22,32,41,5,0,0,0,0,0,0,1,2,3,4,5,7,0,0]
+                                                                     var chart = new Highcharts.Chart(mysqlQuestionsOptions);
+                                                                     /*刷新图片替换，ps停止刷新*/
+                                                                     document.getElementById('reg_reload').src='/static/images/reload1.png' 
+                                                              }  
+                                                        });  
+                                        }
+                                        $(document).ready(function () {
+
+                                            ajax_chars();//封装画图
+
+                                        });
+
+                                           //document.getElementById("h1").className="active"; 
+/*                                      $('#container').highcharts({
                                         chart: {
                                             type: 'line'
                                         },
@@ -101,9 +169,27 @@
                                       });
                                     }
 
-                                );
+                                );*/
+                                     /*局部刷新*/
+                                    function click_reload() {
+                                          document.getElementById('reg_reload').src='/static/images/reload.gif' 
+                                          ajax_chars();
+
+                                    }
                                 </script>　
-                </div>                
+                    　        <div style="cursor: pointer;" onclick="click_reload();">
+                                    <img src="/static/images/reload1.png" id='reg_reload'>
+                                </div>
+                </div>   
+               <div style="cursor: pointer;text-align:center;" onclick="">
+                      <img src="/static/images/pre.png" id='' onclick="ajax_chars();">
+                      <span>&nbsp;&nbsp;&nbsp;</span>
+                     <img src="/static/images/pre_d.png" id='' onclick="ajax_chars();">
+                     <span>&nbsp;&nbsp;&nbsp;</span>
+                     <img src="/static/images/next_d.png" id='' onclick="ajax_chars();">
+                     <span>&nbsp;&nbsp;&nbsp;</span>
+                     <img src="/static/images/next.png" id='' onclick="ajax_chars();">
+              </div>             
               </div>
             </div>
           </div>
@@ -116,52 +202,85 @@
   　
                                   <div id="container1" style="width:100%; height:400px;"></div>
                                 <script type="text/javascript">
-                                  $(document).ready(
-                                    function () {
-                                      $('#container1').highcharts({
-                                        chart: {
-                                            type: 'line'
-                                        },
-                                        title: {
-                                            text: '还款-逾期人数统计表'
-                                        },
-                                        subtitle: {
-                                            text: '月份:2016,7'
-                                        },
-                                        xAxis: {
-                                             title:{
-                                              text:'日期'
-                                             },
-                                            categories: ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
-                                        },
-                                        yAxis: {
-                                            title: {
-                                                text: '人数'
-                                            }
-                                        },
-                                        plotOptions: {
-                                            line: {
-                                                dataLabels: {
-                                                    enabled: true
-                                                },
-                                                enableMouseTracking: false
-                                            }
-                                        },
-                                        series: [{
-                                            name: '还款人数折线图',
-                                            data: [7,3, 9, 50,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-                                        },{
-                                            name: '逾期人数折线图',
-                                            data: [4,2,4, 3, 1,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                                        function ajax_chars_repay()
+                                        {
+                                                var mysqlQuestionsOptions = {
+                                                            chart: {
+                                                                renderTo: 'container1',
+                                                                type: 'line'
+                                                            },
+                                                            title: {
+                                                                text: '还款-逾期统计表',
+                                                            },
+                                                            subtitle: {
+                                                              text: '月份:2016,7'
+                                                            },                                                          
+                                                            xAxis: {
+                                                                title: {
+                                                                    text: '日期'
+                                                                },
+                                                                categories: ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
+                                                            },
+                                                            yAxis: {
+                                                              title: {
+                                                                  text: '人数'
+                                                                }
+                                                          },
+                                                          plotOptions: {
+                                                            line: {
+                                                                dataLabels: {
+                                                                    enabled: true
+                                                                },
+                                                                enableMouseTracking: false
+                                                               }
+                                                           },                                                          
+                                                            series: [{
+                                                                name: '还款人数折线图',
+                                                            },{
+                                                                name: '逾期人数折线图',
+                                                            }]
+                                                        };
+                                                        /*ajax请求*/
+                                                        $.ajax({  
+                                                                type:'get',      
+                                                                url:'/apix/test/',  
+                                                                data:{"uid":1},   
+                                                                dataType:"json",
+                                                                success:function(data){  
+
+                                                                   xAxis_name_flag = []
+                                                                   register_nums_list = [ ]
+                                                                   for(var key in data){ 
+                                                                            xAxis_name_flag.push( key ) //x轴
+                                                                            register_nums_list.push(data[key]) //数据
+                                                                    }  
+                                                                    mysqlQuestionsOptions.xAxis.categories = xAxis_name_flag
+                                                                    mysqlQuestionsOptions.series[0].data = register_nums_list
+                                                                    mysqlQuestionsOptions.series[1].data=[11,22,32,41,5,0,0,0,0,0,0,1,2,3,4,5,7,0,0]
+                                                                     var chart = new Highcharts.Chart(mysqlQuestionsOptions);
+                                                                     /*刷新图片替换，ps停止刷新*/
+                                                                     document.getElementById('reback_reload').src='/static/images/reload1.png' 
+                                                              }  
+                                                        });  
                                         }
-
-                                        ]
-                                      });
-                                    }
-
-                                );
-                                </script>　
-                </div>                
+                                  $(document).ready(function(){ 
+                                      ajax_chars_repay();
+                                  });
+                                </script>
+                                <!-- <div style="cursor: pointer;" onclick="document.getElementById('reback_reload').src='/static/images/reload.gif' ;ajax_chars_repay();"> -->
+                                 <div style="cursor: pointer;" onclick="document.getElementById('reback_reload').src='/static/images/reload.gif' ;setTimeout('ajax_chars_repay()',2000) ;">
+                                    <img src="/static/images/reload1.png" id='reback_reload'>
+                                </div>　
+                </div>
+               <div style="cursor: pointer;text-align:center;" onclick="">
+                      <img src="/static/images/pre.png" id='' onclick="ajax_chars_repay();">
+                      <span>&nbsp;&nbsp;&nbsp;</span>
+                     <img src="/static/images/pre_d.png" id='' onclick="ajax_chars_repay();">
+                     <span>&nbsp;&nbsp;&nbsp;</span>
+                     <img src="/static/images/next_d.png" id='' onclick="ajax_chars_repay();">
+                     <span>&nbsp;&nbsp;&nbsp;</span>
+                     <img src="/static/images/next.png" id='' onclick="ajax_chars_repay();">
+              </div>                                
               </div>
             </div>
           </div>
