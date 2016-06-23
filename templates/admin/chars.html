@@ -59,7 +59,7 @@
                               <div id="container" style="width:100%; height:400px;"></div>
                                 <script type="text/javascript">
                                   
-                                  function ajax_chars()
+                                  function ajax_chars(year,month)
                                   {
                                                 var mysqlQuestionsOptions = {
                                                             chart: {
@@ -100,95 +100,57 @@
                                                         /*ajax请求*/
                                                         $.ajax({  
                                                                 type:'get',      
-                                                                url:'/apix/test/',  
-                                                                data:{"uid":1},   
+                                                                url:'/apix/reg/',  
+                                                                data:{
+                                                                      "year":year,
+                                                                      "month":month
+                                                                },
                                                                 dataType:"json",
                                                                  cache:true,   
                                                                 success:function(data){  
-                                                                /*  alert(data['02'])*/
+                                                                   
                                                                    xAxis_name_flag = []
                                                                    register_nums_list = [ ]
-                                                                   for(var key in data){ 
+                                                                   for(var key in data['rs']){ 
                                                                             xAxis_name_flag.push( key ) //x轴
-                                                                            register_nums_list.push(data[key]) //数据
+                                                                            register_nums_list.push(data['rs'][key]) //数据
                                                                     }  
-                                                                    mysqlQuestionsOptions.xAxis.categories = xAxis_name_flag
-                                                                    mysqlQuestionsOptions.series[0].data = register_nums_list
+                                                                    year = Number(data['d1']['year'])
+                                                                    month = Number(data['d1']['month'])
+                                                                    mysqlQuestionsOptions.subtitle.text = year + '年' + month +'月' //设置标题
+                                                                    mysqlQuestionsOptions.xAxis.categories = xAxis_name_flag　//x轴
+                                                                    mysqlQuestionsOptions.series[0].data = register_nums_list　//数据
                                                                     mysqlQuestionsOptions.series[1].data=[11,22,32,41,5,0,0,0,0,0,0,1,2,3,4,5,7,0,0]
                                                                      var chart = new Highcharts.Chart(mysqlQuestionsOptions);
                                                                      /*刷新图片替换，ps停止刷新*/
                                                                      document.getElementById('reg_reload').src='/static/images/reload1.png' 
+                                                                     /*动态设置onclick事件参数*/     
+                                                                     str1 = '<img src="/static/images/pre.png" id=" "    onclick="ajax_chars('+((month-1)<=0? year-1: year )+','+ ((month-1)<=0? 12: month-1)+ ');">'
+                                                                     str2 = '<img src="/static/images/pre_d.png" id=" "    onclick="ajax_chars('+((month-1)<=0? year-1: year) +','+ ((month-1)<=0? 12: month-1)+ ');">'
+                                                                     str3 = '<img src="/static/images/next_d.png" id=" "    onclick="ajax_chars('+((month+1)>12? year+1: year )+','+ ((month+1)>12? 1: month+1 )+ ');">'
+                                                                     str4 = '<img src="/static/images/next.png" id=" "    onclick="ajax_chars('+((month+1)>12? year+1: year )+','+ ((month+1)>12? 1: month+1 )+ ');">'
+                                                                     document.getElementById("reg_next").innerHTML =  str1+str2+str3+str4
                                                               }  
                                                         });  
                                         }
                                         $(document).ready(function () {
-
-                                            ajax_chars();//封装画图
-
+                                            /*首次访问需要传时间*/
+                                            // ajax_chars(2016,7);//封装画图
+                                            ajax_chars({{ year }},{{ month }} )
                                         });
-
-                                           //document.getElementById("h1").className="active"; 
-/*                                      $('#container').highcharts({
-                                        chart: {
-                                            type: 'line'
-                                        },
-                                        title: {
-                                            text: '用户注册-申请统计表'
-                                        },
-                                        subtitle: {
-                                            text: '月份:2016,7'
-                                        },
-                                        xAxis: {
-                                            title:{
-                                                text:'日期'
-                                            },
-                                            categories: ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
-                                        },
-                                        yAxis: {
-                                            title: {
-                                                text: '人数'
-                                            }
-                                        },
-                                        plotOptions: {
-                                            line: {
-                                                dataLabels: {
-                                                    enabled: true
-                                                },
-                                                enableMouseTracking: false
-                                            }
-                                        },
-                                        series: [{
-                                            name: '注册人数折线图',
-                                            data: [7,4, 9, 50,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-                                        },{
-                                            name: '申请人数折线图',
-                                            data: [4,3,6, 20, 12,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-                                        }
-
-                                        ]
-                                      });
-                                    }
-
-                                );*/
                                      /*局部刷新*/
                                     function click_reload() {
                                           document.getElementById('reg_reload').src='/static/images/reload.gif' 
-                                          ajax_chars();
-
+                                          // ajax_chars(2016,7);
+                                          ajax_chars({{ year }},{{ month }} )
                                     }
                                 </script>　
-                    　        <div style="cursor: pointer;" onclick="click_reload();">
+                    　        <div style="cursor: pointer;" onclick="click_reload({{ year }},{{ month }});">
                                     <img src="/static/images/reload1.png" id='reg_reload'>
                                 </div>
                 </div>   
-               <div style="cursor: pointer;text-align:center;" onclick="">
-                      <img src="/static/images/pre.png" id='' onclick="ajax_chars();">
-                      <span>&nbsp;&nbsp;&nbsp;</span>
-                     <img src="/static/images/pre_d.png" id='' onclick="ajax_chars();">
-                     <span>&nbsp;&nbsp;&nbsp;</span>
-                     <img src="/static/images/next_d.png" id='' onclick="ajax_chars();">
-                     <span>&nbsp;&nbsp;&nbsp;</span>
-                     <img src="/static/images/next.png" id='' onclick="ajax_chars();">
+               <div style="cursor: pointer;text-align:center;" id='reg_next'>
+ 
               </div>             
               </div>
             </div>
@@ -202,7 +164,7 @@
   　
                                   <div id="container1" style="width:100%; height:400px;"></div>
                                 <script type="text/javascript">
-                                        function ajax_chars_repay()
+                                        function ajax_chars_repay(year,month)
                                         {
                                                 var mysqlQuestionsOptions = {
                                                             chart: {
@@ -243,44 +205,50 @@
                                                         /*ajax请求*/
                                                         $.ajax({  
                                                                 type:'get',      
-                                                                url:'/apix/test/',  
-                                                                data:{"uid":1},   
+                                                                url:'/apix/reback/',  
+                                                                data:{
+                                                                      'year' : year,
+                                                                      'month' : month
+                                                                },   
                                                                 dataType:"json",
                                                                 success:function(data){  
 
                                                                    xAxis_name_flag = []
                                                                    register_nums_list = [ ]
-                                                                   for(var key in data){ 
+                                                                   for(var key in data['rs']){ 
                                                                             xAxis_name_flag.push( key ) //x轴
-                                                                            register_nums_list.push(data[key]) //数据
+                                                                            register_nums_list.push(data['rs'][key]) //数据
                                                                     }  
+                                                                    year = Number(data['d1']['year'])
+                                                                    month = Number(data['d1']['month'])
+                                                                    mysqlQuestionsOptions.subtitle.text = year + '年' + month +'月' //设置标题  
+                                                                                                                                     
                                                                     mysqlQuestionsOptions.xAxis.categories = xAxis_name_flag
                                                                     mysqlQuestionsOptions.series[0].data = register_nums_list
                                                                     mysqlQuestionsOptions.series[1].data=[11,22,32,41,5,0,0,0,0,0,0,1,2,3,4,5,7,0,0]
                                                                      var chart = new Highcharts.Chart(mysqlQuestionsOptions);
                                                                      /*刷新图片替换，ps停止刷新*/
                                                                      document.getElementById('reback_reload').src='/static/images/reload1.png' 
+                                                                      /*动态设置onclick事件参数*/     
+                                                                     str1 = '<img src="/static/images/pre.png" id=" "    onclick="ajax_chars_repay('+((month-1)<=0? year-1: year )+','+ ((month-1)<=0? 12: month-1)+ ');">'
+                                                                     str2 = '<img src="/static/images/pre_d.png" id=" "    onclick="ajax_chars_repay('+((month-1)<=0? year-1: year) +','+ ((month-1)<=0? 12: month-1)+ ');">'
+                                                                     str3 = '<img src="/static/images/next_d.png" id=" "    onclick="ajax_chars_repay('+((month+1)>12? year+1: year )+','+ ((month+1)>12? 1: month+1 )+ ');">'
+                                                                     str4 = '<img src="/static/images/next.png" id=" "    onclick="ajax_chars_repay('+((month+1)>12? year+1: year )+','+ ((month+1)>12? 1: month+1 )+ ');">'
+                                                                     document.getElementById("reback_next").innerHTML =  str1+str2+str3+str4                                                                    
                                                               }  
                                                         });  
                                         }
                                   $(document).ready(function(){ 
-                                      ajax_chars_repay();
+                                      ajax_chars_repay({{ year }},{{ month }});
                                   });
                                 </script>
                                 <!-- <div style="cursor: pointer;" onclick="document.getElementById('reback_reload').src='/static/images/reload.gif' ;ajax_chars_repay();"> -->
-                                 <div style="cursor: pointer;" onclick="document.getElementById('reback_reload').src='/static/images/reload.gif' ;setTimeout('ajax_chars_repay()',2000) ;">
+                                 <div style="cursor: pointer;" onclick="document.getElementById('reback_reload').src='/static/images/reload.gif' ;setTimeout('ajax_chars_repay({{ year }},{{ month }})',2000) ;">
                                     <img src="/static/images/reload1.png" id='reback_reload'>
                                 </div>　
                 </div>
-               <div style="cursor: pointer;text-align:center;" onclick="">
-                      <img src="/static/images/pre.png" id='' onclick="ajax_chars_repay();">
-                      <span>&nbsp;&nbsp;&nbsp;</span>
-                     <img src="/static/images/pre_d.png" id='' onclick="ajax_chars_repay();">
-                     <span>&nbsp;&nbsp;&nbsp;</span>
-                     <img src="/static/images/next_d.png" id='' onclick="ajax_chars_repay();">
-                     <span>&nbsp;&nbsp;&nbsp;</span>
-                     <img src="/static/images/next.png" id='' onclick="ajax_chars_repay();">
-              </div>                                
+               <div style="cursor: pointer;text-align:center;" id='reback_next'>
+               </div>                                
               </div>
             </div>
           </div>
