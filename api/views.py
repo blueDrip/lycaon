@@ -114,39 +114,83 @@ def del_views(request):
     return HttpResponseRedirect('/apix/index/')
 #数据统计
 def stat_chars_views(request):
-    return render(request,'admin/chars.html')
+    return render(request,'admin/chars.html',{'year':2016,'month':7 })
 
-def test(request):
+def reg(request):
+    year=request.GET['year']
+    month=request.GET['month']
     return HttpResponse(
-            json.dumps({
-                1 : 0,
-                2 : 1,
-                3 : 4,
-                4 : 7,
-                5 : 8,
-                6 : 9,
-                7 : 8,
-                8 : 8,
-                9 : 9,
-                10 : 6,
-                11 : 10,
-                12 : 7,
-                13 : 6,
-                14 : 7,
-                15 : 8,
-                16 : 9,
-                17 : 8,
-                18 : 8,
-                19 : 9,
-                20 : 6,
-                21 : 8,
-                22 : 11,
-                23 : 4,
-                24 : 7,
-                25 : 8,
-                26 : 9,
-                27 :8,
-                28 :8,
-                29 :9
+            json.dumps({'d1':{'year':year,'month':month},
+                'rs' : {
+                    1 : 0,
+                    2 : 1,
+                    3 : 4,
+                    4 : 7,
+                    5 : 8,
+                    6 : 9,
+                    7 : 8,
+                    8 : 8,
+                    9 : 9,
+                    10 : 6,
+                    11 : 10,
+                    12 : 7,
+                    13 : 6,
+                    14 : 7,
+                    15 : 8,
+                    16 : 9,
+                    17 : 8,
+                    18 : 8,
+                    19 : 9,
+                    20 : 6,
+                    21 : 8,
+                    22 : 11,
+                    23 : 4,
+                    24 : 7,
+                    25 : 8,
+                    26 : 9,
+                    27 :8,
+                    28 :8,
+                    29 :9
+            }
             })
+
+        )
+def reback(request):
+    year=request.GET['year']
+    month=request.GET['month']
+    return HttpResponse(
+            json.dumps({'d1':{'year':year,'month':month},
+                'rs' : {
+                    1 : 0,
+                    2 : 1,
+                    3 : 4,
+                    4 : 7,
+                    5 : 8,
+                    6 : 9,
+                    7 : 8,
+                    8 : 8,
+                    9 : 9,
+                    10 : 6,
+                    11 : 10,
+                    12 : 7,
+                    13 : 6,
+                    14 : 7,
+                    15 : 8,
+                    16 : 9,
+                    17 : 8,
+                    18 : 8,
+                    19 : 9,
+                    20 : 6,
+                    21 : 8,
+                    22 : 11,
+                    23 : 4,
+                    24 : 7,
+                    25 : 8,
+                    26 : 9,
+                    27 :8,
+                    28 :8,
+                    29 :9
+            }
+            })
+
         )
