@@ -20,5 +20,6 @@ urlpatterns = [
     url(r'^role/',views.role_views),
     url(r'^ruleitems/',views.rules_items_vies),
     url(r'^deluser/',views.del_views),
+    url(r'^chars/',views.stat_chars_views),
     
 ]

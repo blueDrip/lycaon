@@ -29,6 +29,7 @@
     <!--left menu-->
         <script type="text/javascript">
           document.getElementById("id1").className="active"; 
+          
         </script>
       <!--end left-->
 
@@ -44,6 +45,23 @@
           <div class="panel panel-default no-border">
               <div class="panel-heading border-radius-10">
                 <h2>基本信息</h2>
+                <script type="text/javascript">
+                  laypage({
+                      cont: 'page11',
+                      pages: 18, //可以叫服务端把总页数放在某一个隐藏域，再获取。假设我们获取到的是18
+                      curr: function(){ //通过url获取当前页，也可以同上（pages）方式获取
+                          var page = location.search.match(/page=(\d+)/);
+                          return page ? page[1] : 1;
+                      }(), 
+                      jump: function(e, first){ //触发分页后的回调
+                          if(!first){ //一定要加此判断，否则初始时会无限刷新
+                              location.href = '?page='+e.curr;
+                          }
+                      }
+                  });
+
+                  
+                </script>
               </div>
           </div>
           <div class="templatemo-flex-row flex-content-row templatemo-overflow-hidden"> <!-- overflow hidden for iPad mini landscape view-->
@@ -88,6 +106,13 @@
                                             </tr>
                                         {% endfor %}
                                     </table>
+                        <div>
+
+
+
+
+
+                        </div>
                         </div>
                 </div>                
               </div>
