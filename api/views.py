@@ -103,6 +103,7 @@ def rules_items_vies(request):
     uid=request.GET['uid']
     top_rs = topResult.objects.filter(user_id = uid).order_by('-created_time').first()
     return render(request, 'admin/rules.html', {'tp': top_rs})
+#删除
 def del_views(request):
     uid=request.GET['uid'].lower()
     user_id = binascii.a2b_hex(uid)
@@ -110,7 +111,9 @@ def del_views(request):
     Busers.objects.using('users').filter(user_id=user_id).delete()
     ucredit.objects.using('users').filter(user_id=user_id).delete()    
     return HttpResponseRedirect('/apix/index/')
-
+#数据统计
+def stat_chars_views(request):
+    return render(request,'admin/chars.html')
 
 def test(request):
     return render(request,'api/tt.html',{'v':'sssssssss'})

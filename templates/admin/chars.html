@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">  
+    <title>数据统计</title>
+    <meta name="description" content="">
+    <meta name="author" content="templatemo">
+
+    <link href='http://fonts.useso.com/css?family=Open+Sans:400,300,400italic,700' rel='stylesheet' type='text/css'>
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/templatemo-style.css" rel="stylesheet">
+    <link href="/static/css/html.css" rel="stylesheet">
+    <script type="text/javascript" src="/static/js/jquery-1.11.2.min.js"></script>      <!-- jQuery -->
+    <script type="text/javascript" src="/static/js/templatemo-script.js"></script>      <!-- Templatemo Script -->
+    <script language="JavaScript" src="/static/js/highcharts.js"></script>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>  
+
+    <!-- Left column -->
+    <div class="templatemo-flex-row">
+      <!--Left column-->
+        {% include 'admin/left.html' %}
+    <!--left menu-->
+        <script type="text/javascript">
+         
+        </script>
+      <!--end left-->
+
+      <!-- Main content--> 
+      <div class="templatemo-content col-1 light-gray-bg">
+        <!--header-->
+          <!--<#include "head.ftl">-->
+        {% include "admin/head.html" %}
+       <!--end header-->
+        
+        <div class="templatemo-content-container">
+     
+          <div class="panel panel-default no-border">
+              <div class="panel-heading border-radius-10">
+                <h2>数据统计</h2>
+              </div>
+          </div>
+          <div class="templatemo-flex-row flex-content-row templatemo-overflow-hidden"> <!-- overflow hidden for iPad mini landscape view-->
+
+            <div class="col-1 templatemo-overflow-hidden">
+              <div class="templatemo-content-widget white-bg templatemo-overflow-hidden">
+                <div class="templatemo-flex-row flex-content-row">
+  　
+                                  <div id="container" style="width:100%; height:400px;"></div>
+                                <script type="text/javascript">
+                                  $(document).ready(
+                                    function () {
+                                      document.getElementById("h1").className="active"; 
+                                      $('#container').highcharts({
+                                        chart: {
+                                            type: 'line'
+                                        },
+                                        title: {
+                                            text: '用户注册-申请统计表'
+                                        },
+                                        subtitle: {
+                                            text: '月份:2016,7'
+                                        },
+                                        xAxis: {
+                                            categories: ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
+                                        },
+                                        yAxis: {
+                                            title: {
+                                                text: '人数'
+                                            }
+                                        },
+                                        plotOptions: {
+                                            line: {
+                                                dataLabels: {
+                                                    enabled: true
+                                                },
+                                                enableMouseTracking: false
+                                            }
+                                        },
+                                        series: [{
+                                            name: '注册人数折线图',
+                                            data: [7,4, 9, 50,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                                        },{
+                                            name: '申请人数折线图',
+                                            data: [4,3,6, 20, 12,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                                        }
+
+                                        ]
+                                      });
+                                    }
+
+                                );
+                                </script>　
+                </div>                
+              </div>
+            </div>
+          </div>
+
+          <div class="templatemo-flex-row flex-content-row templatemo-overflow-hidden"> <!-- overflow hidden for iPad mini landscape view-->
+
+            <div class="col-1 templatemo-overflow-hidden">
+              <div class="templatemo-content-widget white-bg templatemo-overflow-hidden">
+                <div class="templatemo-flex-row flex-content-row">
+  　
+                                  <div id="container1" style="width:100%; height:400px;"></div>
+                                <script type="text/javascript">
+                                  $(document).ready(
+                                    function () {
+                                      $('#container1').highcharts({
+                                        chart: {
+                                            type: 'line'
+                                        },
+                                        title: {
+                                            text: '还款-逾期人数统计表'
+                                        },
+                                        subtitle: {
+                                            text: '月份:2016,7'
+                                        },
+                                        xAxis: {
+                                            categories: ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30']
+                                        },
+                                        yAxis: {
+                                            title: {
+                                                text: '人数'
+                                            }
+                                        },
+                                        plotOptions: {
+                                            line: {
+                                                dataLabels: {
+                                                    enabled: true
+                                                },
+                                                enableMouseTracking: false
+                                            }
+                                        },
+                                        series: [{
+                                            name: '还款人数折线图',
+                                            data: [7,3, 9, 50,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                                        },{
+                                            name: '逾期人数折线图',
+                                            data: [4,2,4, 3, 1,18, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                                        }
+
+                                        ]
+                                      });
+                                    }
+
+                                );
+                                </script>　
+                </div>                
+              </div>
+            </div>
+          </div>
+          <!--footer-->
+            {% include "admin/footer.html" %}            
+          <!--end-->
+         
+        </div>
+      </div>
+    </div>
+    
+    <!-- JS -->
+
+     
+
+
+  </body>
+</html>
