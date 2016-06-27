@@ -16,7 +16,11 @@ import binascii
 import json
 import logging
 import time
+import requests
+import calendar
 logger = logging.getLogger('django.api')
+logger.setLevel(logging.INFO)
+
 def index(request):
     '''    
     b=BaseRule()
@@ -114,44 +118,28 @@ def del_views(request):
     return HttpResponseRedirect('/apix/index/')
 #数据统计
 def stat_chars_views(request):
-    return render(request,'admin/chars.html',{'year':2016,'month':7 })
+    return render(request,'admin/chars.html',{'year':datetime.now().year,'month':datetime.now().month })
 
 def reg(request):
-    year=request.GET['year']
-    month=request.GET['month']
+    year = request.GET['year']
+    month = request.GET['month']
+    url = "http://192.168.1.120:3000/user/number"
+    querystring = { "year":year,"month":int(month)<10 and '0'+ month or month }
+    headers = {
+        'accept': "application/json",
+        'content-type': "application/json",
+    }
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    result_map = json.loads(response.text)['result']
+    month_days = calendar.monthrange(int(year),int(month))[1]
+    rs={}
+    for i in range(1,month_days+1):
+        key=str(datetime(int(year),int(month),i).date())
+        rs[i]=key in result_map and result_map[key] or 0
+
     return HttpResponse(
-            json.dumps({'d1':{'year':year,'month':month},
-                'rs' : {
-                    1 : 0,
-                    2 : 1,
-                    3 : 4,
-                    4 : 7,
-                    5 : 8,
-                    6 : 9,
-                    7 : 8,
-                    8 : 8,
-                    9 : 9,
-                    10 : 6,
-                    11 : 10,
-                    12 : 7,
-                    13 : 6,
-                    14 : 7,
-                    15 : 8,
-                    16 : 9,
-                    17 : 8,
-                    18 : 8,
-                    19 : 9,
-                    20 : 6,
-                    21 : 8,
-                    22 : 11,
-                    23 : 4,
-                    24 : 7,
-                    25 : 8,
-                    26 : 9,
-                    27 :8,
-                    28 :8,
-                    29 :9
-            }
+            json.dumps({'d1':{'year':year,'month':month },
+                'rs' : rs
             })
 
         )

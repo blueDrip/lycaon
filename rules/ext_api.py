@@ -236,8 +236,8 @@ class EXT_API():
                 ff = self.tel_map[n2].split('-')
                 g['province'] = ff[0]
                 g['city'] = ff[1]
-        if g['province'] == 'none' and g['city'] == 'none':
-            return self.get_phone_location_online(num)
+        #if g['province'] == 'none' and g['city'] == 'none':
+        #    return self.get_phone_location_online(num)
         return g
 
     #def get_gps_location_new(self,latitude,longitude):

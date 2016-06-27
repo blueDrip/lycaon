@@ -125,23 +125,27 @@ def china_mobile_orm(cnd={}):
     if 'None' in cnd.values():
         return None
 
-    d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    #d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    d=MongoDb('101.201.78.139',27017,'plat_data','plat_data','plat_grant_data')
     c=d.get_collection('yidong').find_one(cnd,sort=[('createTime',-1)]) or {}
 
     cmb=chinaMobile()
     if c:
         cmb.currRemainingAmount= c['currRemainingAmount']
-        cmb.phonedetail = c['phonedetail']
-        cmb.personalInfo = c['personalInfo']
+        cmb.phonedetail = c['phoneDetail']
+        if c['personalInfo']:
+            cmb.address = c['personalInfo']['address'] #地址
+            cmb.phone_using_time = c['personalInfo']['inNetDate'] #手机号创办时间
+            cmb.netage = c['personalInfo']['netAge']
+            cmb.userphone = c['personalInfo']['contactNum'] #手机号
+            cmb.real_name = c['personalInfo']['name'] #姓名
         cmb.openBusiness = c['openBusiness']
-        cmb.currPoint = c['currPoint']
-        cmb.smsdetail = c['smsdetail']
+        cmb.smsdetail = c['smsDetail']
         cmb.phone_no = c['phone_no']
-        cmb.businessOrder = c['businessOrder']
-        cmb.netdetail = c['netdetail']
-        cmb.fixed = c['fixed']
+        cmb.netdetail = c['netDetail']
         cmb.createTime = c['createTime']
-        cmb.recharge = c['recharge']
+        cmb.recharge = c['paymentRecord']
+        cmb.historyBillInfo = c['historyBillInfo']
         return cmb
     return None
 
@@ -149,20 +153,25 @@ def china_mobile_orm(cnd={}):
 def china_unicom_orm(cnd={}):
     if 'None' in cnd.values():
         return None
-    d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    #d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
+    d=MongoDb('101.201.78.139',27017,'plat_data','plat_data','plat_grant_data')
     c=d.get_collection('liantong').find_one(cnd,sort=[('createTime',-1)]) or {}
 
     cub=chinaUnicom()
     if c:
-        cub.base_info = c['base_info']
+        if c['userInfo']:
+            cub.address = c['userInfo']['certAddr'] #地址
+            cub.netage = '' #网龄
+            cub.real_name = c['userInfo']['userName'] #姓名
+        if c['phoneInfo']:
+            cub.userphone = c['phoneInfo']['phoneNumber']
+            cub.phone_using_time = c['phoneInfo']['inNetDate'].replace(u'年','').replace(u'月','').replace(u'日','') #手机号创办时间
         cub.phone_no = c['phone_no']
-        cub.yue_jifen = c['yue_jifen'] 
-        cub.recharge = c['rechargedetail']
-        cub.phonedetail = c['phonedetail']
-        cub.smsdetail = c['smsdetail']
-        cub.netdetail = c['netdetail']
-        cub.others = c['others']
-        cub.personalInfo = {}
+        cub.recharge = c['paymentRecord']
+        cub.phonedetail = c['callDetail']
+        cub.smsdetail = c['smsDetail']
+        cub.netdetail = c['netDetail']
+        cub.historyBillInfo = c['historyBillInfo']
         cub.createTime = c['createTime']
         return cub    
     return None
