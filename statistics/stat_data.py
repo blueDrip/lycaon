@@ -588,7 +588,7 @@ def init_sp_record_info(basedata):
     basic_info={
         '1007':{ u'运营商实名认证' : u'---' },#运营商实名认证
         '1006':{ u'运营商实名与美信生活实名是否一致' : u'---' },#运营商实名与自有实名是否一致
-        '1005':{ u'入网时间' : u'---' },#入网时间
+        '1005':{ u'入网时间' : binfo and binfo.phone_using_time or u'---' },#入网时间
         '1004':{ u'地址' : binfo and binfo.address or u'---' },#地址
         '1003':{ u'网龄' : binfo and binfo.netage or u'---' }, #网龄
         '1002':{ u'最早一次通话时间' : calls_info and calls_info[0] or u'---'},#最早一次通话时间
