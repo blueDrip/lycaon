@@ -39,6 +39,14 @@ class JD(BaseRule):
             30021:self.safe_level(basedata),#安全级别,ps常用用户安全级别高
         }
 
+    #验证本人申请
+    # 1.绑定手机和申请手机号一致
+    # 2.通过身份证验证
+    # 3.收货人中申请人手机号
+    # 4.手机归属地市级别出现在收货地址中
+    # 5.同一手机号，收货地址中出现多个不同的收货人姓名
+    def base_line(self,basedata):
+        pass
     #基本验证
     def is_basic(self,basedata,r):
         if not basedata.jd:

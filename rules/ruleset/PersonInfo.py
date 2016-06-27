@@ -15,6 +15,13 @@ class PersonInfo(BaseRule):
             10006:self.get_profession(basedata),
             10007:self.is_samephoto_with_idcard(basedata)
         }    
+    #验证是否本人 ps 1:身份验证通过,
+    def base_line(self,basedata):
+        is_pass = basedata.user and basedata.user.is_certification or 0
+        if not is_pass:
+            basedata.user=None        
+        else:
+            pass
 
     def get_age(self,basedata):
         r = minRule()

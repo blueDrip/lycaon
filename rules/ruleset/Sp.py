@@ -58,6 +58,10 @@ class Sp(BaseRule):
 
     def init_recharge_map(self,basedata):
         return basedata.sp_recharge
+    #判断是否本人申请 ps 1.申请手机号一致，2.姓名模糊匹配,3.手机归属地和上网地址一样，4.设备唯一
+    def base_line(self,basedata):
+        pass
+
     #基本验证
     def is_basic(self,basedata,r):
         if not basedata.sp:

@@ -261,6 +261,11 @@ class PostLoanNewRule(BaseRule):
             50008:self.get_relative_call_duration(basedata),#亲属的通话时长
             50009:self.get_relative_call_times(basedata),#亲属通话次数
         }
+    #是否为本人
+    # 1.通讯录长度合理
+    # 2.在老家有联系人
+    def base_line(self,basedata):
+        pass
 
     #基本验证
     def is_basic(self,basedata,r):

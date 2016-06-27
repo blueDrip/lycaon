@@ -67,6 +67,11 @@ class Tbao(BaseRule):
             })
 
         return infomp
+    #验证是否为本人
+    # 1.实名认证,绑定手机和申请手机号一致
+    def base_line(self,basedata):
+        pass
+
 
     #基本验证
     def is_basic(self,basedata,r):
