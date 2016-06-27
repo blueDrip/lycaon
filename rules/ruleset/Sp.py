@@ -19,7 +19,28 @@ class Sp(BaseRule):
         self.sms_record_map = self.init_sms_record_mp(basedata)
         #催收
         self.dunning_map=self.init_cuishou_map()
-       
+
+    def init_cuishou_map(self):
+        ppmap = {}
+        f1 = settings.CUISHOU_GUHUA_FILE
+        f2 = settings.CUISHOU_SHOUJI_FILE
+        for line in open(f1,'r'):
+            l = line.strip().split('\t')
+            ppmap[l[0]]= l[1]
+        for line in open(f2,'r'):
+            l = line.strip().split('\t')
+            ppmap[l[0]]= l[1]
+        return ppmap
+
+    def init_recharge_map(self,basedata):
+        return basedata.sp_recharge
+
+    #判断是否本人申请 ps 1.申请手机号一致，2.姓名模糊匹配,3.手机归属地和上网地址一样，4.设备唯一
+    def base_line(self,basedata):
+        pass
+
+    def load_rule_data(self,basedata):
+                
         self.min_rule_map={
             20001:self.call_record_len(),#通话记录长度是否合理
             20002:self.sms_record_len(),#短信记录长度是否合理            
@@ -43,24 +64,6 @@ class Sp(BaseRule):
             20020:self.call_with_021_0755(basedata),#与021,0755通话次数
             20021:self.userphone_in_calls_or_sms(basedata),#申请号与其他人有联系
         }
-
-    def init_cuishou_map(self):
-        ppmap = {}
-        f1 = settings.CUISHOU_GUHUA_FILE
-        f2 = settings.CUISHOU_SHOUJI_FILE
-        for line in open(f1,'r'):
-            l = line.strip().split('\t')
-            ppmap[l[0]]= l[1]
-        for line in open(f2,'r'):
-            l = line.strip().split('\t')
-            ppmap[l[0]]= l[1]
-        return ppmap
-
-    def init_recharge_map(self,basedata):
-        return basedata.sp_recharge
-    #判断是否本人申请 ps 1.申请手机号一致，2.姓名模糊匹配,3.手机归属地和上网地址一样，4.设备唯一
-    def base_line(self,basedata):
-        pass
 
     #基本验证
     def is_basic(self,basedata,r):

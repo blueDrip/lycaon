@@ -14,8 +14,43 @@ class JD(BaseRule):
         self.login_his_map={}
         self.address_info_map={}
         self.load_data(basedata)
-        self.min_rule_map={
 
+    #验证本人申请
+    # 1.通过身份证验证
+    # 2.通过手机认证
+    # 4.同一手机号，收货地址中出现多个不同的收货人姓名
+    # 5.银行卡绑定手机号中有申请号
+    '''条件满足>=3判断为本人申请'''
+    def base_line(self,basedata):
+        if not basedata.jd:
+            return None
+        #是否通过身份验证
+        is_pass_valide_idcard = u'YES' in basedata.jd.indentify_verified.values() and 1 or 0
+        #通过手机认证
+        uphone = basedata.user_phone[:3]+'*****'+basedata.user_phone[8:]
+        is_pass_valid_phone = uphone in basedata.jd.phone_verifyied.values() and 1 or 0
+        #收货地址中有申请手机号
+        phone_map = self.init_info_mp(basedata)
+        count_mp={}
+        for k,v in phone_map.items():
+            for it in v:
+                if it['phone'] not in count_mp:
+                    count_mp[it['phone']] = 0
+                count_mp[it['phone']]+=1
+        lsm=sorted(count_mp.items(),key=lambda s:s[1],reverse=True)
+        uphone = basedata.user_phone[:3]+'****'+basedata.user_phone[7:]
+        max_phone_times = lsm and uphone in lsm[0][0] and 1 or 0
+        #银行卡绑定手机号中有申请号
+        bankinfo=basedata.jd.bankinfo or []
+        bank_times = [ 1 for bk in bankinfo if uphone in bk] and 1 or 0
+        pass_count = is_pass_valide_idcard + is_pass_valid_phone + max_phone_times + bank_times
+        print pass_count
+        if pass_count<3:
+            basedata.jd=None
+        pass
+
+    def load_rule_data(self,basedata):
+        self.min_rule_map={
             30001:self.is_valid_name(basedata),#京东身份证验证
             30002:self.is_valid_phone(basedata),#京东手机验证
             30003:self.get_huiyuanjibie(basedata),#京东会员等级
@@ -39,14 +74,6 @@ class JD(BaseRule):
             30021:self.safe_level(basedata),#安全级别,ps常用用户安全级别高
         }
 
-    #验证本人申请
-    # 1.绑定手机和申请手机号一致
-    # 2.通过身份证验证
-    # 3.收货人中申请人手机号
-    # 4.手机归属地市级别出现在收货地址中
-    # 5.同一手机号，收货地址中出现多个不同的收货人姓名
-    def base_line(self,basedata):
-        pass
     #基本验证
     def is_basic(self,basedata,r):
         if not basedata.jd:

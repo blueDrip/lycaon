@@ -6,6 +6,15 @@ from rules.models import BaseRule
 from rules.raw_data import minRule
 class PersonInfo(BaseRule):
     def __init__(self,basedata):
+        pass
+    #验证是否本人 ps 1:身份验证通过,
+    def base_line(self,basedata):
+        is_pass = basedata.user and basedata.user.is_certification or 0
+        if not is_pass:
+            basedata.user=None        
+        else:
+            pass
+    def load_rule_data(self,basedata):
         self.min_rule_map={
             10001:self.get_age(basedata),
             10002:self.get_sex(basedata),
@@ -14,15 +23,7 @@ class PersonInfo(BaseRule):
             10005:self.get_marry_status(basedata),
             10006:self.get_profession(basedata),
             10007:self.is_samephoto_with_idcard(basedata)
-        }    
-    #验证是否本人 ps 1:身份验证通过,
-    def base_line(self,basedata):
-        is_pass = basedata.user and basedata.user.is_certification or 0
-        if not is_pass:
-            basedata.user=None        
-        else:
-            pass
-
+        }
     def get_age(self,basedata):
         r = minRule()
         age = basedata.idcard_info['age']

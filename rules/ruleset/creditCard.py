@@ -11,11 +11,15 @@ from rules.raw_data import minRule
 class creditCard(BaseRule):
     def __init__(self,basedata):
 
-
         self.cm_detail_list = []
         self.city_map = self.init_city_map()
         self.init_cmbcc(basedata)
 
+    #判断是否本人申请
+    def base_line(self,basedata):
+        pass 
+    def load_rule_data(self,basedata):
+        
         self.min_rule_map={
             60001:self.get_all_credit_amount(basedata),#信用额度
             60002:self.get_can_user_credit_amount_current(basedata),#当前可用信用额度
@@ -26,6 +30,7 @@ class creditCard(BaseRule):
             60007:self.get_most_amount_times(basedata),#三个月内消费金额>=8000元次数
             60008:self.company_address_same_with_phone_location(basedata),#公司所在地址是否与手机归属地一致
         }
+
 
     #基本验证
     def is_basic(self,basedata,r):

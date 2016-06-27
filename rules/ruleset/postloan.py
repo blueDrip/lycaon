@@ -246,10 +246,15 @@ class PostLoanNewRule(BaseRule):
         self.spouse_list=self.init_post_loan_list(spouse_noun_file)
         self.spouse_adj_list=self.init_post_loan_list(spouse_adj_file)
         self.f_m_list=self.init_f_m_list(parent_dict_new)
-
-
         self.load_data(basedata)
 
+    #是否为本人
+    # 1.通讯录长度合理
+    # 2.在老家有联系人
+    def base_line(self,basedata):
+        pass
+
+    def load_rule_data(self,basedata):
         self.min_rule_map={
             50001:self.get_contact_len(basedata),#通讯录长度
             50002:self.parents_len_in_contact(basedata),#父母个数
@@ -261,11 +266,6 @@ class PostLoanNewRule(BaseRule):
             50008:self.get_relative_call_duration(basedata),#亲属的通话时长
             50009:self.get_relative_call_times(basedata),#亲属通话次数
         }
-    #是否为本人
-    # 1.通讯录长度合理
-    # 2.在老家有联系人
-    def base_line(self,basedata):
-        pass
 
     #基本验证
     def is_basic(self,basedata,r):
