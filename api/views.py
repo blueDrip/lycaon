@@ -123,7 +123,7 @@ def stat_chars_views(request):
 def reg(request):
     year = request.GET['year']
     month = request.GET['month']
-    url = "http://192.168.1.120:3000/user/number"
+    url = "http://123.56.93.103:3000/user/number"
     querystring = { "year":year,"month":int(month)<10 and '0'+ month or month }
     headers = {
         'accept': "application/json",
