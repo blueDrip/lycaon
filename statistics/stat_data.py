@@ -580,8 +580,8 @@ def init_sp_record_info(basedata):
     rpl = [ it.phone_location.split('-') for it in contact_list if it.phone in relatives_map ]
     hlocation = basedata.home_location
     #基本信息
-    bas_info=basedata.sp and basedata.sp.personalInfo or {}
-    data = bas_info and bas_info['data'] or {}
+    binfo=basedata.sp or None
+    #data = bas_info and bas_info['data'] or {}
     
     calls_info = [ c.call_time for c in sp_calls ]
     calls_info.sort()
@@ -589,8 +589,8 @@ def init_sp_record_info(basedata):
         '1007':{ u'运营商实名认证' : u'---' },#运营商实名认证
         '1006':{ u'运营商实名与美信生活实名是否一致' : u'---' },#运营商实名与自有实名是否一致
         '1005':{ u'入网时间' : u'---' },#入网时间
-        '1004':{ u'地址' : data and data['address'] or u'---' },#地址
-        '1003':{ u'网龄' : data and data['netAge'] or u'---' }, #网龄
+        '1004':{ u'地址' : binfo and binfo.address or u'---' },#地址
+        '1003':{ u'网龄' : binfo and binfo.netage or u'---' }, #网龄
         '1002':{ u'最早一次通话时间' : calls_info and calls_info[0] or u'---'},#最早一次通话时间
         '1001':{ u'最后一次通话时间' : calls_info and calls_info[-1] or u'---' } #最后一次通话时间
     }

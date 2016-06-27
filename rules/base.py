@@ -48,10 +48,13 @@ def get_right_datetime(string):
     
 def get_duration(string):
     time=string.replace(u'小时',' ').replace(u'分',' ').replace(u'秒','').split(' ')
-    h=len(time)>2 and int(time[2])*60 or 0
+    h=len(time)>2 and int(time[2])*3600 or 0
     m=len(time)>1 and int(time[1])*60  or 0
     s=len(time)==1 and int(time[0]) or 0
     return h+m+s
+def get_net_duration(string):
+    time=string.split(':')
+    return int(time[0])*3600+int(time[1])*60+int(time[2])
 def format_phone(phone):
     phone = phone.replace('-','').replace(' ','')
     if u"+86" == phone[:3]:
@@ -63,6 +66,7 @@ def format_phone(phone):
     elif u'0086' == phone[:4]:
         phone = phone[4:]
     return phone
+
 class BaseData(object):
 
     """Docstring for OrderInfo. 
@@ -167,13 +171,12 @@ class BaseData(object):
         }
             
     def init_sp_calldetail(self):
-        phonedetail = self.sp and self.sp.phonedetail or {}
-        mp=self.load_sp_datadetail(phonedetail)
+        phonedetail = self.sp and self.sp.phonedetail or []
+        mp=self.load_sp_datadetail()
         cmap={ c.phone:c.name for c in self.contacts }
-        for k,v in mp.items():
-            for itt in v:
-                stime=k[:-2]+'-'+itt['startTime']      
-                st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
+        for itt in phonedetail:
+                stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']     
+                st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
 
@@ -192,21 +195,18 @@ class BaseData(object):
                 self.sp_calls.append(uc)
             
     def init_sp_smsdetail(self):
-        smsdetail = self.sp and self.sp.smsdetail or {}
-        mp = self.load_sp_datadetail(smsdetail)
+        smsdetail = self.sp and self.sp.smsdetail or []
+        mp = self.load_sp_datadetail()
         cmap={ c.phone:c.name for c in self.contacts }
-        for k,v in mp.items():
-            for itt in v:
-                stime=k[:-2]+'-'+itt['startTime']
-                st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
+        for itt in smsdetail:
+                stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']
+                st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
                 s.user_id = self.user_id
-
                 s.send_time = st
                 s.phone=itt['anotherNm']
                 s.owner_phone = self.user_phone
                 s.username = s.phone in cmap and cmap[s.phone] or u'none'
-
                 s.created_time = datetime.now()
                 s.location=itt['commPlac']
                 g=self.ext_api.get_phone_location(format_phone(s.phone))
@@ -215,72 +215,59 @@ class BaseData(object):
                 s.sms_type=itt['commMode']
                 self.sp_sms.append(s)
     def init_sp_netdetail(self):
-        netdetail = self.sp and self.sp.netdetail or {}
-        mp = self.load_sp_datadetail(netdetail)
-        for k,v in mp.items():
-            for itt in v:
-                stime=k[:-2]+'-'+itt['startTime']
-                st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
+        netdetail = self.sp and self.sp.netdetail or []
+        mp = self.load_sp_datadetail()
+        for itt in netdetail:
+                key = itt['startTime'].split('-')[0]
+                if key not in mp:
+                    continue
+                stime=mp[key]+'-'+itt['startTime']
+                st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 n=UserNetInfo()
                 n.owner_phone = self.user_phone
                 n.start_time=st
-
                 n.user_id = self.user_id
-
-                n.comm_time = get_duration(itt['commTime'])
-                n.sum_flow=itt['sumFlow']
+                comm_time_list = itt['commTime'].split(':')
+                n.comm_time = int(comm_time_list[0])*3600+int(comm_time_list[1])*60+int(comm_time_list[0])
+                n.sum_flow=int(float((itt['sumFlow'].replace('KB',''))))
                 n.created_time = datetime.now()
                 n.net_location=itt['commPlac']
                 n.source=u'sp'
                 n.net_type=itt['netType']
                 self.sp_net.append(n)
 
-
     def init_sp_recharege(self):
-        recharge = self.sp and self.sp.recharge or {}
-        json_data = recharge
-        mp = 'data' in json_data and json_data['data'] or {}
+        recharge = self.sp and self.sp.recharge or []
         charge_mp={}
         now=self.create_time
-        for it in mp:
+        for it in recharge:
             td=it['payDate']
             key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),int(td[8:10]),int(td[10:12]),int(td[12:14]))
-            if key>now-timedelta(180) and key<=now:
+            if key>now-timedelta(180) and key<=now and u'充值' in it['payTypeName']:
                 charge_mp.update({
                     key:it['payFee']
                 })
         self.sp_recharge = charge_mp
 
-    def load_sp_datadetail(self,sp_map):
+
+    def load_sp_datadetail(self):
         mp={}
-        for k,v in sp_map.items():
-            itmp='data' in v and v['data'] or []
-            for itt in itmp:
-                if k not in mp:
-                    mp[k]=[]
-                mp[k].append(itt)
+        dt = datetime.now().date()
+        for i in range(0,6):
+            st = dt-timedelta(i*30+15)
+            key = st.month<10 and '0'+str(st.month) or str(st.month)
+            mp[key] = str(st.year)
         return mp
 
     #联通
     def load_unicom_datadetail(self,sp_map):
-        mp={}
-        for k,v in sp_map.items():
-            itmp = []
-            if 'pageMap' in v and 'result' in v['pageMap']:
-                itmp=v['pageMap']['result']
-            for it in itmp:
-                if k not in mp:
-                    mp[k]=[]
-                mp[k].append(it)
-        return mp
+        pass        
 
     def init_sp_unicom_calldetail(self):
-        phonedetail = self.sp and self.sp.phonedetail or {}
-        mp=self.load_unicom_datadetail(phonedetail)
+        phonedetail = self.sp and self.sp.phonedetail or []
         cmap={ c.phone:c.name for c in self.contacts }
-        for k,v in mp.items():
-            for itt in v:
-                stime=k[:-4]+'-'+ k[4:6] +'-' +k[6:] +' ' + itt['calltime']
+        for itt in phonedetail:
+                stime=itt['calldate'] +' ' + itt['calltime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
@@ -300,12 +287,10 @@ class BaseData(object):
 
     def init_sp_unicom_smsdetail(self):
 
-        smsdetail = self.sp and self.sp.smsdetail or {}
-        mp = self.load_unicom_datadetail(smsdetail)
+        smsdetail = self.sp and self.sp.smsdetail or []
         cmap={ c.phone:c.name for c in self.contacts }
-        for k,v in mp.items():
-            for itt in v:
-                stime = k[:-4]+'-'+ k[4:6] +'-' + k[6:] +' ' + itt['smstime']
+        for itt in smsdetail:
+                stime = itt['smsdate'] +' ' + itt['smstime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
                 s.user_id = self.user_id
@@ -324,10 +309,8 @@ class BaseData(object):
                 
     def init_sp_unicom_netdetail(self):
 
-        netdetail = self.sp and self.sp.netdetail or {}
-        mp = self.load_unicom_datadetail(netdetail)
-        for k,v in mp.items():
-            for itt in v:
+        netdetail = self.sp and self.sp.netdetail or []
+        for itt in netdetail:
                 stime=itt['begintime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 n=UserNetInfo()
@@ -346,19 +329,16 @@ class BaseData(object):
 
 
     def init_sp_unicom_recharege(self):
-        recharge = self.sp and self.sp.recharge or {}
-        mp=self.load_unicom_datadetail(recharge)
+        recharge = self.sp and self.sp.recharge or []
         charge_mp={}
         now = self.create_time
-        for k,v in mp.items():
-            minv=0
-            for itt in v:
-                td=itt['paydate'].replace('-','')
-                key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),random.randint(1,12))
-                if key>now-timedelta(180) and key<=now:
-                    charge_mp.update({
-                        key : itt['payfee'].replace('-','')
-                    })
+        for itt in recharge:
+            td=itt['paydate'].replace('-','')
+            key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),random.randint(1,12))
+            if key>now-timedelta(180) and key<=now:
+                charge_mp.update({
+                    key : itt['payfee'].replace('-','')
+                })
         self.sp_recharge = charge_mp
 
     def init_contact(self):

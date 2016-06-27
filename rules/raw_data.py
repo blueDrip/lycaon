@@ -306,28 +306,38 @@ class chinaMobile(Document):
     phonedetail = DictField()
     personalInfo = DictField()
     openBusiness = DictField()
-    currPoint = DictField()
     smsdetail = DictField()
     phone_no = StringField()
-    businessOrder = DictField()
     netdetail = DictField()
-    fixed = DictField()
     createTime = StringField()
     recharge = DictField()
+    historyBillInfo = DictField()
 
+    address = StringField(default = '') #地址
+    phone_using_time = StringField() #手机号创办时间
+    netage = StringField(default='')
+    userphone = StringField() #手机号
+    real_name = StringField() #姓名
+
+    
 
 #联通chinaUnicom
 class chinaUnicom(Document):
-    base_info = DictField()
     phone_no = DictField()
-    yue_jifen = DictField
     rechargedetail = DictField()
     phonedetail = DictField()
-    personalInfo = DictField()
     smsdetail = DictField()
     netdetail = DictField()
-    others = DictField()
     createTime = StringField()
+    historyBillInfo = DictField()
+
+    address = StringField(default = '') #地址
+    phone_using_time = StringField() #手机号创办时间
+    netage = StringField(default='')
+    userphone = StringField() #手机号
+    real_name = StringField() #姓名
+
+
 #电信
 class chinaTelecom(Document):
     base_info =StringField(default=str)
