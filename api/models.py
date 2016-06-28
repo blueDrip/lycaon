@@ -149,4 +149,12 @@ class BankAccount(models.Model):
      
     class Meta:
         db_table = 'bank_account'
+class adminAccount(models.Model):
+    id = models.AutoField(primary_key=True)
+    login_name = models.CharField(max_length=255,blank=False)
+    pwd = models.CharField(max_length=255,blank=False)
+    login_time = models.DateTimeField()
+    
+    class Meta:
+        db_table = 'users'
 

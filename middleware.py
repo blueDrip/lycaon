@@ -22,6 +22,6 @@ class QtsAuthenticationMiddleware(object):
         base_logger.info(str(request.session.keys())+'sssssssssssssss\t'+str('sss' in request.session))
         if '/apix/score/' in request.path:
             return None
-        if 'sss' not in request.session and  request.path not in  ['/apix/login/','/apix/login_auth/']:
+        if 'user' not in request.session and  request.path not in  ['/apix/login/','/apix/login_auth/']:
             return HttpResponseRedirect('/apix/login/')
         return None

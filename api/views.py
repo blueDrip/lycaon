@@ -12,6 +12,8 @@ from datetime import datetime
 from statistics.models import RulesInfo
 from rules.calculate import cal_by_message
 from django.views.decorators.csrf import csrf_exempt
+from api.models import adminAccount
+
 import binascii
 import json
 import logging
@@ -83,8 +85,13 @@ def delitem(request):
 def admin_login_views(request):
     return render(request,'admin/login.html')
 def login_auth(request):
-    request.session['sss']='sw'
-    logger.info(request.session.keys())
+    username=request.POST['username']
+    pwd=request.POST['passwd']
+    m=adminAccount.objects.using('admin').filter(login_name=username,pwd=pwd)
+    if m:
+        request.session['user']=m.first().login_name
+        #设置过期时间
+        #request.session.set_expiry(100)
     return HttpResponseRedirect('/apix/chars/')    
 def logout(request):
     request.session.flush()
