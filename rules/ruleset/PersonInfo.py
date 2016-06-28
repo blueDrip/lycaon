@@ -110,7 +110,7 @@ class PersonInfo(BaseRule):
         elif u'离异' in marr:
             r.score = 60
             r.feature_val = u'离异'
-        elif u'丧妻' in marr:
+        elif u'丧偶' in marr:
             r.score = 80
             r.feature_val = u'丧妻'
         return r

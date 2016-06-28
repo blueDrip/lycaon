@@ -73,11 +73,10 @@ class Tbao(BaseRule):
             if key not in mp:
                 mp[key] = 0
             mp[key]+=1
-        sort_up = sorted(mp.items(),key=lambda s:s[1],reverse=True)[0][0]
+        sort_up = mp and sorted(mp.items(),key=lambda s:s[1],reverse=True)[0][0] or 'None'
         phone_in_addr = tb_uphone in sort_up and 1 or 0
         count = same_phone+phone_in_addr
-        print count
-        if count<2:
+        if not count:
             basedata.tb=None
         pass
 

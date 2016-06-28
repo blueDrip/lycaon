@@ -68,10 +68,11 @@ def get_token(str_token):
     taobao_name_token = token_list[5]
     jd_name_token = token_list[6]
     
+
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
     userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(user_id_token.replace('-',''))).first()
-
+    user_id=user_id_token.replace('-','').upper()
     try:
         sp = Yunyinglogdata.objects.filter( uuid = sp_phone_no_token).first()
         sp_phoneno = sp and sp.phoneno or str(None)
@@ -82,7 +83,7 @@ def get_token(str_token):
     except:
         sp=None
         base_logger.error(get_tb_info())
-        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+        base_logger.error("【 error 】" + " USER_ID:  "+user_id)
 
     try:
         online_shop = Dianshanglogdata.objects.filter(uuid = jd_name_token).first()
@@ -91,7 +92,7 @@ def get_token(str_token):
     except:
         jd=None
         base_logger.error(get_tb_info())
-        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+        base_logger.error("【 error 】" + "  USER_ID: "+user_id)
     try:
         online_shop = Dianshanglogdata.objects.filter(uuid = taobao_name_token).first()
         tb_loginname = online_shop and online_shop.loginname or str(None)
@@ -99,13 +100,13 @@ def get_token(str_token):
     except:
         tb=None
         base_logger.error(get_tb_info())
-        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+        base_logger.error("【 error 】" + "  USER_ID: "+user_id)
     try:
         ucl = phonebook_orm({ "token" : phone_book_token})
     except:
         ucl=None
         base_logger.error(get_tb_info())
-        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+        base_logger.error("【 error 】" + "  USER_ID: "+user_id)
 
     try:
         #cb = cmbcc.objects.filter(id=u'573ae5201d41c83f39423b9d').first()
@@ -114,7 +115,7 @@ def get_token(str_token):
     except:
         cb=None
         base_logger.error(get_tb_info())
-        base_logger.error("【 error 】" + "  datetime= "+str(datetime.now()))
+        base_logger.error("【 error 】" + "  USER_ID: "+user_id)
     #if not (idcard_token and sp and ucl and (jd or tb)):
     #    return None
     return {
@@ -208,7 +209,7 @@ def cal(minfo = {
             detail_rule.score = 0
             detail_rule.save()
             base_logger.error(get_tb_info())
-            base_logger.error("【 " + k +"  error 】" + "   datetime= "+str(datetime.now()))
+            base_logger.error("【 " + k +"  error 】" + 'USER_ID:'+user_id)
 
         top_rule.rulelist.append(detail_rule)
         top_rule.score+=detail_rule.score*weight_map[k]
