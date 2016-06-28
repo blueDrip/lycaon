@@ -166,7 +166,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 from logging.handlers import SysLogHandler
 
@@ -249,6 +248,8 @@ LOGGING = {
     }
 }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.file"
+SESSION_FILE_PATH  = "/home/sw/logs"
 # from mongoengine import DEFAULT_CONNECTION_NAME
 from mongoengine import  connect
 #connect('api_plus_plus',host='182.92.71.136',username='test',password='test')

@@ -49,8 +49,38 @@ class Tbao(BaseRule):
         return infomp
     #验证是否为本人
     # 1.实名认证,绑定手机和申请手机号一致
+    # 2.申请手机在淘宝收货地址手机中,次数最多
+    # 3.姓名在淘宝收货人中
     def base_line(self,basedata):
+        #绑定手机号是否一致
+        bphone=basedata.tb and basedata.tb.bindMobile or u'unknown'
+        own_phone = basedata.user_phone[:3]+'****'+basedata.user_phone[7:]
+        same_phone = own_phone in bphone and 1 or 0
+        #地址
+        tb_address = basedata.tb and basedata.tb.addrs or []
+        tb_addr_list = [{
+            'host_name' : it[0],
+            'dictr' : it[1],
+            'address' : it[2],
+            'phone' : it[4].replace('\t','').replace('\n',''),
+            'tel_phone' : u'---',
+            'email' : u'---'
+        } for it in map(lambda x:x.replace('默认收货地址 : ','').split('|'),tb_address)]        
+        tb_uphone=basedata.user_phone[:2]+'*******'+basedata.user_phone[9:] 
+        mp={}
+        for it in tb_addr_list:
+            key = it['phone']
+            if key not in mp:
+                mp[key] = 0
+            mp[key]+=1
+        sort_up = sorted(mp.items(),key=lambda s:s[1],reverse=True)[0][0]
+        phone_in_addr = tb_uphone in sort_up and 1 or 0
+        count = same_phone+phone_in_addr
+        print count
+        if count<2:
+            basedata.tb=None
         pass
+
 
     def load_rule_data(self,basedata):
 
