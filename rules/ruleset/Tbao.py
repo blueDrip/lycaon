@@ -10,26 +10,6 @@ class Tbao(BaseRule):
     def __init__(self,basedata):
         self.harf_order_list = self.init_orderList(basedata)
         self.address_map = self.init_info_mp(basedata)
-        self.min_rule_map={
-            40001:self.binding_phone(basedata),#是否绑定手机
-            40002:self.real_name(basedata),#实名认证
-            40003:self.repay_back_fast(basedata),#淘宝急速退款金额
-            40004:self.cat_level(basedata),#天猫等级
-            40005:self.credit_grade(basedata),#淘宝信用等级
-            40006:self.cat_grade(basedata),#天猫积分
-            40007:self.profit_amount(basedata),#余额总收益
-            40008:self.hb_amount(basedata),#花呗总额度
-            40009:self.consume_times(basedata),#淘宝消费次数
-            40010:self.cat_exep_value(basedata),#天猫经验值
-            40011:self.bindp_same_with_owner_phone(basedata),#绑定手机号与申请号是否一致
-            40012:self.safe_level(basedata),#账号安全级别
-            40013:self.goods_nums_harf(basedata),#半年内成功交易的商品件数
-            40014:self.max_min_amount_diff(basedata),#半年内单件商品最大消费金额与最小消费差值
-            40015:self.consume_hz(basedata),#消费频次
-            40016:self.using_year(basedata),#淘宝使用年限
-            40017:self.close_order_times(basedata),#半年内关闭的订单数
-        }
-
 
     def init_orderList(self,basedata):
         order_list = basedata.tb and basedata.tb.orderList or []
@@ -67,6 +47,62 @@ class Tbao(BaseRule):
             })
 
         return infomp
+    #验证是否为本人
+    # 1.实名认证,绑定手机和申请手机号一致
+    # 2.申请手机在淘宝收货地址手机中,次数最多
+    # 3.姓名在淘宝收货人中
+    def base_line(self,basedata):
+        #绑定手机号是否一致
+        bphone=basedata.tb and basedata.tb.bindMobile or u'unknown'
+        own_phone = basedata.user_phone[:3]+'****'+basedata.user_phone[7:]
+        same_phone = own_phone in bphone and 1 or 0
+        #地址
+        tb_address = basedata.tb and basedata.tb.addrs or []
+        tb_addr_list = [{
+            'host_name' : it[0],
+            'dictr' : it[1],
+            'address' : it[2],
+            'phone' : it[4].replace('\t','').replace('\n',''),
+            'tel_phone' : u'---',
+            'email' : u'---'
+        } for it in map(lambda x:x.replace('默认收货地址 : ','').split('|'),tb_address)]        
+        tb_uphone=basedata.user_phone[:2]+'*******'+basedata.user_phone[9:] 
+        mp={}
+        for it in tb_addr_list:
+            key = it['phone']
+            if key not in mp:
+                mp[key] = 0
+            mp[key]+=1
+        sort_up = sorted(mp.items(),key=lambda s:s[1],reverse=True)[0][0]
+        phone_in_addr = tb_uphone in sort_up and 1 or 0
+        count = same_phone+phone_in_addr
+        print count
+        if count<2:
+            basedata.tb=None
+        pass
+
+
+    def load_rule_data(self,basedata):
+
+        self.min_rule_map={
+            40001:self.binding_phone(basedata),#是否绑定手机
+            40002:self.real_name(basedata),#实名认证
+            40003:self.repay_back_fast(basedata),#淘宝急速退款金额
+            40004:self.cat_level(basedata),#天猫等级
+            40005:self.credit_grade(basedata),#淘宝信用等级
+            40006:self.cat_grade(basedata),#天猫积分
+            40007:self.profit_amount(basedata),#余额总收益
+            40008:self.hb_amount(basedata),#花呗总额度
+            40009:self.consume_times(basedata),#淘宝消费次数
+            40010:self.cat_exep_value(basedata),#天猫经验值
+            40011:self.bindp_same_with_owner_phone(basedata),#绑定手机号与申请号是否一致
+            40012:self.safe_level(basedata),#账号安全级别
+            40013:self.goods_nums_harf(basedata),#半年内成功交易的商品件数
+            40014:self.max_min_amount_diff(basedata),#半年内单件商品最大消费金额与最小消费差值
+            40015:self.consume_hz(basedata),#消费频次
+            40016:self.using_year(basedata),#淘宝使用年限
+            40017:self.close_order_times(basedata),#半年内关闭的订单数
+        }
 
     #基本验证
     def is_basic(self,basedata,r):

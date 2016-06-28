@@ -22,5 +22,7 @@ urlpatterns = [
     url(r'^ruleitems/',views.rules_items_vies),
     url(r'^deluser/',views.del_views),
     url(r'^chars/',views.stat_chars_views),
-    
+    url(r'^login_auth/',views.login_auth),
+    url(r'^logout/',views.logout),
+        
 ]

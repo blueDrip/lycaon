@@ -19,5 +19,5 @@ class BaseRule:
     def get_score(self):
         return
     #验证申请人是否本人申请
-    def base_line(self):
+    def base_line(self,basedata):
         return 

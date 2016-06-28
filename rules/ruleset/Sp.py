@@ -19,13 +19,43 @@ class Sp(BaseRule):
         self.sms_record_map = self.init_sms_record_mp(basedata)
         #催收
         self.dunning_map=self.init_cuishou_map()
-       
+
+    def init_cuishou_map(self):
+        ppmap = {}
+        f1 = settings.CUISHOU_GUHUA_FILE
+        f2 = settings.CUISHOU_SHOUJI_FILE
+        for line in open(f1,'r'):
+            l = line.strip().split('\t')
+            ppmap[l[0]]= l[1]
+        for line in open(f2,'r'):
+            l = line.strip().split('\t')
+            ppmap[l[0]]= l[1]
+        return ppmap
+
+    def init_recharge_map(self,basedata):
+        return basedata.sp_recharge
+
+    #判断是否本人申请>＝３
+    #1.申请手机号一致
+    #2.姓名模糊匹配,
+    def base_line(self,basedata):
+        #申请手机号码一致
+        uphone = basedata.user_phone
+        userphone = basedata.sp and basedata.sp.userphone or None
+        same_phone = uphone in userphone and 1 or 0
+        #姓名或申请手机号必须和sp一致
+        if not same_phone:
+            basedata.sp=None
+        pass
+        
+    def load_rule_data(self,basedata):
+                
         self.min_rule_map={
-            20001:self.call_record_len(),#通话记录长度是否合理
-            20002:self.sms_record_len(),#短信记录长度是否合理            
-            20003:self.get_incharge_amount_harf_year(),#半年内充值金额
-            20004:self.get_incharge_times_harf_year(),#半年内充值次数
-            20005:self.get_incharge_inter_days(),#半年内平均充值间隔(天/次)
+            20001:self.call_record_len(basedata),#通话记录长度是否合理
+            20002:self.sms_record_len(basedata),#短信记录长度是否合理            
+            20003:self.get_incharge_amount_harf_year(basedata),#半年内充值金额
+            20004:self.get_incharge_times_harf_year(basedata),#半年内充值次数
+            20005:self.get_incharge_inter_days(basedata),#半年内平均充值间隔(天/次)
             20006:self.get_call_in_times(basedata),#半年内主叫次数
             20007:self.get_call_in_duration(basedata),#半年内主叫时长
             20008:self.get_call_out_times(basedata),#半年内被叫次数
@@ -44,20 +74,6 @@ class Sp(BaseRule):
             20021:self.userphone_in_calls_or_sms(basedata),#申请号与其他人有联系
         }
 
-    def init_cuishou_map(self):
-        ppmap = {}
-        f1 = settings.CUISHOU_GUHUA_FILE
-        f2 = settings.CUISHOU_SHOUJI_FILE
-        for line in open(f1,'r'):
-            l = line.strip().split('\t')
-            ppmap[l[0]]= l[1]
-        for line in open(f2,'r'):
-            l = line.strip().split('\t')
-            ppmap[l[0]]= l[1]
-        return ppmap
-
-    def init_recharge_map(self,basedata):
-        return basedata.sp_recharge
     #基本验证
     def is_basic(self,basedata,r):
         if not basedata.sp:
@@ -87,7 +103,7 @@ class Sp(BaseRule):
         return smsmap
 
     '''半年内充值金额'''
-    def get_incharge_amount_harf_year(self):
+    def get_incharge_amount_harf_year(self,basedata):
         r=minRule()
         r.value=''
         r.score =0
@@ -106,10 +122,11 @@ class Sp(BaseRule):
         elif amount>=400:
             r.score=100
         r.source = str(amount)
+        self.is_basic(basedata,r)
         return r
 
     '''半年内充值次数'''
-    def get_incharge_times_harf_year(self):
+    def get_incharge_times_harf_year(self,basedata):
         r=minRule()
         r.value=''
         r.score =0
@@ -125,10 +142,11 @@ class Sp(BaseRule):
             r.score=60
         elif times>=12:
             r.score=100
+        self.is_basic(basedata,r)
         return r
 
     '''半年内平均每隔多少天充值一次'''
-    def get_incharge_inter_days(self):
+    def get_incharge_inter_days(self,basedata):
         r=minRule()
         r.value=u'30'
         r.name=u'充值话费的平均时间间隔'
@@ -153,6 +171,7 @@ class Sp(BaseRule):
             r.score=60
         elif avg>=15:
             r.score=20
+        self.is_basic(basedata,r)
         return r
 
     '''主叫次数'''
@@ -178,6 +197,7 @@ class Sp(BaseRule):
         r.value=str(times)
         r.source = str(times)
         r.feature_val = str(times)+u'次'
+        self.is_basic(basedata,r)
         return r
    
     '''主叫时长'''
@@ -210,6 +230,7 @@ class Sp(BaseRule):
         r.value = '\t'.join(value)
         r.source = str(duration)
         r.feature_val = str(duration)+'s'
+        self.is_basic(basedata,r)
         return r
     '''被叫次数'''
     def get_call_out_times(self,basedata):
@@ -231,6 +252,7 @@ class Sp(BaseRule):
         r.source=str(times)
         r.value = str(times)
         r.feature_val = str(times)+u'次'
+        self.is_basic(basedata,r)
         return r
     '''被叫时长'''
     def get_call_out_duration(self,basedata):
@@ -258,6 +280,7 @@ class Sp(BaseRule):
         r.value = '\t'.join(value)
         r.source = str(duration)
         r.feature_val = str(duration)+'s'
+        self.is_basic(basedata,r)
         return r
 
     '''通话记录电话号码出现在通讯录的个数'''
@@ -287,6 +310,7 @@ class Sp(BaseRule):
         r.value = '\t'.join(value)
         r.source = str(count)
         r.feature_val = str(count)+u'个'
+        self.is_basic(basedata,r)
         return r
 
     '''短信记录电话号码出现在通讯录中的个数'''
@@ -317,6 +341,7 @@ class Sp(BaseRule):
         r.value = '\t'.join(value)
         r.feature_val = str(count)+u'个'
         r.source = str(count)
+        self.is_basic(basedata,r)
         return r
 
     '''通话记录中电话号码在老家的个数'''
@@ -353,6 +378,7 @@ class Sp(BaseRule):
             r.score = 100
         r.source = str(count)
         r.feature_val = str(count)
+        self.is_basic(basedata,r)
         return r
 
 
@@ -389,6 +415,7 @@ class Sp(BaseRule):
             r.score = 100
         r.source =str(count)
         r.feature_val = str(count)+u'个'
+        self.is_basic(basedata,r)
         return r
 
 
@@ -424,6 +451,7 @@ class Sp(BaseRule):
             r.score = 100
         r.source = str(count)
         r.feature_val = str(count)+u'个'
+        self.is_basic(basedata,r)
         return r
 
     '''短信记录中电话号码与申请人同一手机归属地的个数'''
@@ -458,6 +486,7 @@ class Sp(BaseRule):
             r.score = 100
         r.source = str(count)
         r.feature_val = str(count)+u'个'
+        self.is_basic(basedata,r)
         return r
 
     '''是否设置21呼叫转移'''
@@ -607,7 +636,7 @@ class Sp(BaseRule):
         self.is_basic(basedata,r)
         return r
     '''通话记录长度'''
-    def call_record_len(self):
+    def call_record_len(self,basedata):
         call_len = len(self.call_record_map.keys())
         r = minRule()
         r.name = u'半年内通话记录长度'
@@ -622,10 +651,11 @@ class Sp(BaseRule):
         elif call_len>=100:
             r.score = 100
         r.value=u'暂不显示通话记录'
+        self.is_basic(basedata,r)
         return r
 
     '''短信记录长度'''
-    def sms_record_len(self):
+    def sms_record_len(self,basedata):
         sms_len = len(self.sms_record_map.keys())
         r = minRule()
         r.name = u'半年内短信记录长度'
@@ -640,6 +670,7 @@ class Sp(BaseRule):
         elif sms_len>=100:
             r.score = 100
         r.value=u'暂不显示短信记录'
+        self.is_basic(basedata,r)
         return r
 
 

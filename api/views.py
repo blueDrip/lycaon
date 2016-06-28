@@ -79,8 +79,16 @@ def delitem(request):
 
 
 '''数据分析admin'''
+#首页
 def admin_login_views(request):
     return render(request,'admin/login.html')
+def login_auth(request):
+    request.session['sss']='sw'
+    logger.info(request.session.keys())
+    return HttpResponseRedirect('/apix/chars/')    
+def logout(request):
+    request.session.flush()
+    return HttpResponseRedirect('/apix/login/')
 
 def admin_index_views(request):
     ulist = Profile.objects.using('users').all()

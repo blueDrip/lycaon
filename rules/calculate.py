@@ -189,6 +189,10 @@ def cal(minfo = {
         b=None
         try:
             b=rule(bd)
+            #判断是否本人申请
+            b.base_line(bd)
+            #加载规则
+            b.load_rule_data(bd)
             for rd,min_rule in b.min_rule_map.items():
                 min_rule.ruleid = str(rd)
                 min_rule.value = min_rule.value.replace('\t','<br/>')
