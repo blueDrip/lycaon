@@ -125,6 +125,14 @@ DATABASES = {
         'PASSWORD': MYSQL_PWD,
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
+    'admin':{
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'admin_panel',
+        'USER': 'root',
+        'HOST': '123.56.85.36',
+        'PORT': '3306',
+        'PASSWORD': 'root',
+    }
 }
 
 
@@ -250,6 +258,8 @@ LOGGING = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.file"
 SESSION_FILE_PATH  = "/home/sw/logs"
+SESSION_COOKIE_AGE = 60*10
+
 # from mongoengine import DEFAULT_CONNECTION_NAME
 from mongoengine import  connect
 #connect('api_plus_plus',host='182.92.71.136',username='test',password='test')
