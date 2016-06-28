@@ -41,7 +41,7 @@ class Sp(BaseRule):
     def base_line(self,basedata):
         #申请手机号码一致
         uphone = basedata.user_phone
-        userphone = basedata.sp and basedata.sp.userphone or None
+        userphone = basedata.sp and basedata.sp.userphone or 'None'
         same_phone = uphone in userphone and 1 or 0
         #姓名或申请手机号必须和sp一致
         if not same_phone:

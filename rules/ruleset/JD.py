@@ -44,8 +44,7 @@ class JD(BaseRule):
         bankinfo=basedata.jd.bankinfo or []
         bank_times = [ 1 for bk in bankinfo if uphone in bk] and 1 or 0
         pass_count = is_pass_valide_idcard + is_pass_valid_phone + max_phone_times + bank_times
-        print pass_count
-        if pass_count<3:
+        if pass_count<2:
             basedata.jd=None
         pass
 

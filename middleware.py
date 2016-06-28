@@ -20,6 +20,8 @@ class QtsAuthenticationMiddleware(object):
         #base_logger.info('00000000000'+request.session["username"]+str(request.session.get_expiry_age()))
         '''不拦截首页访问和登陆过程'''
         base_logger.info(str(request.session.keys())+'sssssssssssssss\t'+str('sss' in request.session))
+        if '/apix/score/' in request.path:
+            return None
         if 'sss' not in request.session and  request.path not in  ['/apix/login/','/apix/login_auth/']:
-            return HttpResponseRedirect('http://192.168.1.19:8080/apix/login/')
+            return HttpResponseRedirect('/apix/login/')
         return None
