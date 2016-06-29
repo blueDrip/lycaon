@@ -13,13 +13,12 @@ class creditCard(BaseRule):
 
         self.cm_detail_list = []
         self.city_map = self.init_city_map()
-        self.init_cmbcc(basedata)
 
     #判断是否本人申请
     def base_line(self,basedata):
         pass 
     def load_rule_data(self,basedata):
-        
+        self.init_cmbcc(basedata)        
         self.min_rule_map={
             60001:self.get_all_credit_amount(basedata),#信用额度
             60002:self.get_can_user_credit_amount_current(basedata),#当前可用信用额度

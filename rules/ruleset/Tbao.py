@@ -8,8 +8,8 @@ from rules.raw_data import minRule
 class Tbao(BaseRule):
 
     def __init__(self,basedata):
-        self.harf_order_list = self.init_orderList(basedata)
-        self.address_map = self.init_info_mp(basedata)
+        self.harf_order_list = []
+        self.address_map = {}
 
     def init_orderList(self,basedata):
         order_list = basedata.tb and basedata.tb.orderList or []
@@ -83,6 +83,8 @@ class Tbao(BaseRule):
 
     def load_rule_data(self,basedata):
 
+        self.harf_order_list = self.init_orderList(basedata)
+        self.address_map = self.init_info_mp(basedata)
         self.min_rule_map={
             40001:self.binding_phone(basedata),#是否绑定手机
             40002:self.real_name(basedata),#实名认证
