@@ -24,5 +24,6 @@ urlpatterns = [
     url(r'^chars/',views.stat_chars_views),
     url(r'^login_auth/',views.login_auth),
     url(r'^logout/',views.logout),
+    url(r'^apache/',views.apache_views),
         
 ]
