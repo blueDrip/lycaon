@@ -13,7 +13,6 @@ class JD(BaseRule):
         self.consume_list=[]
         self.login_his_map={}
         self.address_info_map={}
-        self.load_data(basedata)
 
     #验证本人申请
     # 1.通过身份证验证
@@ -49,6 +48,7 @@ class JD(BaseRule):
         pass
 
     def load_rule_data(self,basedata):
+        self.load_data(basedata)
         self.min_rule_map={
             30001:self.is_valid_name(basedata),#京东身份证验证
             30002:self.is_valid_phone(basedata),#京东手机验证

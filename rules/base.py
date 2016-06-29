@@ -366,7 +366,7 @@ class BaseData(object):
             conlist = ucl['linkmen']
         except:
             base_logger.error(get_tb_info())
-            base_logger.error("【init contact error】"  + ",uid=" + self.user_id + ",datetime="+ str(datetime.now()))
+            base_logger.error("【init contact error】"  + " USER_ID  " + self.user_id)
         clist=[]
         for cc in conlist:
             itt=eval(cc)

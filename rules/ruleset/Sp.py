@@ -14,10 +14,10 @@ from rules.base import get_right_datetime
 class Sp(BaseRule):
 
     def __init__(self,basedata):
-        self.recharge_map = self.init_recharge_map(basedata)
-        self.call_record_map = self.init_phone_record_mp(basedata)
-        self.sms_record_map = self.init_sms_record_mp(basedata)
         #催收
+        self.recharge_map = {}
+        self.call_record_map = {}
+        self.sms_record_map = {}
         self.dunning_map=self.init_cuishou_map()
 
     def init_cuishou_map(self):
@@ -49,6 +49,10 @@ class Sp(BaseRule):
         pass
         
     def load_rule_data(self,basedata):
+        
+        self.recharge_map = self.init_recharge_map(basedata)
+        self.call_record_map = self.init_phone_record_mp(basedata)
+        self.sms_record_map = self.init_sms_record_mp(basedata)
                 
         self.min_rule_map={
             20001:self.call_record_len(basedata),#通话记录长度是否合理
