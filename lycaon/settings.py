@@ -161,14 +161,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
+# If you set this to False, Django will not use timezone-aware datetimes.
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
@@ -257,8 +258,8 @@ LOGGING = {
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.file"
-SESSION_FILE_PATH  = "/home/sw/logs"
-SESSION_COOKIE_AGE = 60*10
+SESSION_FILE_PATH  = "/home/sw/logs/session"
+SESSION_COOKIE_AGE = 60*30
 
 # from mongoengine import DEFAULT_CONNECTION_NAME
 from mongoengine import  connect

@@ -128,8 +128,8 @@ class PersonInfo(BaseRule):
             r.score = 60
         elif p == u'学生':
             r.score = 70
-        else:
-            r.score=20
+        elif p == u'其他':
+            r.score = 50
         r.name=u'职业'
         r.source = p
         r.feature_val = p
