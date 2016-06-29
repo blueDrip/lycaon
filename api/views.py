@@ -13,7 +13,7 @@ from statistics.models import RulesInfo
 from rules.calculate import cal_by_message
 from django.views.decorators.csrf import csrf_exempt
 from api.models import adminAccount
-
+from api.sys import apache
 import binascii
 import json
 import logging
@@ -115,6 +115,10 @@ def cal_again_views(request):
 #系统设置
 def set_sys_views(request):
     return render(request,'admin/sys.html')
+
+def apache_views(request):
+    return HttpResponse(apache())
+
 #权限设置
 def role_views(request):
     return render(request,'admin/userRole.html')
