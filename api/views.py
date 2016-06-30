@@ -12,7 +12,7 @@ from datetime import datetime
 from statistics.models import RulesInfo
 from rules.calculate import cal_by_message
 from django.views.decorators.csrf import csrf_exempt
-from api.models import adminAccount
+from api.models import adminAccount,privaliage,role,privaliage_role,user_role
 from api.sys import apache
 import binascii
 import json
@@ -92,6 +92,16 @@ def login_auth(request):
         request.session['user']=m.first().login_name
         #设置过期时间
         #request.session.set_expiry(100)
+        #权限查询
+        role_id=user_role.objects.using('admin').filter(uid=m.first().id).first().rid
+        r = role.objects.using('admin').filter(rid=role_id).first()
+        pr=privaliage_role.objects.using('admin').filter(role_id = r.rid)
+        pl=privaliage.objects.using('admin').filter(privaliage_id__in=[p.privaliage_id for p in pr])
+        request.session['admin_level'] = r.descname
+        request.session['privaliage'] = [{'pid':it.privaliage_id,
+            'url':it.url,
+            'privaliage_name':it.privaliage_name } for it in pl ]
+
     return HttpResponseRedirect('/apix/chars/')    
 def logout(request):
     request.session.flush()
@@ -121,7 +131,14 @@ def apache_views(request):
 
 #权限设置
 def role_views(request):
-    return render(request,'admin/userRole.html')
+    u=adminAccount.objects.using('admin').all()
+    p = privaliage.objects.using('admin').all()
+    r = role.objects.using('admin').all()
+    return render(request,'admin/userRole.html',{'adminusers':u,'prlist':p,'r':r})
+
+
+
+
 #规则
 def rules_items_vies(request):
     uid=request.GET['uid']
@@ -138,6 +155,78 @@ def del_views(request):
 #数据统计
 def stat_chars_views(request):
     return render(request,'admin/chars.html',{'year':datetime.now().year,'month':datetime.now().month })
+
+
+#创建用户
+@csrf_exempt
+def create_user_views(request):
+    uname = request.POST['name']
+    pwd = request.POST['pwd']
+    a=adminAccount.objects.using('admin').filter(login_name=uname)
+    if a:
+        return HttpResponse(json.dumps({'notnull':-3}))
+    if not uname:
+        return HttpResponse(json.dumps({'notnull':-2}))
+    elif not pwd:
+        return HttpResponse(json.dumps({'notnull':-1}))
+    
+    a=adminAccount()
+    a.login_name = uname
+    a.pwd = pwd
+    a.login_time = datetime.now()
+    a.save(using='admin')
+    return HttpResponse(json.dumps({
+        'id' : str(a.id),
+        'login_name' : uname,
+        'ip' : str('192.168.1.120'),
+        'login_time' : str(a.login_time)
+    }))
+#角色
+def chagerole(request):
+    rid = request.GET['rid']
+    pr=privaliage_role.objects.using('admin').filter(role_id = int(rid))
+    pl=privaliage.objects.using('admin').filter(privaliage_id__in=[p.privaliage_id for p in pr])
+    return HttpResponse(json.dumps({'privaliage_id_list':[it.privaliage_id for it in pl]}))
+#删除系统管理员
+def del_sys_user(request):
+    uid = request.GET['uid']
+    #系统管理员admin,不能删除
+    if int(uid) !=1:
+        m=adminAccount.objects.using('admin').filter(id=int(uid)).delete()
+    return HttpResponseRedirect('/apix/role/')
+ 
+#创建角色
+def create_role(request):
+    rolename = request.GET['rolename']
+    check_list = request.GET['privaliage_list']
+    if not rolename or not check_list:
+        return HttpResponse(json.dumps({'notnull':0}))
+    r=role.objects.using('admin').filter(descname=rolename)
+    if r:
+        return HttpResponse(json.dumps({'notnull':-1}))
+    r=role()
+    r.descname=rolename
+    r.save(using='admin')
+    #分配权限
+    rid=r.rid
+    if check_list:
+        for pid in check_list.strip('c').split('c'):
+            pr= privaliage_role()
+            pr.role_id = rid
+            pr.privaliage_id = int(pid)
+            pr.save(using='admin')
+        #批量插入
+        #privaliage_role.objects.using('admin').bulk_create(pro_list)
+    return HttpResponse(json.dumps({'rolename':r.descname,'rid':r.rid}))
+#分配角色
+def distr_role_to_user(request):
+    uid = request.GET['uid']
+    rid = request.GET['rid']
+    ru = user_role()
+    ru.uid = int(uid)
+    ru.rid = int(rid)
+    ru.save(using='admin')
+    return HttpResponse(1)
 
 def reg(request):
     year = request.GET['year']

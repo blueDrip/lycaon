@@ -27,7 +27,7 @@
       <!--Left column-->
         {% include "admin/left.html" %}
         <script type="text/javascript">
-          document.getElementById("id6").className="active"
+          document.getElementById("_apix_sys_").className="active"
         </script>
       <!--end left-->
       <!-- Main content -->
@@ -58,25 +58,13 @@
          </script>          
               <div class="row form-group">
                 <div class="col-lg-6 col-md-6 form-group">                  
-                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="stop apache" onclick="alert(11)">                  
+                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="stop apache" onclick="return confirm('确定停止当前服务？')">                  
                 </div> 
                 <div class="col-lg-6 col-md-6 form-group">                  
                     <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="restart apache" onclick="apache();">                  
                 </div> 
               </div>
-            <h2 class="margin-bottom-10">session管理</h2>        
-              <div class="row form-group">
-                <div class="col-lg-6 col-md-6 form-group">                  
-                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="close session" onclick="alert(11)">                  
-                </div> 
-                <div class="col-lg-6 col-md-6 form-group">                  
-                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="open session" onclick="alert(11)">                  
-                </div> 
-                <div class="col-lg-6 col-md-6 form-group">                  
-                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="delete session" onclick="alert(11)">                  
-                </div> 
-              </div> 
-
+            <!--
             <h2 class="margin-bottom-10">mongo管理</h2>        
               <div class="row form-group">
                 <div class="col-lg-6 col-md-6 form-group">                  
@@ -92,6 +80,7 @@
                     <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="backup database" onclick="alert(11)">                  
                 </div>                
               </div>
+            -->
             <h2 class="margin-bottom-10">日志管理</h2>                   
               <div class="row form-group">
                 <div class="col-lg-6 col-md-6 form-group">                  
