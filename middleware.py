@@ -17,11 +17,34 @@ class QtsAuthenticationMiddleware(object):
         #if "username" not in request.session:
         #    request.session['username'] = 'sw'
         #    return render(request,'admin/login.html')       
-        #base_logger.info('00000000000'+request.session["username"]+str(request.session.get_expiry_age()))
+        base_logger.info(request.session.keys())
         '''不拦截首页访问和登陆过程'''
-        base_logger.info(str(request.session.keys())+'sssssssssssssss\t'+str('sss' in request.session))
         if '/apix/score/' in request.path:
             return None
         if 'user' not in request.session and  request.path not in  ['/apix/login/','/apix/login_auth/']:
             return HttpResponseRedirect('/apix/login/')
+        elif 'privaliage' in request.session:
+            url_list = [ it['url'] for it in request.session['privaliage'] ]
+
+            url_list.append('/apix/chars/')
+
+            url_list.append('/apix/login/')
+            url_list.append('/apix/login_auth/')
+
+            url_list.append('/apix/reg/')
+            url_list.append('/apix/reback/')
+            url_list.append('/apix/apache/')
+            url_list.append('/apix/ruleitems/')
+            url_list.append('/apix/rulesinfo/')
+            url_list.append('/apix/deluser/')
+            url_list.append('/apix/createuser/')
+            url_list.append('/apix/createrole/')
+            url_list.append('/apix/distrrole/')
+            url_list.append('/apix/logout/')                      
+            url_list.append('/apix/chagerole/')
+            url_list.append('/apix/delsysuser/')
+            base_logger.info(url_list)
+            #没有权限访问其他路径,跳到首页
+            if request.path not in url_list:
+                return HttpResponseRedirect(url_list[0])
         return None

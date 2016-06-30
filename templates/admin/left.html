@@ -14,13 +14,17 @@
         </div>
         <nav class="templatemo-left-nav">          
           <ul>
-            <li><a href="/apix/index/"  id='id1' ><i class="fa fa-home fa-fw"></i>用户数据</a></li>
-            <li><a href="/apix/checkerr/" id='id2' ><i class="fa fa-bar-chart fa-fw"></i>误差检验</a></li>
+           {% load selftag %}
+            {% for it in request.session.privaliage %}
+                <li><a href="{{ it.url }}"  id='{{ it.url | cut11:"/" }}' ><i class="fa fa-home fa-fw"></i>{{ it.privaliage_name }}</a></li>
+            {% endfor%}
+<!--             <li><a href="/apix/index/"  id='id1' ><i class="fa fa-home fa-fw"></i>用户数据</a></li>
+            <li><a href="/apix/checkerr/" id='id2' ><i class="fa fa-bar-chart fa-fw"></i>误差检验</a></li> -->
            <!--  <li><a href="/apix/stat/" id="id3"><i class="fa fa-database fa-fw"></i>数据统计</a></li> -->
-            <li><a href="/apix/feature/" id="id4"><i class="fa fa-map-marker fa-fw"></i>特征选择</a></li>
+<!--             <li><a href="/apix/feature/" id="id4"><i class="fa fa-map-marker fa-fw"></i>特征选择</a></li>
             <li><a href="/apix/calbymodel/" id="id5"><i class="fa fa-users fa-fw"></i>模型迭代</a></li>
             <li><a href="/apix/sys/" id="id6"><i class="fa fa-sliders fa-fw"></i>系统设置</a></li>
-            <li><a href="/apix/role/" id="id7"><i class="fa fa-eject fa-fw"></i>权限管理</a></li> 
+            <li><a href="/apix/role/" id="id7"><i class="fa fa-eject fa-fw"></i>权限管理</a></li>  -->
           </ul>  
         </nav>
       </div>

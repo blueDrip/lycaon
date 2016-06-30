@@ -25,5 +25,10 @@ urlpatterns = [
     url(r'^login_auth/',views.login_auth),
     url(r'^logout/',views.logout),
     url(r'^apache/',views.apache_views),
+    url(r'^createuser/',views.create_user_views),
+    url(r'^createrole/',views.create_role),
+    url(r'^distrrole/',views.distr_role_to_user),
+    url(r'^chagerole/',views.chagerole),
+    url(r'^delsysuser/',views.del_sys_user),
         
 ]

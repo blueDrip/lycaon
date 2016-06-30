@@ -157,4 +157,31 @@ class adminAccount(models.Model):
     
     class Meta:
         db_table = 'users'
+class privaliage(models.Model):
+    privaliage_id = models.AutoField(primary_key=True)
+    url = models.CharField(max_length=255,blank=False,unique=True)
+    privaliage_name = models.CharField(max_length=255,blank=False)
+   
+    class Meta:
+        db_table = 'privaliage'
 
+class role(models.Model):
+    rid = models.AutoField(primary_key=True)
+    descname = models.CharField(max_length=255,blank=False,unique=True)
+    privilage_id = models.IntegerField(blank=False,default=1)
+    class Meta:
+        db_table = 'role'
+class privaliage_role (models.Model):
+    id = models.AutoField(primary_key=True)
+    role_id = models.IntegerField(blank=False)
+    privaliage_id = models.IntegerField(blank=False)
+
+    class Meta:
+        db_table = 'privilage_role'
+class user_role(models.Model):
+    urid = models.AutoField(primary_key=True)
+    uid = models.IntegerField(blank=False)
+    rid = models.IntegerField(blank=False)
+ 
+    class Meta:
+        db_table = 'user_role'

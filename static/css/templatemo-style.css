@@ -549,7 +549,6 @@ input[type="radio"]:checked + label span {
 .has-error .form-control { border-color: #D7425C; }
 .templatemo-multi-select {
 	min-width: 200px;
-	height: 100px;
 	overflow-y: scroll;	
 }
 
