@@ -154,7 +154,9 @@
                       var uid = sel.options[sel.selectedIndex].value;  
                       var sel = document.getElementById("select_role");
                       var rid = sel.options[sel.selectedIndex].value;     
-          
+ 
+
+
                      $.ajax({  
                             type:'get',      
                             url:'/apix/distrrole/',  
@@ -164,7 +166,13 @@
                             },
                             dataType:"text",  
                             success:function(data){ 
-                                      alert(data)
+
+
+                                      if (data>0) {
+                                          alert('角色分配成功')
+                                      }else{
+                                           alert('选择角色')
+                                      }
                                
                           }  
                       });   
@@ -289,7 +297,7 @@
                             　
                                <div class="row form-group">
                                         <div class="col-lg-6 col-md-6 form-group"> 
-                                        <label class="control-label templatemo-block">角色</label>                 
+                                        <label class="control-label templatemo-block">角色名称（**必选**）</label>                 
                                         <select   class="templatemo-multi-select form-control" id='select_role' onchange="chage_role(this)">
                                                <option value="-1">-----</option>
                                               {% for role in r %}
