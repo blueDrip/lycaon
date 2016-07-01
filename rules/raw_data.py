@@ -384,6 +384,7 @@ class DetailRule(Document):
     name = StringField(required=True)
     score = IntField(default=-1)
     rules = ListField(ReferenceField(minRule))
+    value = StringField(default='')
 
 class topResult(Document):
     user_id = StringField(default = str)
@@ -393,3 +394,5 @@ class topResult(Document):
     name = StringField(default = str)
     created_time = DateTimeField()
     user_type = StringField(default = '正常用户') #黑名单用户
+    token = StringField(required=True) #各项token值
+    authorize_item_count = IntField(default=0) #当前授权的项数

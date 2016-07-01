@@ -260,6 +260,7 @@ LOGGING = {
 SESSION_ENGINE = "django.contrib.sessions.backends.file"
 SESSION_FILE_PATH  = "/home/sw/logs/session"
 SESSION_COOKIE_AGE = 60*30
+EXPIRE_DAY = 30
 
 # from mongoengine import DEFAULT_CONNECTION_NAME
 from mongoengine import  connect
