@@ -210,18 +210,22 @@ def create_role(request):
     #分配权限
     rid=r.rid
     if check_list:
+        prolist=[]
         for pid in check_list.strip('c').split('c'):
             pr= privaliage_role()
             pr.role_id = rid
             pr.privaliage_id = int(pid)
-            pr.save(using='admin')
+            prolist.append(pr)
+            #pr.save(using='admin')
         #批量插入
-        #privaliage_role.objects.using('admin').bulk_create(pro_list)
+        privaliage_role.objects.using('admin').bulk_create(prolist)
     return HttpResponse(json.dumps({'rolename':r.descname,'rid':r.rid}))
 #分配角色
 def distr_role_to_user(request):
     uid = request.GET['uid']
     rid = request.GET['rid']
+    if int(rid)<0:
+        return HttpResponse(0)
     ru = user_role()
     ru.uid = int(uid)
     ru.rid = int(rid)
