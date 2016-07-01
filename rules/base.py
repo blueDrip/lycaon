@@ -124,21 +124,23 @@ class BaseData(object):
 
             '''creditCard'''
             self.cb = map_info['cb']
-
             self.init_contact()
-            if '移动' in phone_info['supplier']:
+
+            '''授权sp数据的用户手机号'''
+            sp_phone_info = self.sp and self.ext_api.get_phone_location(self.sp.userphone) or {'supplier':'none'}
+            if '移动' in sp_phone_info['supplier']:
                 print '移动'
                 self.init_sp_calldetail()
                 self.init_sp_smsdetail()
                 self.init_sp_netdetail()
                 self.init_sp_recharege()
-            elif '联通' in phone_info['supplier']:
+            elif '联通' in sp_phone_info['supplier']:
                 print '联通'
                 self.init_sp_unicom_calldetail()
                 self.init_sp_unicom_smsdetail()
                 self.init_sp_unicom_netdetail()
                 self.init_sp_unicom_recharege()
-            elif '电信' in phone_info['supplier']:
+            elif '电信' in sp_phone_info['supplier']:
                 pass
             else:
                 pass
@@ -169,14 +171,12 @@ class BaseData(object):
             'age':age,
             'idcard':self.idcard
         }
-            
     def init_sp_calldetail(self):
         phonedetail = self.sp and self.sp.phonedetail or []
         mp=self.load_sp_datadetail()
         cmap={ c.phone:c.name for c in self.contacts }
+        phone_info = self.ext_api.get_phone_location(self.sp.userphone)
         for itt in phonedetail:
-                if 'startTime' not in itt:
-                    continue
                 stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']     
                 st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
@@ -201,8 +201,6 @@ class BaseData(object):
         mp = self.load_sp_datadetail()
         cmap={ c.phone:c.name for c in self.contacts }
         for itt in smsdetail:
-                if 'startTime' not in itt:
-                    continue
                 stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']
                 st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
@@ -222,8 +220,6 @@ class BaseData(object):
         netdetail = self.sp and self.sp.netdetail or []
         mp = self.load_sp_datadetail()
         for itt in netdetail:
-                if 'startTime' not in itt:
-                    continue
                 key = itt['startTime'].split('-')[0]
                 if key not in mp:
                     continue
@@ -247,8 +243,6 @@ class BaseData(object):
         charge_mp={}
         now=self.create_time
         for it in recharge:
-            if 'payDate' not in it:
-                continue
             td=it['payDate']
             key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),int(td[8:10]),int(td[10:12]),int(td[12:14]))
             if key>now-timedelta(180) and key<=now and u'充值' in it['payTypeName']:
@@ -275,8 +269,6 @@ class BaseData(object):
         phonedetail = self.sp and self.sp.phonedetail or []
         cmap={ c.phone:c.name for c in self.contacts }
         for itt in phonedetail:
-                if 'calldate' not in itt:
-                    continue
                 stime=itt['calldate'] +' ' + itt['calltime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
@@ -300,8 +292,6 @@ class BaseData(object):
         smsdetail = self.sp and self.sp.smsdetail or []
         cmap={ c.phone:c.name for c in self.contacts }
         for itt in smsdetail:
-                if 'smsdate' not in itt:
-                    continue
                 stime = itt['smsdate'] +' ' + itt['smstime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
@@ -323,8 +313,6 @@ class BaseData(object):
 
         netdetail = self.sp and self.sp.netdetail or []
         for itt in netdetail:
-                if 'begintime' not in itt:
-                    continue
                 stime=itt['begintime']
                 st=dd_start_time = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 n=UserNetInfo()
@@ -347,8 +335,6 @@ class BaseData(object):
         charge_mp={}
         now = self.create_time
         for itt in recharge:
-            if 'paydate' not in itt:
-                continue
             td=itt['paydate'].replace('-','')
             key=datetime(int(td[0:4]),int(td[4:6]),int(td[6:8]),random.randint(1,12))
             if key>now-timedelta(180) and key<=now:

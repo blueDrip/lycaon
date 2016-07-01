@@ -68,6 +68,14 @@ def get_token(str_token):
     taobao_name_token = token_list[5]
     jd_name_token = token_list[6]
     
+    '''当前授权的项数'''
+    authorize_item_count = idcard_token and 1 or 0         #授权身份认证
+    authorize_item_count += sp_phone_no_token and 1 or 0   #授权运营商
+    authorize_item_count += phone_book_token and 1 or 0    #授权通讯录
+    authorize_item_count += taobao_name_token and 1 or 0   #授权淘宝
+    authorize_item_count += jd_name_token and 1 or 0       #授权京东
+
+    print 'authorize_item_count',authorize_item_count
 
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
@@ -120,14 +128,16 @@ def get_token(str_token):
     #    return None
     return {
         'user':userinfo,
-        'user_id':user_id_token.replace('-',''),
+        'user_id':user_id,
         'user_phone':user_phone_token,
         'idcard':idcard_token,
         'jd' : jd,
         'tb' : tb,
         'sp' : sp,
         'ucl': ucl,
-        'cb' : cb
+        'cb' : cb,
+        'token' : str_token,
+        'authorize_item_count':authorize_item_count
     }
 
 def cal_by_message(msg):
@@ -145,7 +155,9 @@ def cal(minfo = {
         'tb':None,
         'sp':None,
         'ucl':None,
-        'cb':None}
+        'cb':None,
+        'token':'None;None;None;None;None;None;None;None',
+        'authorize_item_count':0 }
     ):
 
     rule_map={'personinfo':PersonInfo,
@@ -171,18 +183,30 @@ def cal(minfo = {
         'cb':0.05,
     }
 
+    '''判断是否为黑名单用户'''
     user_type = u'正常用户'
     if is_apix_basic():
         user_type = u'黑名单'
+
     ext_api = EXT_API()
     b=BaseRule()
     bd=BaseData(map_info=minfo,ext=ext_api)
+    user_id=minfo['user_id'].upper()
+    '''查看最近一条记录'''
+    top_rs = topResult.objects.filter(user_id = user_id).order_by('-created_time').first()
+    if top_rs:
+        auitem = top_rs.authorize_item_count
+        score = int(top_rs.score)
+        #全部授权完
+        if auitem == minfo['authorize_item_count']:
+            return score
+
     top_rule = topResult()
+    top_rule.authorize_item_count = minfo['authorize_item_count'] #记录当前授权的项目
+    top_rule.token = minfo['token'] #记录此次的token值
 
     user_id=minfo['user_id'].upper()
-    rules_detail_map={}    
-
-    cal_logger.info(u'【start calculate score】　' + str(user_id))
+    cal_logger.info(u'【 start calculate score 】 ' + str(user_id))
     #规则计算
     i=1
     for k,rule in rule_map.items():
@@ -214,8 +238,8 @@ def cal(minfo = {
         top_rule.rulelist.append(detail_rule)
         top_rule.score+=detail_rule.score*weight_map[k]
         cal_logger.info( name_list[k] +'\t\t'+str(datetime.now())+'\t\t'+str(detail_rule.score))
-        #加载模型
-        rules_detail_map[k]=b
+        ##加载模型
+        ##rules_detail_map[k]=b
         i+=1
 
     top_rule.name = u'credit_score'
@@ -227,9 +251,7 @@ def cal(minfo = {
     if user:
         user.trust_score=top_rule.score
         user.save()
-    cal_logger.info(u'【计算完成】\t' + str(user_id)+'\t'+str(datetime.now())+'\t'+str(top_rule.score))
-
-
+    cal_logger.info(u'  【计算完成】 ' + str(top_rule.score))
 
     #try:
     rule_detail = RulesInfo()
