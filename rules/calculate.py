@@ -69,13 +69,13 @@ def get_token(str_token):
     jd_name_token = token_list[6]
     
     '''当前授权的项数'''
-    authorize_item_count = idcard_token and 1 or 0         #授权身份认证
-    authorize_item_count += sp_phone_no_token and 1 or 0   #授权运营商
-    authorize_item_count += phone_book_token and 1 or 0    #授权通讯录
-    authorize_item_count += taobao_name_token and 1 or 0   #授权淘宝
-    authorize_item_count += jd_name_token and 1 or 0       #授权京东
+    authorize_item_count =  idcard_token != 'None' and 1 or 0         #授权身份认证
+    authorize_item_count += sp_phone_no_token != 'None' and 1 or 0   #授权运营商
+    authorize_item_count += phone_book_token != 'None' and 1 or 0    #授权通讯录
+    authorize_item_count += taobao_name_token != 'None' and 1 or 0   #授权淘宝
+    authorize_item_count += jd_name_token != 'None' and 1 or 0       #授权京东
 
-    print 'authorize_item_count',authorize_item_count
+    cal_logger.info('【authorize_item_count】 '+str(authorize_item_count))
 
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
@@ -237,9 +237,7 @@ def cal(minfo = {
 
         top_rule.rulelist.append(detail_rule)
         top_rule.score+=detail_rule.score*weight_map[k]
-        cal_logger.info( name_list[k] +'\t\t'+str(datetime.now())+'\t\t'+str(detail_rule.score))
-        ##加载模型
-        ##rules_detail_map[k]=b
+        cal_logger.info( name_list[k] +'\t'+str(detail_rule.score))
         i+=1
 
     top_rule.name = u'credit_score'

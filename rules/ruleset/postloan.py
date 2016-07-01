@@ -253,7 +253,7 @@ class PostLoanNewRule(BaseRule):
     def base_line(self,basedata):
         clen = len(basedata.contacts)
         if clen<30:
-            basedata.contacts=[]
+            basedata.ucl=None
 
 
     def load_rule_data(self,basedata):
