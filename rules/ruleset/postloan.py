@@ -249,7 +249,7 @@ class PostLoanNewRule(BaseRule):
 
     #是否为本人
     # 1.通讯录长度合理>30
-    # 2.在老家有联系人
+    # 2.通讯录中亲属父母至少有一个
     def base_line(self,basedata):
         clen = len(basedata.contacts)
         if clen<30:
