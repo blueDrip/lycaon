@@ -55,6 +55,21 @@
                             }  
                         });
                   } 
+                /*日志*/
+              function log_err_info(){
+                       $.ajax({  
+                              type:'get',      
+                              url:'/apix/checklog/',
+                              dataType:"json",
+                              success:function(data){
+                                   var d=document.getElementById('log_info')
+                                  d.value += '开始时间 ：'+data['st']+'\t'
+                                  d.value +='结束时间 ：'+data['dt']+'\t'
+                                  d.value +='错误个数：' +data['err_count']+'\n'
+                                 
+                            }  
+                        });
+                  } 
          </script>          
               <div class="row form-group">
                 <div class="col-lg-6 col-md-6 form-group">                  
@@ -86,9 +101,16 @@
                 <div class="col-lg-6 col-md-6 form-group">                  
                     <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="日志下载" onclick="alert(11)">                  
                 </div> 
-                <div class="col-lg-6 col-md-6 form-group">                  
-                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="日志错误检查" onclick="alert(11)">                  
+                <div class="col-lg-6 col-md-6 form-group"> 
+                    <input type="button" class="form-control" id="inputLastName" placeholder="Smith" value="日志错误检查" onclick="log_err_info()">                  
                 </div> 
+
+              </div>
+
+            <div class="row form-group">
+                <div class="col-lg-6 col-md-6 form-group">                  
+                            <textarea rows="20" cols="165" disabled style="border: 1px solid gray" id='log_info'> </textarea>                 
+                </div>  
               </div>
           </div>
           <!--footer-->

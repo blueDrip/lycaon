@@ -14,6 +14,7 @@ from rules.calculate import cal_by_message
 from django.views.decorators.csrf import csrf_exempt
 from api.models import adminAccount,privaliage,role,privaliage_role,user_role
 from api.sys import apache
+from rules.check_log import rules_log
 import binascii
 import json
 import logging
@@ -125,6 +126,13 @@ def cal_again_views(request):
 def set_sys_views(request):
     return render(request,'admin/sys.html')
 
+#日志检查
+def check_log(request):
+    count = rules_log()
+    st = str(datetime.now().date())
+    dt = str(datetime.now())
+    return HttpResponse(json.dumps({'st':str(st),'dt':str(dt),'err_count':count}))
+#重启apache
 def apache_views(request):
     return HttpResponse(apache())
 

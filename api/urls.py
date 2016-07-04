@@ -30,5 +30,6 @@ urlpatterns = [
     url(r'^distrrole/',views.distr_role_to_user),
     url(r'^chagerole/',views.chagerole),
     url(r'^delsysuser/',views.del_sys_user),
+    url(r'^checklog/',views.check_log),
         
 ]
