@@ -1,5 +1,6 @@
 # coding=utf8
 from corelib.database import MongoDb
+from django.conf import settings
 from rules.raw_data import JdData,TaoBao,chinaMobile,phonebook,chinaUnicom
 from datetime import datetime
 def jd_orm(cnd={}):
@@ -8,7 +9,8 @@ def jd_orm(cnd={}):
 
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('jingdong').find_one(cnd,sort=[('createTime',-1)]) or {}
-    if not c:
+    #不存在记录或查到记录>30天,等待
+    if not c or not is_expire(rs=c):
         return None
     jd=JdData()
     if 'accountSafeInfo' in c:
@@ -60,7 +62,8 @@ def tb_orm(cnd={}):
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('taobao').find_one(cnd,sort=[('createTime',-1)]) or {}
-    if not c:
+    #不存在记录或查到记录>30天,等待
+    if not c or not is_expire(rs=c):
         return None
     tb=TaoBao()
     tb.taobao_name = 'taobao_name' in c and c['taobao_name'] or ''
@@ -127,7 +130,9 @@ def china_mobile_orm(cnd={}):
 
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('yidong').find_one(cnd,sort=[('createTime',-1)]) or {}
-
+    #不存在记录或查到记录>30天,等待
+    if not c or not is_expire(rs=c):
+        return None
     cmb=chinaMobile()
     if c:
         cmb.currRemainingAmount= c['currRemainingAmount']
@@ -154,7 +159,9 @@ def china_unicom_orm(cnd={}):
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('liantong').find_one(cnd,sort=[('createTime',-1)]) or {}
-
+    #不存在记录或查到记录>30天,等待
+    if not c or not is_expire(rs=c):
+        return None
     cub=chinaUnicom()
     if c:
         if c['userInfo']:
@@ -180,6 +187,9 @@ def phonebook_orm(cnd={}):
         return None
     d=MongoDb('101.201.78.139',27017,'app_data','heigeMeixin','app_grant_data')
     c=d.get_collection('phonebook').find_one(cnd,sort=[('createTime',-1)]) or {}
+    #不存在记录或查到记录>30天,等待
+    if not c or not is_expire(rs=c):
+        return None
 
     pb = phonebook()
     if c:
@@ -190,4 +200,12 @@ def phonebook_orm(cnd={}):
         pb.device_id = c['device_id']
         return pb
     return None
-
+def is_expire(rs=None):
+    if not rs:
+        return True
+    dt = datetime.strptime(rs['createTime'],'%Y-%m-%d %H:%M:%S')
+    diff = (datetime.now()-dt).days
+    print 'diff',diff
+    if diff<=settings.EXPIRE_DAY:
+        return True
+    return False
