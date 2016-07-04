@@ -124,8 +124,6 @@ def get_token(str_token):
         cb=None
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  USER_ID: "+user_id)
-    #if not (idcard_token and sp and ucl and (jd or tb)):
-    #    return None
     return {
         'user':userinfo,
         'user_id':user_id,
@@ -139,12 +137,33 @@ def get_token(str_token):
         'token' : str_token,
         'authorize_item_count':authorize_item_count
     }
-
+#逻辑控制,规定何时算分
 def cal_by_message(msg):
     rmap=get_token(msg)
-    if not rmap:
-        return None
+    user_id = rmap['user_id']
+
+    id_card = rmap['idcard']
+
+    is_author = rmap['idcard'] and rmap['sp'] and rmap['ucl'] and (rmap['jd'] or rmap['tb'])
+    #如果当前授权不全,等待
+    if not is_author:
+       return None
+    top_rs = topResult.objects.filter(user_id = user_id).order_by('-created_time').first()
+    if top_rs:
+        auitem = top_rs.authorize_item_count
+        score = int(top_rs.score)
+        old_token = top_rs.token
+        #是否重新授权
+        new_token_list = [ it for it in msg.replace('None','').split(';') if not str(it).isdigit() ]
+        is_agrain_author = not len([ it for it in new_token_list if it in old_token ])>2
+
+        #只要每次授权的比上次的多，就重新算分
+        if not is_agrain_author and auitem == rmap['authorize_item_count']:
+            return score
+
+    #重新授权或授权项变多
     return cal(minfo=rmap)
+
 
 def cal(minfo = {
         'user':None,
@@ -176,9 +195,9 @@ def cal(minfo = {
     }
     weight_map={
         'personinfo':0.15,
-        'jd':0.1,
-        'tb':0.1,
-        'sp':0.3,
+        'jd':0.15,
+        'tb':0.15,
+        'sp':0.2,
         'postloan':0.3,
         'cb':0.05,
     }
@@ -192,14 +211,6 @@ def cal(minfo = {
     b=BaseRule()
     bd=BaseData(map_info=minfo,ext=ext_api)
     user_id=minfo['user_id'].upper()
-    '''查看最近一条记录'''
-    top_rs = topResult.objects.filter(user_id = user_id).order_by('-created_time').first()
-    if top_rs:
-        auitem = top_rs.authorize_item_count
-        score = int(top_rs.score)
-        #全部授权完
-        if auitem == minfo['authorize_item_count']:
-            return score
 
     top_rule = topResult()
     top_rule.authorize_item_count = minfo['authorize_item_count'] #记录当前授权的项目
