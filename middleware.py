@@ -43,6 +43,7 @@ class QtsAuthenticationMiddleware(object):
             url_list.append('/apix/logout/')                      
             url_list.append('/apix/chagerole/')
             url_list.append('/apix/delsysuser/')
+            url_list.append('/apix/checklog/')
             base_logger.info(url_list)
             #没有权限访问其他路径,跳到首页
             if request.path not in url_list:
