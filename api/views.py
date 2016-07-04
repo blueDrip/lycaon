@@ -48,9 +48,8 @@ def score_views(request):
     try:
         if token:
             score = cal_by_message(token)
-            #if score:
-            #    return HttpResponse(json.dumps({'user_score':score}))
-            return HttpResponse(json.dumps({'user_score':score}))
+            if score:
+                return HttpResponse(json.dumps({'user_score' : score}))
         return HttpResponse(json.dumps({'user_score':-3}))
     except:
         return HttpResponse(json.dumps({'user_score':-3}))
