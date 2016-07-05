@@ -147,6 +147,7 @@ def cal_by_message(msg):
     is_author = rmap['idcard'] and rmap['sp'] and rmap['ucl'] and (rmap['jd'] or rmap['tb'])
     #如果当前授权不全,等待
     if not is_author:
+       cal_logger.info('【 抓取未完成 】')
        return None
     top_rs = topResult.objects.filter(user_id = user_id).order_by('-created_time').first()
     if top_rs:
@@ -159,6 +160,7 @@ def cal_by_message(msg):
 
         #只要每次授权的比上次的多，就重新算分
         if not is_agrain_author and auitem == rmap['authorize_item_count']:
+            cal_logger.info('【 当前分数 】: '+str(score))
             return score
 
     #重新授权或授权项变多
