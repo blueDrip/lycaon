@@ -31,5 +31,6 @@ urlpatterns = [
     url(r'^chagerole/',views.chagerole),
     url(r'^delsysuser/',views.del_sys_user),
     url(r'^checklog/',views.check_log),
-        
+    url(r'^spinfo/',views.sp_data_views),
+            
 ]

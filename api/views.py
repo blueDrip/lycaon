@@ -13,6 +13,10 @@ from statistics.models import RulesInfo
 from rules.calculate import cal_by_message
 from django.views.decorators.csrf import csrf_exempt
 from api.models import adminAccount,privaliage,role,privaliage_role,user_role
+from sole_models.statistics.china_mobile import get_cb_infos
+from sole_models.statistics.china_union import get_um_info
+from sole_models.sole_orm import china_unicom_orm_desplay,china_mobile_orm_desplay
+from rules.ext_api import EXT_API
 from api.sys import apache
 from rules.check_log import rules_log
 import binascii
@@ -54,6 +58,32 @@ def score_views(request):
         return HttpResponse(json.dumps({'user_score':-3}))
     except:
         return HttpResponse(json.dumps({'user_score':-3}))
+
+#sp数据
+def sp_data_views(request):
+    if 'token' not in request.GET or 'phone' not in request.GET:
+        return HttpResponse(json.dumps({'err':'token or phone is must'}))
+    try:
+        token=request.GET['token']
+        phone=request.GET['phone']
+        ext_api=EXT_API()
+        ptype=ext_api.get_phone_location(phone) or {'supplier':'none'}
+        if token and phone:
+            cnd = {'token':token}
+            rs={'note':'unknown'}
+            if '移动' in ptype['supplier']:
+                cc=china_mobile_orm_desplay(cnd)
+                rs=get_cb_infos(cc)            
+            elif '联通' in ptype['supplier']:
+                cc=china_unicom_orm_desplay(cnd)
+                rs=get_um_info(cc)
+            else:
+                rs={'notice':'the phone type is not supported!'}
+            return HttpResponse(json.dumps(rs))
+        return HttpResponse("error! token or phone is empty!")
+    except:
+        return HttpResponse("an error occured")
+
 
 def credit_detail(request):
     uid=request.GET['uid']

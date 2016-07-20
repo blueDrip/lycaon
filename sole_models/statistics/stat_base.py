@@ -67,7 +67,7 @@ def format_phone(phone):
         phone = phone[4:]
     return phone
 
-class BaseData(object):
+class statBasedata(object):
 
     """Docstring for OrderInfo. 
         map_info = {
@@ -124,7 +124,6 @@ class BaseData(object):
 
             '''creditCard'''
             self.cb = map_info['cb']
-            self.init_contact()
 
             '''授权sp数据的用户手机号'''
             sp_phone_info = self.sp and self.ext_api.get_phone_location(self.sp.userphone) or {'supplier':'none'}
@@ -177,10 +176,7 @@ class BaseData(object):
         cmap={ c.phone:c.name for c in self.contacts }
         phone_info = self.ext_api.get_phone_location(self.sp.userphone)
         for itt in phonedetail:
-                key=itt['startTime'].split('-')[0]
-                if key not in mp:
-                    continue
-                stime=mp[key]+'-'+itt['startTime']
+                stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']     
                 st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
@@ -204,10 +200,7 @@ class BaseData(object):
         mp = self.load_sp_datadetail()
         cmap={ c.phone:c.name for c in self.contacts }
         for itt in smsdetail:
-                key = itt['startTime'].split('-')[0]
-                if key not in mp:
-                    continue
-                stime=mp[key]+'-'+itt['startTime']
+                stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']
                 st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
                 s.user_id = self.user_id
@@ -226,8 +219,6 @@ class BaseData(object):
         netdetail = self.sp and self.sp.netdetail or []
         mp = self.load_sp_datadetail()
         for itt in netdetail:
-                if 'startTime' not in itt:
-                    continue
                 key = itt['startTime'].split('-')[0]
                 if key not in mp:
                     continue
@@ -350,59 +341,3 @@ class BaseData(object):
                     key : itt['payfee'].replace('-','')
                 })
         self.sp_recharge = charge_mp
-
-    def init_contact(self):
-        ucl = self.ucl
-        if not ucl:
-            return
-        conlist = []
-        try:
-            conlist = ucl['linkmen']
-        except:
-            base_logger.error(get_tb_info())
-            base_logger.error("【init contact error】"  + " USER_ID  " + self.user_id)
-        clist=[]
-        for cc in conlist:
-            itt=eval(cc)
-            u = UserContact()
-            u.name=itt['name'] and itt['name'].decode('utf8') or u''
-            u.user_id = ucl['user_id']
-            u.owner_phone=ucl["phone"]
-            u.device_id = ucl["device_id"]
-            u.source = str(itt['source'])
-            u.created_at = datetime.now()
-            u.phone =  format_phone(itt['contact_phone']) #号码规范
-            g=self.ext_api.get_phone_location(u.phone)
-            u.phone_location=g['province']+'-'+g['city']+'-'+g['supplier'] #手机归属地解析
-            u.call_count = 0
-            clist.append(u)
-        self.contacts=clist
-
-        #得到 含有有意义名字的通信录
-        num_map = {}
-        for c in self.contacts:
-            if c.name.isdigit():
-                continue
-            if not self.ext_api.is_normal_phonenum(c.phone):
-                continue
-            if c.name in num_map:
-                num_map[c.name].append(c)
-            else:
-                num_map[c.name] = [c]
-
-        for k,v in num_map.items():
-            if len(v) >=8:
-                continue
-            else:
-                self.good_contacts.append(v)
-
-        return
-    
-
-    def init_cmbcc(self):
-        self.cb=None
-
-
-
-
-      
