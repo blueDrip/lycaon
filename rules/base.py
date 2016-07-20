@@ -177,7 +177,10 @@ class BaseData(object):
         cmap={ c.phone:c.name for c in self.contacts }
         phone_info = self.ext_api.get_phone_location(self.sp.userphone)
         for itt in phonedetail:
-                stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']     
+                key=itt['startTime'].split('-')[0]
+                if key not in mp:
+                    continue
+                stime=mp[key]+'-'+itt['startTime']
                 st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 uc=UserCallPhone()
                 uc.call_time = st
@@ -201,7 +204,10 @@ class BaseData(object):
         mp = self.load_sp_datadetail()
         cmap={ c.phone:c.name for c in self.contacts }
         for itt in smsdetail:
-                stime=mp[itt['startTime'].split('-')[0]]+'-'+itt['startTime']
+                key = itt['startTime'].split('-')[0]
+                if key not in mp:
+                    continue
+                stime=mp[key]+'-'+itt['startTime']
                 st = datetime.strptime(stime,'%Y-%m-%d %H:%M:%S')
                 s=UserShortMessage()
                 s.user_id = self.user_id
@@ -220,6 +226,8 @@ class BaseData(object):
         netdetail = self.sp and self.sp.netdetail or []
         mp = self.load_sp_datadetail()
         for itt in netdetail:
+                if 'startTime' not in itt:
+                    continue
                 key = itt['startTime'].split('-')[0]
                 if key not in mp:
                     continue

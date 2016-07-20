@@ -16,24 +16,19 @@ from rules.raw_data import UserCallPhone,chinaUnicom,chinaMobile,chinaTelecom
 
 
 #移动
-#class chinaMobile_child(chinaMobile):
+class chinaMobile_desplay(Document):
 #
-#    currRemainingAmount = DictField()
-#    phonedetail = DictField()
-#    personalInfo = DictField()
-#    openBusiness = DictField()
-#    smsdetail = DictField()
-#    phone_no = StringField()
-#    netdetail = DictField()
-#    createTime = StringField()
-#    recharge = DictField()
-#    historyBillInfo = DictField()
+    currRemainingAmount = DictField()
+    phonedetail = DictField()
+    personalInfo = DictField()
+    openBusiness = DictField()
+    smsdetail = DictField()
+    phone_no = StringField()
+    netdetail = DictField()
+    createTime = StringField()
+    recharge = DictField()
+    historyBillInfo = DictField()
 
-#    address = StringField(default = '') #地址
-#    phone_using_time = StringField() #手机号创办时间
-#    netage = StringField(default='')
-#    userphone = StringField() #手机号
-#    real_name = StringField() #姓名
 
     
 

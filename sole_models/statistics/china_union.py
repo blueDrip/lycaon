@@ -25,7 +25,7 @@ import time
 from datetime import datetime, date, timedelta
 
 '''标题'''
-def title_info(cubd):
+def title_cm_info(cubd):
     mp=cubd or None
     ct = str(datetime.now())
     if not mp:
@@ -33,7 +33,7 @@ def title_info(cubd):
     return {'phone_no':mp['phone_no'] or '-','ct':ct,'ptype':u'联通'}
 
 '''个人信息'''
-def basic_info(cubd,score='-'):
+def basic_cm_info(cubd,score='-'):
 
     user_info = cubd and cubd.userinfo or {}
     user_info_keys=[ 'userName','certType','sex','certAddr','certNum','email' ]
@@ -63,15 +63,23 @@ def basic_info(cubd,score='-'):
 
 
 '''历史账单'''
-def his_bill_info(cubd):
-    bill_list = cubd and cubd.rechargedetail or {}
-    
+def his_bill_cm_info(cubd):
+    bill_list = cubd and cubd.historyBillInfo or {}
+    b_keys = ['busiName','fee']
+    rs_map={}
+    for k,v in bill_list.items():
+        if not v:
+            continue
+        allfee = 'allFee' in v and v['allFee'] or '-'
+        writeOffFee = 'writeOffFee' in v and v['writeOffFee'] or '-'
+        if k not in rs_map:
+            rs_map[k] = {'val':[],'allFee':allfee,'writeOffFee':writeOffFee}
+        if 'billInfos' in v:
+            rs_map[k]['val'].append(v['billInfos'] or { it:'-' for it in b_keys})
+    return rs_map or {'---': [{it:'-' for it in b_keys}],'allFee':'-','writeOffFee':'-'}
 
-
-
-    
 '''上网痕迹'''
-def net_info(cubd):
+def net_cm_info(cubd):
     net_list = cubd and cubd.netdetail or []
     net_keys = [u'flowname', u'uptraffic', u'featinfo', 
         u'bizname', u'totaltraffic', u'biztype', 
@@ -82,7 +90,7 @@ def net_info(cubd):
     return net_list or [ { it : '-' for it in net_keys} ]
 
 '''通话记录'''
-def call_info(cubd):
+def call_cm_info(cubd):
     phone_list = cubd and cubd.phonedetail or [{}]
     phone_keys = ['calldate','calllonghour','calltime','calltype',
         'calltypeName','cellid','deratefee','homearea','homeareaName',
@@ -92,7 +100,7 @@ def call_info(cubd):
     ]
     return map(lambda x:{k:v for k,v in x.items() if k in phone_keys },phone_list) or [{ it:'-' for it in phone_keys }]
 '''短信记录'''
-def sms_info(cubd):
+def sms_cm_info(cubd):
     sms_list = cubd and cubd.smsdetail or []
     sms_keys = [u'businesstype', u'fee', u'othernum', 
         u'smsdate', u'smstype', u'amount', 
@@ -101,7 +109,18 @@ def sms_info(cubd):
     return map(lambda x:{k:v for k,v in x.items() if k in sms_keys },sms_list) or [{ it:'-' for it in sms_keys }]
 
 '''话费充值记录'''
-def incharge(cubd):
+def incharge_cm(cubd):
     recharge = cubd and cubd.rechargedetail or []
     rsd_keys = [u'paydate', u'payfee', u'paychannel']
     return recharge or [ {it:'-' for it in rsd_keys} ]
+
+def get_um_info(cubd):
+    return {
+        'title':title_cm_info(cubd),#标题
+        'basicinfo' : basic_cm_info(cubd,score='-'),#基本信息
+        'billinfo' : his_bill_cm_info(cubd),#历史账单
+        'netinfo' : net_cm_info(cubd),#上网痕迹
+        'callinfo' : call_cm_info(cubd),#通话记录
+        'sms_cm_info' : sms_cm_info(cubd),#短信记录
+        'recharge' : incharge_cm(cubd),#话费充值记录
+    }
