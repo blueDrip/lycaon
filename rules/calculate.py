@@ -82,11 +82,13 @@ def get_token(str_token):
     userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(user_id_token.replace('-',''))).first()
     user_id=user_id_token.replace('-','').upper()
     try:
-        sp = Yunyinglogdata.objects.filter( uuid = sp_phone_no_token).first()
-        sp_phoneno = sp and sp.phoneno or str(None)
+        #sp = Yunyinglogdata.objects.filter( uuid = sp_phone_no_token).first()
+        #sp_phoneno = sp and sp.phoneno or str(None)
 
-        sp_mobile=china_mobile_orm({ "phone_no" : sp_phoneno })
-        sp_unicom=china_unicom_orm({ "phone_no" : sp_phoneno })
+        token = sp_phone_no_token
+
+        sp_mobile=china_mobile_orm({ "token" : token })
+        sp_unicom=china_unicom_orm({ "token" : token })
         sp = sp_mobile or sp_unicom
     except:
         sp=None
