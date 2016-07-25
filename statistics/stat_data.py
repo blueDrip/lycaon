@@ -115,7 +115,7 @@ def init_online_shop_info(basedata):
     #淘宝消费记录    
     tb_consume_list = tb_origin_consume_list
     jd_cm_list = [ it['money'] for it in jd_consume_list ]
-    tb_cm_list = [ float(it['orderTotalPrice']) for it in tb_consume_list ]
+    tb_cm_list = [ float(it['orderTotalPrice'] or 0) for it in tb_consume_list ]
     tb_product_list = [ len(it['orderProducts']) for it in tb_consume_list]
     #排序
     jd_cm_list.sort()
@@ -314,7 +314,7 @@ def init_online_shop_info(basedata):
         key=it['businessDate']
         key_str=key.split('-')
         kk = key_str[0]+'-'+key_str[1]
-        money=float(it['orderTotalPrice'])
+        money=float(it['orderTotalPrice'] or 0)
 
         if money<=50:
             tb_stage_map_info[u'Jan']+=1
@@ -384,7 +384,7 @@ def init_online_shop_info(basedata):
             hl_map[key]=it
         else:
             hl_map[key]['orderProducts'].extend(it['orderProducts'])
-            price=float(hl_map[key]['orderTotalPrice']) + float(it['orderTotalPrice'])
+            price=float(hl_map[key]['orderTotalPrice'] or 0) + float(it['orderTotalPrice'] or 0)
             hl_map[key]['orderTotalPrice'] = str(price)
 
     tb_order_info = [
