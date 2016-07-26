@@ -318,7 +318,7 @@ class chinaMobile(Document):
     netage = StringField(default='')
     userphone = StringField() #手机号
     real_name = StringField() #姓名
-
+    token = StringField() #token
     
 
 #联通chinaUnicom
@@ -336,7 +336,7 @@ class chinaUnicom(Document):
     netage = StringField(default='')
     userphone = StringField() #手机号
     real_name = StringField() #姓名
-
+    token = StringField() #token
 
 #电信
 class chinaTelecom(Document):
