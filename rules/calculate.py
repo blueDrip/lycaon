@@ -178,7 +178,8 @@ def desplay_detail_data(msg):
     user_id = rmap['user_id']
 
     bd=BaseData(map_info=rmap,ext=ext_api)
-    rule_detail = RulesInfo()
+    #保存或更新
+    rule_detail = RulesInfo.objects.filter(user_id=user_id).first() or RulesInfo()
     rule_detail.valid_name_info = init_valid_name_info(bd)
     rule_detail.online_shop_info = init_online_shop_info(bd)
     rule_detail.contact_info = init_contact_info(bd)
@@ -286,16 +287,16 @@ def cal(minfo = {
     cal_logger.info(u'  【计算完成】 ' + str(top_rule.score))
 
     #try:
-    ##rule_detail = RulesInfo()
-    ##rule_detail.valid_name_info = init_valid_name_info(bd)
-    ##rule_detail.online_shop_info = init_online_shop_info(bd)
-    ##rule_detail.contact_info = init_contact_info(bd)
-    ##rule_detail.sp_info = init_sp_record_info(bd)
-    ##rule_detail.credit_info = {}
-    ##rule_detail.created_at = datetime.now()
-    ##rule_detail.user_id = user_id
-    ##rule_detail.save()
+    #rule_detail = RulesInfo()
+    #rule_detail.valid_name_info = init_valid_name_info(bd)
+    #rule_detail.online_shop_info = init_online_shop_info(bd)
+    #rule_detail.contact_info = init_contact_info(bd)
+    #rule_detail.sp_info = init_sp_record_info(bd)
+    #rule_detail.credit_info = {}
+    #rule_detail.created_at = datetime.now()
+    #rule_detail.user_id = user_id
+    #rule_detail.save()
     ##print 'stat is finished'   
     #except:
-        #print '【详情保存完成】'
+    #print '【详情保存完成】'
     return top_rule.score

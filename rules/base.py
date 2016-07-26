@@ -25,6 +25,8 @@ from rules.orm import china_mobile_orm
 
 base_logger = logging.getLogger('django.rules')
 base_logger.setLevel(logging.INFO)
+net_logger = logging.getLogger('django.net')
+net_logger.setLevel(logging.INFO)
 
 def get_right_datetime(string):
 
@@ -47,11 +49,23 @@ def get_right_datetime(string):
     return dd_start_time
     
 def get_duration(string):
-    time=string.replace(u'小时',' ').replace(u'分',' ').replace(u'秒','').split(' ')
-    h=len(time)>2 and int(time[2])*3600 or 0
-    m=len(time)>1 and int(time[1])*60  or 0
-    s=len(time)==1 and int(time[0]) or 0
-    return h+m+s
+    #time=string.replace(u'小时',' ').replace(u'分',' ').replace(u'秒','').split(' ')
+    ss,h=string,0
+    if u'时' in string:
+        hour_list = string.split('时')[1]
+        h = int(hour_list[0] or 0)*3600 or 0
+        ss = hour_list[1]
+    if u'分' in ss and not u'秒' in ss:
+        return int(ss.replace('分','') or 0)*60
+    elif u'分' not in ss and u'秒' in ss:
+        return int(ss.replace('秒','') or 0)
+    elif u'分' in ss and u'秒' in ss:
+        time=ss.replace(u'分',' ').replace(u'秒','').split(' ')
+        m = int(time[0] or 0)*60  or 0
+        s =  int(time[1] or 0) or 0
+        return h+m+s
+    else:
+        return -1
 def get_net_duration(string):
     time=string.split(':')
     return int(time[0])*3600+int(time[1])*60+int(time[2])
@@ -238,8 +252,21 @@ class BaseData(object):
                 n.start_time=st
                 n.user_id = self.user_id
                 comm_time_list = itt['commTime'].split(':')
-                n.comm_time = int(comm_time_list[0])*3600+int(comm_time_list[1])*60+int(comm_time_list[0])
-                n.sum_flow=int(float((itt['sumFlow'].replace('KB',''))))
+                if len(comm_time_list)>1: 
+                    n.comm_time = int(comm_time_list[0])*3600+int(comm_time_list[1])*60+int(comm_time_list[0])
+                else:
+                    n.comm_time =  get_duration(itt['commTime'])
+                #归一化
+                try:
+                    #当前形式
+                    pre_flow=itt['sumFlow'].replace('(M','MB').replace('(K','KB')
+                    flowstr="MB" not in pre_flow and '0MB'+pre_flow or pre_flow
+                    flowstr=flowstr.replace('(M','MB').replace('(K','KB')
+                    flow_list = flowstr.replace('KB','').replace(' ','').split('MB')
+                    n.sum_flow=int(float((flow_list[0] or 0)))*1024+int(float((flow_list[1] or 0)))
+                except:
+                    net_logger.error(get_tb_info()+"SP_NET_ERROR"+'  '+self.sp.token)
+                    n.sum_flow=0
                 n.created_time = datetime.now()
                 n.net_location=itt['commPlac']
                 n.source=u'sp'
@@ -292,7 +319,7 @@ class BaseData(object):
                 uc.phone_location = g['province']+'-'+g['city']+'-'+g['supplier']
                 uc.call_duration=get_duration(itt['calllonghour'])
                 uc.source=u'sp'
-                uc.call_type=itt['calltypeName']
+                uc.call_type='calltypeName' in itt and itt['calltypeName'] or 'None'
                 self.sp_calls.append(uc)
 
     def init_sp_unicom_smsdetail(self):

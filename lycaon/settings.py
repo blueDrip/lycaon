@@ -227,7 +227,12 @@ LOGGING = {
             'filename':LOG_DIR + 'calculate.log',
             'formatter':'standard',
         },
-        
+        'net':{
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename':LOG_DIR + 'net.log',
+            'formatter':'standard',
+        },
     },
     'loggers': {
         'django.api':{
@@ -254,7 +259,12 @@ LOGGING = {
             'handlers': ['cal'],
             'level': 'INFO',
             'propagate': True,
-        },        
+        },
+        'django.net': {
+            'handlers': ['net'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     }
 }
 

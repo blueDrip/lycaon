@@ -142,7 +142,8 @@ def china_mobile_orm(cnd={}):
             cmb.address = c['personalInfo']['address'] #地址
             cmb.phone_using_time = c['personalInfo']['inNetDate'] #手机号创办时间
             cmb.netage = c['personalInfo']['netAge']
-            cmb.userphone = c['personalInfo']['contactNum'] #手机号
+            #cmb.userphone = c['personalInfo']['contactNum'] #手机号
+            cmb.userphone = c['phone_no']
             cmb.real_name = c['personalInfo']['name'] #姓名
         cmb.openBusiness = c['openBusiness']
         cmb.smsdetail = c['smsDetail']
@@ -151,6 +152,7 @@ def china_mobile_orm(cnd={}):
         cmb.createTime = c['createTime']
         cmb.recharge = c['paymentRecord']
         cmb.historyBillInfo = c['historyBillInfo']
+        cmb.token = c['token']
         return cmb
     return None
 
@@ -171,8 +173,9 @@ def china_unicom_orm(cnd={}):
             cub.netage = '' #网龄
             cub.real_name = c['userInfo']['userName'] #姓名
         if c['phoneInfo']:
-            cub.userphone = c['phoneInfo']['phoneNumber']
-            cub.phone_using_time = c['phoneInfo']['inNetDate'].replace(u'年','').replace(u'月','').replace(u'日','') #手机号创办时间
+            #cub.userphone = c['phoneInfo']['phoneNumber']
+            cub.userphone = c['phone_no']
+            cub.phone_using_time = 'inNetDate' in c['phoneInfo'] and c['phoneInfo']['inNetDate'].replace(u'年','').replace(u'月','').replace(u'日','') or 'None' #手机号创办时间
         cub.phone_no = c['phone_no']
         cub.recharge = c['paymentRecord']
         cub.phonedetail = c['callDetail']
@@ -180,6 +183,7 @@ def china_unicom_orm(cnd={}):
         cub.netdetail = c['netDetail']
         cub.historyBillInfo = c['historyBillInfo']
         cub.createTime = c['createTime']
+        cub.token=c['token']
         return cub    
     return None
 
