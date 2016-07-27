@@ -384,7 +384,7 @@ class BaseData(object):
             return
         conlist = []
         try:
-            conlist = ucl['linkmen']
+            conlist = json.loads(ucl['linkmen'])
         except:
             base_logger.error(get_tb_info())
             base_logger.error("【init contact error】"  + " USER_ID  " + self.user_id)
