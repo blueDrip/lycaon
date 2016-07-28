@@ -44,7 +44,7 @@ def init_valid_name_info(basedata):
 
     return {
         '1008' : { u'民族' : basedata.idcard_info['nation'] },#民族
-        '1007' : { u'是否实名认证' : u'---'},#是否实名认证
+        '1007' : { u'是否实名认证' : basedata.user.is_certification and '认证' or '未认证'},#是否实名认证
         '1006' : { u'姓名' : basedata.idcard_info['name'] },#姓名
         '1005' : { u'身份证号' : basedata.idcard_info['idcard'] },#idcardno
         '1004' : { u'性别' : basedata.idcard_info['sex'] },#性别
