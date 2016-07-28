@@ -67,6 +67,11 @@ def get_token(str_token):
     phone_book_token = token_list[4]
     taobao_name_token = token_list[5]
     jd_name_token = token_list[6]
+    is_verfi_idcard = token_list[7] or '0'
+    channel = token_list[8]
+    idinfo = json.loads(token_list[9] or '{}')
+    #url = "#{ENV['TRUSTSCORE']}/?token=#{id};#{idcard};#{phone};#{isp};#{contact};#{taobao};#{jingdong};#{result};#{channel};#{data.to_json}"
+
     
     '''当前授权的项数'''
     authorize_item_count =  idcard_token != 'None' and 1 or 0         #授权身份认证
@@ -79,7 +84,9 @@ def get_token(str_token):
 
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
+
     userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(user_id_token.replace('-',''))).first()
+
     user_id=user_id_token.replace('-','').upper()
     try:
         #sp = Yunyinglogdata.objects.filter( uuid = sp_phone_no_token).first()
@@ -127,18 +134,24 @@ def get_token(str_token):
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  USER_ID: "+user_id)
     return {
-        'user':userinfo,
+        'user' : userinfo,
         'user_id':user_id,
         'user_phone':user_phone_token,
         'idcard':idcard_token,
+        'is_verfi_idcard' : is_verfi_idcard,#身份认证
         'jd' : jd,
         'tb' : tb,
         'sp' : sp,
         'ucl': ucl,
         'cb' : cb,
+        'channel' : channel or 'app',
+        'idinfo' : idinfo or {}, 
         'token' : str_token,
         'authorize_item_count':authorize_item_count
     }
+
+
+
 #逻辑控制,规定何时算分
 def cal_by_message(msg):
     '''数据提前展示'''
@@ -148,8 +161,13 @@ def cal_by_message(msg):
     user_id = rmap['user_id']
 
     id_card = rmap['idcard']
-
-    is_author = rmap['idcard'] and rmap['sp'] and rmap['ucl'] and (rmap['jd'] or rmap['tb'])
+    #app或h5调用
+    channel=rmap['channel']
+    is_author=None
+    if 'html5' in channel:
+        is_author = rmap['idcard'] and rmap['sp']  and (rmap['jd'] or rmap['tb'])
+    else:
+        is_author = rmap['idcard'] and rmap['sp'] and rmap['ucl'] and (rmap['jd'] or rmap['tb'])
     #如果当前授权不全,等待
     if not is_author:
        cal_logger.info('【 抓取未完成 】')
