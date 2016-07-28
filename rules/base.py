@@ -100,18 +100,21 @@ class BaseData(object):
             '''user info'''
             self.ext_api = ext or EXT_API()
             '''user info'''
-            self.user = map_info['user']
+            self.is_verfi_idcard = map_info['is_verfi_idcard']
+            #前端传过来的idcard info
+            self.base_idcard_info = map_info['idinfo']
+
             self.idcard = map_info['idcard']
             self.idcard_info={}
             
             self.user_phone = map_info['user_phone']
             phone_info = self.ext_api.get_phone_location(self.user_phone)
             self.user_plocation = map_info['user'] and map_info['user'].phone_place or phone_info['province']+phone_info['city']
+            #申请人姓名
+            self.username =  self.base_idcard_info and self.base_idcard_info['name'] or None
 
-            self.username = u'none'
             self.user_id = map_info['user_id']
-
-
+            #初始化
             self.init_idcard_info()
             self.home_location = self.idcard_info['home_location']
             self.create_time=datetime.now()
@@ -165,25 +168,30 @@ class BaseData(object):
             base_logger.error(get_tb_info())
 
     def init_idcard_info(self):
-        idcard_info_map={ 'sex':u'unknow',
-            'age':'unknow',
-            'home_location':u'unknow',
-            'birthday':u'unknow',
-            'idcard':u'unknow'
+        idcard_info_map={ 'sex' : 'unknow',
+            'age' : 'unknow',
+            'home_location' : 'unknow',
+            'birthday' : 'unknow',
+            'idcard' : 'unknow',
+            'name' : 'unknow',
         }
-        #print self.idcard.cardno
         if not self.idcard or self.idcard == u'None':
             self.idcard_info = idcard_info_map
             return
-        info = self.ext_api.get_info_by_id(self.idcard)
-        b = info[2]
-        age = (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365
+        #根据身份证解析出
+        info = self.ext_api.get_idcard_info(self.idcard,self.username)
+        #前端上传
+        binfo = self.base_idcard_info
+        b = info['birthday']
+        age = b and (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365 or 'unknow'
         self.idcard_info={
-            'sex':info[0],
-            'home_location':info[1],
-            'birthday':info[2],
+            'sex':info['sex'] or 'unknow',
+            'home_location': 'null' in binfo['detailed_address'] and info['address']  or binfo['detailed_address'] or 'unknow',
+            'birthday':info['birthday'] or 'unknow',
             'age':age,
-            'idcard':self.idcard
+            'idcard':self.idcard,
+            'name' : self.username,
+            'nation' : binfo['nation']
         }
     def init_sp_calldetail(self):
         phonedetail = self.sp and self.sp.phonedetail or []
