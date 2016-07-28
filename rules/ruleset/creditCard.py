@@ -16,6 +16,7 @@ class creditCard(BaseRule):
 
     #判断是否本人申请
     def base_line(self,basedata):
+        self.chef_map={}
         pass 
     def load_rule_data(self,basedata):
         self.init_cmbcc(basedata)        
