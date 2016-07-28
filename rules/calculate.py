@@ -261,6 +261,7 @@ def cal(minfo = {
             detail_rule.name = name_list[k]
             detail_rule.rule_id = i
             detail_rule.score = int(b.get_score())*10
+            detail_rule.remark = b.chef_map
             detail_rule.save()
         except:
             detail_rule.name = name_list[k]

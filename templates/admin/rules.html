@@ -48,10 +48,11 @@
                                 <thead>
                                 <tr>
                                       <th width="10%">特征</th>
+                                      <th width="15%">数据一致性检验</th>
                                       <th width="25%">策略集合</th>
                                       <th width="15%">特征值</th>
                                       <th width="20%">得分</th>
-                                      <th width="30%">来源</th>
+                                      <th width="15%">来源</th>
                                 </tr>
                                 </thead>
                                 {% for name in tp.rulelist%}
@@ -62,7 +63,8 @@
                                        {% for v in name.rules %}
                                         <tr class = "{% cycle 'a1' 'aa' %}">
                                               {% if forloop.first %}
-                                              <td rowspan="{{ name.rules | length }}" class = 't3'>{{ name.name }}<br/>得分:{{ name.score }}分</td>
+                                               <td rowspan="{{ name.rules | length }}" class = 't3'>{{ name.name }}<br/>得分:{{ name.score }}分</td>
+                                               <td rowspan="{{ name.rules | length }}" class = 'a1'>None<br/>None</td>
                                               {% endif %}
                                               <td> {{ v.name }} </td>
                                               <td> {{ v.feature_val }} </td>

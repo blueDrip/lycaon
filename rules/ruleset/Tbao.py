@@ -76,9 +76,13 @@ class Tbao(BaseRule):
         sort_up = mp and sorted(mp.items(),key=lambda s:s[1],reverse=True)[0][0] or 'None'
         phone_in_addr = tb_uphone in sort_up and 1 or 0
         count = same_phone+phone_in_addr
-        if not count:
-            basedata.tb=None
-        pass
+        self.chef_map={
+            '绑定手机和申请手机号一致':same_phone and '通过' or '未通过',
+            '申请手机号是否出现在收货地址中':phone_in_addr and '通过' or '未通过'
+        }
+        #if not count:
+        #    basedata.tb=None
+        #pass
 
 
     def load_rule_data(self,basedata):

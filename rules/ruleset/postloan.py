@@ -252,8 +252,9 @@ class PostLoanNewRule(BaseRule):
     # 2.通讯录中亲属父母至少有一个
     def base_line(self,basedata):
         clen = len(basedata.contacts)
-        if clen<30:
-            basedata.ucl=None
+        self.chef_map={'通讯录长度个数':clen}
+        #if clen<30:
+        #    basedata.ucl=None
 
 
     def load_rule_data(self,basedata):
