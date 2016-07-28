@@ -385,6 +385,7 @@ class DetailRule(Document):
     score = IntField(default=-1)
     rules = ListField(ReferenceField(minRule))
     value = StringField(default='')
+    remark = DictField()#防欺诈
 
 class topResult(Document):
     user_id = StringField(default = str)

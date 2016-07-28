@@ -43,9 +43,15 @@ class JD(BaseRule):
         bankinfo=basedata.jd.bankinfo or []
         bank_times = [ 1 for bk in bankinfo if uphone in bk] and 1 or 0
         pass_count = is_pass_valide_idcard + is_pass_valid_phone + max_phone_times + bank_times
-        if pass_count<2:
-            basedata.jd=None
-        pass
+        self.chef_map={
+            '通过身份证验证' : is_pass_valide_idcard and '通过' or '未通过',
+            '通过手机认证' : is_pass_valid_phone and '通过' or '未通过',
+            '收货地址中有申请手机号' : max_phone_times and '通过' or '未通过',
+            '银行卡绑定手机号中有申请号' : bank_times and '通过' or '未通过'
+        }
+        #if pass_count<2:
+        #    #basedata.jd=None
+        #pass
 
     def load_rule_data(self,basedata):
         self.load_data(basedata)

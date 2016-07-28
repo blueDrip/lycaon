@@ -14,6 +14,7 @@ from django.conf import settings
 from rules.raw_data import minRule
 class BaseRule:
     def __init__(self):
+        self.chef_map = {}
         self.min_rule_map={}
         self.minrule = minRule()
     def get_score(self):

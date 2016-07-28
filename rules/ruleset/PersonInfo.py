@@ -10,10 +10,13 @@ class PersonInfo(BaseRule):
     #验证是否本人 ps 1:身份验证通过,
     def base_line(self,basedata):
         is_pass = basedata.user and basedata.user.is_certification or 0
-        if not is_pass:
-            basedata.user=None        
-        else:
-            pass
+        self.chef_map={'身份验证':is_pass and '通过' or '未通过'}
+        #if not is_pass:
+        #    basedata.user=None        
+        #    self.is_chef='未通过'
+        #    self.is_chef_item='身份验证'
+        #else:
+        #    pass
     def load_rule_data(self,basedata):
         self.min_rule_map={
             10001:self.get_age(basedata),

@@ -43,10 +43,12 @@ class Sp(BaseRule):
         uphone = basedata.user_phone
         userphone = basedata.sp and basedata.sp.userphone or 'None'
         same_phone = uphone in userphone and 1 or 0
+        self.chef_map={'申请手机号与授权手机是否一致':same_phone and '通过' or '未通过'}
         #姓名或申请手机号必须和sp一致
-        if not same_phone:
-            basedata.sp=None
-        pass
+        #if not same_phone:
+        #    basedata.sp=None
+        #    self.is_chef_item='申请手机号与授权手机是否一致'
+        #pass
         
     def load_rule_data(self,basedata):
         
