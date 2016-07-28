@@ -106,7 +106,9 @@ class BaseData(object):
 
             self.idcard = map_info['idcard']
             self.idcard_info={}
-            
+
+            self.user = map_info['user']
+                    
             self.user_phone = map_info['user_phone']
             phone_info = self.ext_api.get_phone_location(self.user_phone)
             self.user_plocation = map_info['user'] and map_info['user'].phone_place or phone_info['province']+phone_info['city']
