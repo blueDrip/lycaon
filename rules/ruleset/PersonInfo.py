@@ -138,14 +138,14 @@ class PersonInfo(BaseRule):
         r.feature_val = p
         return r
     def is_samephoto_with_idcard(self,basedata):
-        idsame = basedata.user and basedata.user.is_certification or 'unknow'
+        idsame = basedata.is_verfi_idcard or 'unknow'
         r=minRule()
         r.score = 10
         r.name=u'是否身份验证'
-        if idsame==1:
+        if idsame==str(1):
             r.value = u'验证通过'
             r.score = 100
-        elif idsame ==0:
+        elif idsame ==str(0):
             r.value = u'未通过'
             r.score = 10
         r.source = str(idsame)
