@@ -106,7 +106,9 @@ class BaseData(object):
 
             self.idcard = map_info['idcard']
             self.idcard_info={}
-            
+
+            self.user = map_info['user']
+                    
             self.user_phone = map_info['user_phone']
             phone_info = self.ext_api.get_phone_location(self.user_phone)
             self.user_plocation = map_info['user'] and map_info['user'].phone_place or phone_info['province']+phone_info['city']
@@ -182,7 +184,7 @@ class BaseData(object):
         info = self.ext_api.get_idcard_info(self.idcard,self.username)
         #前端上传
         binfo = self.base_idcard_info
-        b = info['birthday']
+        b = info['birthday'] and info['birthday'].replace('-','') or 0
         age = b and (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365 or 'unknow'
         self.idcard_info={
             'sex':info['sex'] or 'unknow',

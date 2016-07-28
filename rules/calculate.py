@@ -84,6 +84,9 @@ def get_token(str_token):
 
     '''user,sp,jd,phonecontact,cb'''
     idcard,sp,jd,tb,ucl,cb=None,None,None,None,None,None
+
+    userinfo = Profile.objects.using('users').filter(user_id = binascii.a2b_hex(user_id_token.replace('-',''))).first()
+
     user_id=user_id_token.replace('-','').upper()
     try:
         #sp = Yunyinglogdata.objects.filter( uuid = sp_phone_no_token).first()
@@ -131,6 +134,7 @@ def get_token(str_token):
         base_logger.error(get_tb_info())
         base_logger.error("【 error 】" + "  USER_ID: "+user_id)
     return {
+        'user' : userinfo,
         'user_id':user_id,
         'user_phone':user_phone_token,
         'idcard':idcard_token,
