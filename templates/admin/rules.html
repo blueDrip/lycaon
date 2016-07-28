@@ -64,7 +64,11 @@
                                         <tr class = "{% cycle 'a1' 'aa' %}">
                                               {% if forloop.first %}
                                                <td rowspan="{{ name.rules | length }}" class = 't3'>{{ name.name }}<br/>得分:{{ name.score }}分</td>
-                                               <td rowspan="{{ name.rules | length }}" class = 'a1'>None<br/>None</td>
+                                               <td rowspan="{{ name.rules | length }}" class = 't3'>
+                                                    {% for k,v in name.remark.items%}
+                                                         <font color='black'>{{k}}</font> : <font color='red'>{{v}}</font><br/>
+                                                    {% endfor%}
+                                               </td>
                                               {% endif %}
                                               <td> {{ v.name }} </td>
                                               <td> {{ v.feature_val }} </td>
