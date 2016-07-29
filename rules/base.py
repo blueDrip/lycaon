@@ -188,7 +188,7 @@ class BaseData(object):
         age = b and (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365 or 'unknow'
         self.idcard_info={
             'sex':info['sex'] or 'unknow',
-            'home_location': binfo and ('null' in binfo['detailed_address'] and info['address']  or binfo['detailed_address']) or 'unknow',
+            'home_location': binfo and ('null' in binfo['detailed_address'] and str(info['address'])  or binfo['detailed_address']) or 'unknow',
             'birthday':info['birthday'] or 'unknow',
             'age':age,
             'idcard':self.idcard,
