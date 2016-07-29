@@ -22,7 +22,13 @@ class JD(BaseRule):
     '''条件满足>=3判断为本人申请'''
     def base_line(self,basedata):
         if not basedata.jd:
-            return None
+            self.chef_map = {
+                '通过京东身份证验证' : '未验证',
+                '申请号和京东绑定手机号一致' : '未验证',
+                '收货地址中有申请手机号' : '未验证',
+                '银行卡绑定手机号中有申请号' : '未验证'
+            }
+            return
         #是否通过身份验证
         is_pass_valide_idcard = u'YES' in basedata.jd.indentify_verified.values() and 1 or 0
         #通过手机认证

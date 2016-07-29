@@ -52,6 +52,9 @@ def jd_orm(cnd={}):
                 jd.indentify_verified = it or {}
             elif 'licenseVerified' in it:
                 jd.license_verified = it or {}
+    if 'recentAYearOrder' in c:
+        jd.recentAYearOrder=c['recentAYearOrder']
+
     jd.bankinfo = 'bindBankCards' in c and c['bindBankCards'] or []
     jd.address = 'orderAddress' in c and c['orderAddress'] or ''
     jd.jd_login_name = 'jd_login_name' in c and c['jd_login_name'] or ''
