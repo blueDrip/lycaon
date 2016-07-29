@@ -193,8 +193,13 @@ def cal_by_message(msg):
 def desplay_detail_data(msg):
 
     rmap=get_token(msg)
+    #is_author = rmap['idcard'] and rmap['sp'] and rmap['ucl'] and (rmap['jd'] or rmap['tb'])
+    #if not is_author:
+    #    return -1
     ext_api = EXT_API()
     user_id = rmap['user_id']
+
+
 
     bd=BaseData(map_info=rmap,ext=ext_api)
     #保存或更新
@@ -207,6 +212,8 @@ def desplay_detail_data(msg):
     rule_detail.created_at = datetime.now()
     rule_detail.user_id = user_id
     rule_detail.save()
+
+    return 1
 
 def cal(minfo = {
         'user':None,

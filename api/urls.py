@@ -32,5 +32,6 @@ urlpatterns = [
     url(r'^delsysuser/',views.del_sys_user),
     url(r'^checklog/',views.check_log),
     url(r'^spinfo/',views.sp_data_views),
+    url(r'^saveitem/',views.save_event),
             
 ]
