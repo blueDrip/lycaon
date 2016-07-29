@@ -156,7 +156,7 @@ def get_token(str_token):
 #逻辑控制,规定何时算分
 def cal_by_message(msg):
     '''数据提前展示'''
-    desplay_detail_data(msg)
+    #desplay_detail_data(msg)
 
     rmap=get_token(msg)
     user_id = rmap['user_id']
@@ -260,6 +260,18 @@ def cal(minfo = {
         created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
     ).order_by('-created_time').first() or topResult()
 
+    #数据如果没有失效的话，进行覆盖
+    #删除minRule数据
+    #mrule = minRule.objects.filter(user_id=user_id,
+    #    created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
+    #).order_by('-created_time').delete()
+
+    #删除DetailRule数据
+    #drule = DetailRule.objects.filter(user_id=user_id,
+    #    created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
+    #).order_by('-created_time').delete()
+    const_ct = top_rule.created_time or ct
+
     top_rule.authorize_item_count = minfo['authorize_item_count'] #记录当前授权的项目
     top_rule.token = minfo['token'] #记录此次的token值
 
@@ -268,17 +280,7 @@ def cal(minfo = {
     #规则计算
     i=1
     for k,rule in rule_map.items():
-        #数据如果没有失效的话，进行覆盖
-        #删除minRule数据
-        mrule = minRule.objects.filter(user_id=user_id,
-            created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
-        ).order_by('-created_time').first()
-        mrule and mrule.delete() or 1
-        #创建DetailRule数据
-        detail_rule = DetailRule.objects.filter(user_id=user_id,
-            created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
-        ).order_by('-created_time').first() or DetailRule()
-        detail_rule.rules = []
+        detail_rule = DetailRule()
         b=None
         try:
             b=rule(bd)
@@ -288,7 +290,7 @@ def cal(minfo = {
             b.load_rule_data(bd)
             for rd,min_rule in b.min_rule_map.items():
                 min_rule.user_id = user_id
-                min_rule.created_time = ct
+                min_rule.created_time = const_ct
                 min_rule.ruleid = str(rd)
                 min_rule.value = min_rule.value.replace('\t','<br/>')
                 min_rule.save()
@@ -296,7 +298,7 @@ def cal(minfo = {
             detail_rule.user_id = user_id
             detail_rule.name = name_list[k]
             detail_rule.rule_id = i
-            detail_rule.created_time = ct
+            detail_rule.created_time = const_ct
             detail_rule.score = int(b.get_score())*10
             detail_rule.remark = b.chef_map
             detail_rule.save()
@@ -316,7 +318,7 @@ def cal(minfo = {
     top_rule.name = u'credit_score'
     top_rule.user_type = user_type
     top_rule.user_id = user_id
-    top_rule.created_time = ct
+    top_rule.created_time = const_ct
     top_rule.save()
     user=minfo['user']
     if user:
