@@ -19,6 +19,7 @@ from sole_models.sole_orm import china_unicom_orm_desplay,china_mobile_orm_despl
 from rules.ext_api import EXT_API
 from api.sys import apache
 from rules.check_log import rules_log
+from rules.util.utils import get_tb_info
 import binascii
 import json
 import logging
@@ -27,6 +28,8 @@ import requests
 import calendar
 logger = logging.getLogger('django.api')
 logger.setLevel(logging.INFO)
+other = logging.getLogger('django.others')
+other.setLevel(logging.INFO)
 
 def index(request):
     '''    
@@ -112,6 +115,7 @@ def delitem(request):
 def save_event(request):
     token=request.GET['token']
     try:
+        other.info("Save_to_Mongo"+'  '+token)
         rs = desplay_detail_data(token)
         if rs==-1:
             return HttpResponse('{"code":1,msg:"数据正在抓取中"}')
@@ -120,6 +124,7 @@ def save_event(request):
         else:
             pass
     except:
+        other.error(get_tb_info()+"Save_to_Mongo"+'  '+token)
         return  HttpResponse('{"code":-1,msg:"error"}')
 
 '''数据分析admin'''
