@@ -10,7 +10,7 @@ from api.models import Profile,ucredit,Busers
 from rules.raw_data import UserContact,topResult
 from datetime import datetime
 from statistics.models import RulesInfo
-from rules.calculate import cal_by_message
+from rules.calculate import cal_by_message,desplay_detail_data
 from django.views.decorators.csrf import csrf_exempt
 from api.models import adminAccount,privaliage,role,privaliage_role,user_role
 from sole_models.statistics.china_mobile import get_cb_infos
@@ -109,6 +109,18 @@ def delitem(request):
     #return render(request,'api/users.html',{'users':ulist})
     return HttpResponseRedirect('/apix/userinfo/')  #跳转到index界面
 
+def save_event(request):
+    token=request.GET['token']
+    try:
+        rs = desplay_detail_data(token)
+        if rs==-1:
+            return HttpResponse('{"code":1,msg:"数据正在抓取中"}')
+        elif rs==1:
+            return HttpResponse('{"code":0,msg:"success"}')
+        else:
+            pass
+    except:
+        return  HttpResponse('{"code":-1,msg:"error"}')
 
 '''数据分析admin'''
 #首页
