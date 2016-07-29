@@ -378,6 +378,7 @@ class minRule(Document):
     name = StringField(default = str)
     source = StringField(default = str)
     user_id = StringField(default = str)
+    created_time = DateTimeField()
 
 class DetailRule(Document):
     user_id = StringField(default = str)
@@ -387,6 +388,7 @@ class DetailRule(Document):
     rules = ListField(ReferenceField(minRule))
     value = StringField(default='')
     remark = DictField()#防欺诈
+    created_time = DateTimeField()
 
 class topResult(Document):
     user_id = StringField(default = str)

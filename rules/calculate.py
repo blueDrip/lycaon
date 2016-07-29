@@ -10,7 +10,7 @@ import requests
 import binascii
 import logging
 import json
-from datetime import datetime
+from datetime import datetime,timedelta
 from rules.raw_data import topResult,DetailRule
 from rules.ruleset.JD import JD
 from rules.ruleset.Tbao import Tbao
@@ -253,6 +253,7 @@ def cal(minfo = {
     b=BaseRule()
     bd=BaseData(map_info=minfo,ext=ext_api)
     user_id=minfo['user_id'].upper()
+    ct=datetime.now()
 
     top_rule = topResult()
     top_rule.authorize_item_count = minfo['authorize_item_count'] #记录当前授权的项目
@@ -273,6 +274,7 @@ def cal(minfo = {
             b.load_rule_data(bd)
             for rd,min_rule in b.min_rule_map.items():
                 min_rule.user_id = user_id
+                min_rule.created_time = ct
                 min_rule.ruleid = str(rd)
                 min_rule.value = min_rule.value.replace('\t','<br/>')
                 min_rule.save()
@@ -280,6 +282,7 @@ def cal(minfo = {
             detail_rule.user_id = user_id
             detail_rule.name = name_list[k]
             detail_rule.rule_id = i
+            detail_rule.created_time = ct
             detail_rule.score = int(b.get_score())*10
             detail_rule.remark = b.chef_map
             detail_rule.save()
@@ -299,7 +302,7 @@ def cal(minfo = {
     top_rule.name = u'credit_score'
     top_rule.user_type = user_type
     top_rule.user_id = user_id
-    top_rule.created_time = datetime.now()
+    top_rule.created_time = ct
     top_rule.save()
     user=minfo['user']
     if user:
