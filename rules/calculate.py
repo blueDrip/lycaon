@@ -10,8 +10,9 @@ import requests
 import binascii
 import logging
 import json
+from django.conf import settings
 from datetime import datetime,timedelta
-from rules.raw_data import topResult,DetailRule
+from rules.raw_data import topResult,DetailRule,minRule
 from rules.ruleset.JD import JD
 from rules.ruleset.Tbao import Tbao
 from rules.ruleset.PersonInfo import PersonInfo
@@ -254,8 +255,11 @@ def cal(minfo = {
     bd=BaseData(map_info=minfo,ext=ext_api)
     user_id=minfo['user_id'].upper()
     ct=datetime.now()
+    #top
+    top_rule = topResult.objects.filter(user_id=user_id,
+        created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
+    ).order_by('-created_time').first() or topResult()
 
-    top_rule = topResult()
     top_rule.authorize_item_count = minfo['authorize_item_count'] #记录当前授权的项目
     top_rule.token = minfo['token'] #记录此次的token值
 
@@ -264,7 +268,17 @@ def cal(minfo = {
     #规则计算
     i=1
     for k,rule in rule_map.items():
-        detail_rule = DetailRule()
+        #数据如果没有失效的话，进行覆盖
+        #删除minRule数据
+        mrule = minRule.objects.filter(user_id=user_id,
+            created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
+        ).order_by('-created_time').first()
+        mrule and mrule.delete() or 1
+        #创建DetailRule数据
+        detail_rule = DetailRule.objects.filter(user_id=user_id,
+            created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
+        ).order_by('-created_time').first() or DetailRule()
+        detail_rule.rules = []
         b=None
         try:
             b=rule(bd)
