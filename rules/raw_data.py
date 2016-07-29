@@ -377,9 +377,10 @@ class minRule(Document):
     score = FloatField(default = 0)
     name = StringField(default = str)
     source = StringField(default = str)
-
+    user_id = StringField(default = str)
 
 class DetailRule(Document):
+    user_id = StringField(default = str)
     rule_id = IntField(required=True)
     name = StringField(required=True)
     score = IntField(default=-1)
