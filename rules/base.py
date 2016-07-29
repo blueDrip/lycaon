@@ -181,15 +181,16 @@ class BaseData(object):
             self.idcard_info = idcard_info_map
             return
         #根据身份证解析出
-        info = self.ext_api.get_idcard_info(self.idcard,self.username)
+        #info = self.ext_api.get_idcard_info(self.idcard,self.username)
+        info = self.ext_api.get_info_by_id(self.idcard)
         #前端上传
         binfo = self.base_idcard_info
-        b = info['birthday'] and info['birthday'].replace('-','') or 0
+        b = info[2]
         age = b and (datetime.now()-datetime(int(b[:4]),int(b[4:6]),int(b[6:]))).days/365 or 'unknow'
         self.idcard_info={
-            'sex':info['sex'] or 'unknow',
-            'home_location': binfo and ('null' in binfo['detailed_address'] and str(info['address'])  or binfo['detailed_address']) or 'unknow',
-            'birthday':info['birthday'] or 'unknow',
+            'sex':info[0],
+            'home_location': binfo and ('None' in binfo['detailed_address'] and str(info[1])  or binfo['detailed_address']) or 'unknow',
+            'birthday':b or 'unknow',
             'age':age,
             'idcard':self.idcard,
             'name' : self.username,

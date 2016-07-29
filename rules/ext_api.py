@@ -29,30 +29,30 @@ import logging
 base_logger = logging.getLogger('django.rules')
 base_logger.setLevel(logging.INFO)
 
-#def judge(identifice):
-#    for line in open(id_location_file,"r"):
-#        flist = line.strip().split('\t')
-#        if len(flist) < 3:
-#            continue
-#        id=identifice[0:6];
-#        ##print id,flist[1]
-#        if id==flist[1]:
-#            #print "xxxx",flist[2]
-#            return flist[2]
+def judge(identifice):
+    for line in open(id_location_file,"r"):
+        flist = line.strip().split('\t')
+        if len(flist) < 3:
+            continue
+        id=identifice[0:6];
+        ##print id,flist[1]
+        if id==flist[1]:
+            #print "xxxx",flist[2]
+            return flist[2]
             #return getArea(line[7:]);
-#    #调用api
-#    key='c9323635da814c6eeba0814fecfaf7be';
-#    url='http://apis.juhe.cn/idcard/index?key='+key+'&cardno='+identifice;
-#    try:
-#        idinfo=crawl_timeout(url,10,3);
-#        idstr=json.JSONDecoder().decode(idinfo);
-#        #print idstr
-#        rs=idstr['result']['area'].encode("utf-8");
-#    except:
-#        #print get_tb_info()
-#        return ""
-#    #print "zzzz",rs
-#    return rs
+    #调用api
+    key='c9323635da814c6eeba0814fecfaf7be';
+    url='http://apis.juhe.cn/idcard/index?key='+key+'&cardno='+identifice;
+    try:
+        idinfo=crawl_timeout(url,10,3);
+        idstr=json.JSONDecoder().decode(idinfo);
+        #print idstr
+        rs=idstr['result']['area'].encode("utf-8");
+    except:
+        #print get_tb_info()
+        return ""
+    #print "zzzz",rs
+    return rs
 
 #def get_geo_info(ip):
 #
@@ -187,27 +187,27 @@ class EXT_API():
                     index +=1
                     index = index % 2
         self.tel_map = tel_map
-    #def get_info_by_id(self,id_str):
-    #
-    #    #file = settings.ID_FILE
-    #    info = judge(id_str)
-    #    #location = info['province'] +info['city'] +info['discrict']
-    #    location = info
-    #    sex = ""
-    #    birthday = ""
-    #    if len(id_str) ==15:
-    #        birthday = "19"+id_str[6:6+6]
-    #        if int (id_str[-1]) %2 ==0:
-    #            sex = '女'
-    #        else:
-    #            sex = '男'
-    #    else:
-    #        birthday = id_str[6:6+8]
-    #        if int (id_str[-2]) %2 ==0:
-    #            sex = '女'
-    #        else:
-    #            sex = '男'
-    #    return sex,location,birthday
+    def get_info_by_id(self,id_str):
+    
+        #file = settings.ID_FILE
+        info = judge(id_str)
+        #location = info['province'] +info['city'] +info['discrict']
+        location = info
+        sex = ""
+        birthday = ""
+        if len(id_str) ==15:
+            birthday = "19"+id_str[6:6+6]
+            if int (id_str[-1]) %2 ==0:
+                sex = '女'
+            else:
+                sex = '男'
+        else:
+            birthday = id_str[6:6+8]
+            if int (id_str[-2]) %2 ==0:
+                sex = '女'
+            else:
+                sex = '男'
+        return sex,location,birthday
 
     #查询通讯录归属地
     def get_phone_location(self,num):
@@ -332,37 +332,37 @@ class EXT_API():
             pass
         return g
 
-    def get_idcard_info(self,idcard=None,name=None):
-        key='c389988700b64a8e5e2d19072824a21a'
-        info = {
-            'cardno' : None,
-            'birthday': None,
-            'name' : None,
-            'address' : None,
-            'sex' : None,
-        }
-        url = "http://v.apix.cn/apixcredit/idcheck/idcard"
-        querystring = {"cardno":idcard,'name':name,'type':'idcard'}
-        if not idcard or not name:
-            return info
-        headers = {
-            'accept': "application/json",
-            'content-type': "application/json",
-            'apix-key': key
-        }
-        try:
-            response = requests.request("GET", url, headers=headers, params=querystring)
-            rs = json.loads(response.text)
-            if not rs['code']:
-                info['cardno']='cardno' in rs['data'] and rs['data']['cardno'] or None
-                info['birthday']='birthday' in rs['data'] and rs['data']['birthday'] or None
-                info['name']='name' in rs['data'] and rs['data']['name'] or None
-                info['address']='address' in rs['data'] and rs['data']['address'] or None
-                if 'sex' in rs['data']:
-                     info['sex'] = 'F' in rs['data']['sex'] and '女' or '男'
-        except:
-            pass
-        return info
+    #def get_idcard_info(self,idcard=None,name=None):
+    #    key='c389988700b64a8e5e2d19072824a21a'
+    #    info = {
+    #        'cardno' : None,
+    #        'birthday': None,
+    #        'name' : None,
+    #        'address' : None,
+    #        'sex' : None,
+    #    }
+    #    url = "http://v.apix.cn/apixcredit/idcheck/idcard"
+    #    querystring = {"cardno":idcard,'name':name,'type':'idcard'}
+    #    if not idcard or not name:
+    #        return info
+    #    headers = {
+    #        'accept': "application/json",
+    #        'content-type': "application/json",
+    #        'apix-key': key
+    #    }
+    #    try:
+    #        response = requests.request("GET", url, headers=headers, params=querystring)
+    #        rs = json.loads(response.text)
+    #        if not rs['code']:
+    #            info['cardno']='cardno' in rs['data'] and rs['data']['cardno'] or None
+    #            info['birthday']='birthday' in rs['data'] and rs['data']['birthday'] or None
+    #            info['name']='name' in rs['data'] and rs['data']['name'] or None
+    #            info['address']='address' in rs['data'] and rs['data']['address'] or None
+    #            if 'sex' in rs['data']:
+    #                 info['sex'] = 'F' in rs['data']['sex'] and '女' or '男'
+    #    except:
+    #        pass
+    #    return info
 
 if __name__ == '__main__':
     api = EXT_API()
