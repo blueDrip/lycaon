@@ -272,10 +272,12 @@ def cal(minfo = {
             #加载规则
             b.load_rule_data(bd)
             for rd,min_rule in b.min_rule_map.items():
+                min_rule.user_id = user_id
                 min_rule.ruleid = str(rd)
                 min_rule.value = min_rule.value.replace('\t','<br/>')
                 min_rule.save()
                 detail_rule.rules.append(min_rule)
+            detail_rule.user_id = user_id
             detail_rule.name = name_list[k]
             detail_rule.rule_id = i
             detail_rule.score = int(b.get_score())*10
