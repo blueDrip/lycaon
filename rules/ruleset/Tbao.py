@@ -374,7 +374,7 @@ class Tbao(BaseRule):
         for it in order_list:
             if u'成功' in it['orderStatus']:
                 count+=len(it['orderProducts'])
-                r.value += '\t'.join([v[u'productName']+'-'+v[u'productPrice'] for v in it['orderProducts'] ])    
+                r.value += '\t'.join([v[u'productName'] + '-' + (v[u'productPrice'] or '0') for v in it['orderProducts'] ]) 
 
         r.name = u'半年内交易成功的商品件数'
         r.score = 10 
@@ -399,13 +399,13 @@ class Tbao(BaseRule):
         order_list = self.harf_order_list
         for it in order_list:
             for itt in it['orderProducts']:
-                money=float(itt['productPrice'])
+                money=float(itt['productPrice'] or 0)
                 if money>max_amount:
                     max_amount=money
-                    max_goods=itt['productName']+'-'+itt['productPrice']
+                    max_goods=itt['productName'] + '-' + (itt['productPrice'] or '0')
                 if money<min_amount:
                     min_amount=money
-                    min_goods=itt['productName']+'-'+itt['productPrice']
+                    min_goods=itt['productName'] + '-' + (itt['productPrice'] or '0')
 
         diff = max_amount-min_amount
         r=minRule()
@@ -431,7 +431,7 @@ class Tbao(BaseRule):
 
         r = minRule()
         r.name = u'半年内关闭的订单数'
-        r.value = '\t'.join([ it['orderId']+'-'+ it['orderTotalPrice']+'-'+ it['businessDate']  for it in corder_list])
+        r.value = '\t'.join([ it['orderId']+'-'+ (it['orderTotalPrice'] or '0')+'-'+ it['businessDate']  for it in corder_list])
         r.score = 10
         times=len(corder_list)
         if corder_list:

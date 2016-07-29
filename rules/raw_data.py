@@ -269,7 +269,7 @@ class JdData(Document):
     user_level = StringField(default = str)
     pay_passwd_verified = DictField(default = {})
     login_name = StringField(default = str)
-    
+    recentAYearOrder = DictField(default = {}) 
 #淘宝
 class TaoBao(Document):
     taobao_name = StringField(default=str) #淘宝登录名
