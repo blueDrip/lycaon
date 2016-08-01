@@ -148,6 +148,12 @@ def get_token(str_token):
         'channel' : channel or 'app',
         'idinfo' : idinfo or {}, 
         'token' : str_token,
+        'token_map' : {'jd':sp_phone_no_token,
+            'tb':taobao_name_token,
+            'personinfo':idcard_token,
+            'sp':sp_phone_no_token,
+            'postloan':phone_book_token,
+            'cb':'None'},
         'authorize_item_count':authorize_item_count
     }
 
@@ -226,6 +232,12 @@ def cal(minfo = {
         'ucl':None,
         'cb':None,
         'token':'None;None;None;None;None;None;None;None',
+        'token_map' : {'jd':'None',
+            'tb':'None',
+            'personinfo':'None',
+            'sp':'None',
+            'postloan':'None',
+            'cb':'None'},
         'authorize_item_count':0 }
     ):
 
@@ -262,22 +274,9 @@ def cal(minfo = {
     bd=BaseData(map_info=minfo,ext=ext_api)
     user_id=minfo['user_id'].upper()
     ct=datetime.now()
-    #top
-    top_rule = topResult.objects.filter(user_id=user_id,
-        created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
-    ).order_by('-created_time').first() or topResult()
 
-    #数据如果没有失效的话，进行覆盖
-    #删除minRule数据
-    #mrule = minRule.objects.filter(user_id=user_id,
-    #    created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
-    #).order_by('-created_time').delete()
-
-    #删除DetailRule数据
-    #drule = DetailRule.objects.filter(user_id=user_id,
-    #    created_time__gt=ct-timedelta(settings.EXPIRE_DAY)
-    #).order_by('-created_time').delete()
-    const_ct = top_rule.created_time or ct
+    top_rule = topResult()
+    const_ct = ct
 
     top_rule.authorize_item_count = minfo['authorize_item_count'] #记录当前授权的项目
     top_rule.token = minfo['token'] #记录此次的token值
@@ -308,11 +307,13 @@ def cal(minfo = {
             detail_rule.created_time = const_ct
             detail_rule.score = int(b.get_score())*10
             detail_rule.remark = b.chef_map
+            detail_rule.token = minfo['token_map'][k] #模块token
             detail_rule.save()
         except:
             detail_rule.name = name_list[k]
             detail_rule.rule_id = i
             detail_rule.score = 0
+            detail_rule.token = minfo['token_map'][k] #模块token
             detail_rule.save()
             base_logger.error(get_tb_info())
             base_logger.error("【 " + k +"  error 】" + 'USER_ID:'+user_id)
