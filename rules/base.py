@@ -176,6 +176,7 @@ class BaseData(object):
             'birthday' : 'unknow',
             'idcard' : 'unknow',
             'name' : 'unknow',
+            'nation' : 'unknow'
         }
         if not self.idcard or self.idcard == u'None':
             self.idcard_info = idcard_info_map
