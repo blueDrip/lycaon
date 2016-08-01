@@ -7,8 +7,7 @@ def jd_orm(cnd={}):
     if 'None' in cnd.values():
         return None
 
-    d=MongoDb('101.201.109.253',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('jingdong').find_one(cnd,sort=[('createTime',-1)]) or {}
+    c=settings.APPDB.get_collection('jingdong').find_one(cnd,sort=[('createTime',-1)]) or {}
     #不存在记录或查到记录>30天,等待
     if not c or not is_expire(rs=c):
         return None
@@ -63,8 +62,7 @@ def jd_orm(cnd={}):
 def tb_orm(cnd={}):
     if 'None' in cnd.values():
         return None
-    d=MongoDb('101.201.109.253',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('taobao').find_one(cnd,sort=[('createTime',-1)]) or {}
+    c=settings.APPDB.get_collection('taobao').find_one(cnd,sort=[('createTime',-1)]) or {}
     #不存在记录或查到记录>30天,等待
     if not c or not is_expire(rs=c):
         return None
@@ -131,9 +129,7 @@ def china_mobile_orm(cnd={}):
     if 'None' in cnd.values():
         return None
 
-    d=MongoDb('101.201.109.253',27017,'app_data','heigeMeixin','app_grant_data')
-    #d=MongoDb('101.201.109.253',27017,'plat_data','plat_data','plat_grant_data')
-    c=d.get_collection('yidong').find_one(cnd,sort=[('createTime',-1)]) or {}
+    c=settings.APPDB.get_collection('yidong').find_one(cnd,sort=[('createTime',-1)]) or {}
     #不存在记录或查到记录>30天,等待
     if not c or not is_expire(rs=c):
         return None
@@ -163,9 +159,7 @@ def china_mobile_orm(cnd={}):
 def china_unicom_orm(cnd={}):
     if 'None' in cnd.values():
         return None
-    d=MongoDb('101.201.109.253',27017,'app_data','heigeMeixin','app_grant_data')
-    #d=MongoDb('101.201.109.253',27017,'plat_data','plat_data','plat_grant_data')
-    c=d.get_collection('liantong').find_one(cnd,sort=[('createTime',-1)]) or {}
+    c=settings.APPDB.get_collection('liantong').find_one(cnd,sort=[('createTime',-1)]) or {}
     #不存在记录或查到记录>30天,等待
     if not c or not is_expire(rs=c):
         return None
@@ -194,8 +188,7 @@ def china_unicom_orm(cnd={}):
 def phonebook_orm(cnd={}):
     if not cnd:
         return None
-    d=MongoDb('101.201.109.253',27017,'app_data','heigeMeixin','app_grant_data')
-    c=d.get_collection('phonebook').find_one(cnd,sort=[('createTime',-1)]) or {}
+    c=settings.APPDB.get_collection('phonebook').find_one(cnd,sort=[('createTime',-1)]) or {}
     #不存在记录或查到记录>30天,等待
     if not c or not is_expire(rs=c):
         return None
