@@ -101,22 +101,26 @@ def init_online_shop_info(basedata):
         '1005':{ u'累积消费':bjd and bjd.baitiao and bjd.baitiao[u'consumeAmount'] or u'---'},#白条可用额度
         '1004':{ u'芝麻信用分数':u'---' },#芝麻信用分数
         '1003':{ u'淘宝花呗额度':btb and btb.huabeiTotalAmount or u'---'},#花呗额度
-        '1002':{ u'京东实名认证是否与美信生活实名认证一致' : u'---' },
+        '1002':{ u'京东实名认证是否与美信生活实名认证一致' : '京东实名:%s    美信生活:%s'%(bjd and bjd.real_name or u'---',str(basedata.username))},
         '1001':{ u'淘宝实名认证是否与美信生活实名认证一致' : u'---' },
     }
 
     #消费统计
-    jd_origin_consume_list = bjd and bjd.consume_list or []
+    jd_origin_consume_list = bjd and bjd.recentAYearOrder or []
     tb_origin_consume_list = btb and btb.orderList or []
     #京东消费记录
     jd_consume_list=map(lambda it:{
-            'time':get_right_datetime(it[0].strip(' ')),
-            'orderid':it[1],
-            'money':float(it[2].replace('￥',''))
-        },map(lambda x:x.split('|'),jd_origin_consume_list))
+            'time':get_right_datetime(it['businessTime'].strip(' ')),#购买时间
+            'bindProNames':it['bindProNames'],#商品列表
+            'payType':it['payType'],#支付方式
+            'money':float(it['amount'].replace('总额 ¥','')), #金额
+            'customerName':it['customerName'],#收货人
+            'orderAddr':it['orderAddr'] #收货地址
+        },jd_origin_consume_list)
     #淘宝消费记录    
     tb_consume_list = tb_origin_consume_list
     jd_cm_list = [ it['money'] for it in jd_consume_list ]
+    jd_product_list = [ len(it['bindProNames']) for it in jd_consume_list ]
     tb_cm_list = [ float(it['orderTotalPrice'] or 0) for it in tb_consume_list ]
     tb_product_list = [ len(it['orderProducts']) for it in tb_consume_list]
     #排序
@@ -140,11 +144,11 @@ def init_online_shop_info(basedata):
             '10001' : u'京东',
             '10002' : sum(jd_cm_list),#累计消费总额
             '1009' : len(jd_cm_list),#累计消费笔数
-            '1008' : len(jd_cm_list) and jd_cm_list[-1] or u'---',#单笔最高消费
-            '1007' : len(jd_cm_list) and jd_cm_list[0] or u'---',#单笔最低消费
+            '1008' : max(jd_cm_list or [0]),#单笔最高消费
+            '1007' : min(jd_cm_list or [0]),#单笔最低消费
             '1006' : sum(jd_cm_list)/(len(jd_cm_list) or 1),#平均每笔消费
             '1005' : len(jd_cm_list),#累计订单总数
-            '1004' : u'---',#商品总件数
+            '1004' : sum(jd_product_list),#商品总件数
             '1003' : u'--',#返修退换货比率
             '1002' : u'---',#评价总数
             '1001' : u'---',#差评比率
@@ -153,8 +157,8 @@ def init_online_shop_info(basedata):
             '10001' : u'淘宝',
             '10002' : sum(tb_cm_list),
             '1009' : len(tb_cm_list),
-            '1008' : len(tb_cm_list) and tb_cm_list[-1] or u'---',
-            '1007' : len(tb_cm_list) and tb_cm_list[0] or u'---',
+            '1008' : max(tb_cm_list or [0]),
+            '1007' : min(tb_cm_list or [0]),
             '1006' : sum(tb_cm_list)/(len(tb_cm_list) or 1),
             '1005' : len(tb_cm_list),
             '1004' : sum(tb_product_list),
@@ -355,17 +359,18 @@ def init_online_shop_info(basedata):
     ]
     for it in jd_consume_list:
         k=it['time'].date()
-        if k not in ll:
+        #if k not in ll:
+        if 1:
             jd_order_info.append({
                 '1007':str(k),#订单日期
-                '1006':u'---',#商品名称
-                '1005':str(map_info[k]['pac_num']),#商品件数
-                '1004':str(map_info[k]['amount']),#总额
-                '1003': u'---',#支付方式
-                '1002': u'---',#收货地址
-                '1001':u'---'#收货人
+                '1006':'<br/>'.join(map(lambda it:it['name'],it['bindProNames'])),#商品名称
+                '1005':str(len(it['bindProNames'])),#商品件数
+                '1004': str(it['money']),#总额
+                '1003': it['payType'],#支付方式
+                '1002': it['orderAddr'],#收货地址
+                '1001': it['customerName']#收货人
             })
-            ll.append(k)
+            #ll.append(k)
 
     if len(jd_order_info)<=1:
         jd_order_info.append({
@@ -605,15 +610,15 @@ def init_sp_record_info(basedata):
 
     #人际交往密切程度
     contact_info ={
-        '10001':{ u'通话记录长度' : len(sp_calls) or u'---' },#通话记录长度
-        '1009':{ u'短信记录长度' : len(sp_sms) or u'---'},#短信记录长度
-        '1008':{ u'内主叫次数' : sum( [ 1 for c in sp_calls if u'主叫' in c.call_type ] ) or u'---' },#主叫次数
-        '1007':{ u'内主叫时长' : sum( [ c.call_duration for c in sp_calls if u'主叫' in c.call_type]) or u'---' },#主叫时长
-        '1006':{ u'内被叫次数' : sum( [ 1 for c in sp_calls if u'被叫' in c.call_type ] ) or u'---' },#被叫次数
-        '1005':{ u'被叫时长' : sum( [ c.call_duration for c in sp_calls if u'被叫' in c.call_type]) or u'---' },#被叫时长
+        '10001':{ u'通话记录长度(个)' : len(sp_calls) or u'---' },#通话记录长度
+        '1009':{ u'短信记录长度(个)' : len(sp_sms) or u'---'},#短信记录长度
+        '1008':{ u'半年内主叫次数' : sum( [ 1 for c in sp_calls if u'主叫' in c.call_type ] ) or u'---' },#主叫次数
+        '1007':{ u'半年内主叫时长(s)' : sum( [ c.call_duration for c in sp_calls if u'主叫' in c.call_type]) or u'---' },#主叫时长
+        '1006':{ u'半年内被叫次数' : sum( [ 1 for c in sp_calls if u'被叫' in c.call_type ] ) or u'---' },#被叫次数
+        '1005':{ u'半年被叫时长(s)' : sum( [ c.call_duration for c in sp_calls if u'被叫' in c.call_type]) or u'---' },#被叫时长
         '1004':{ u'亲属长度' : len(relatives_map) or u'---' },#亲属长度
         '1003':{ u'亲属在老家个数' : sum([ 1 for it in rpl if it[0] in hlocation or it[1] in hlocation]) or u'---' },#亲属在老家的个数
-        '1002':{ u'亲属通话时长' : sum([ c.call_duration for c in sp_calls if c.phone in relatives_map ]) or u'---' },#亲属通话时长
+        '1002':{ u'亲属通话时长(s)' : sum([ c.call_duration for c in sp_calls if c.phone in relatives_map ]) or u'---' },#亲属通话时长
         '1001':{ u'亲属通话次数' : sum([ 1 for c in sp_calls if c.phone in relatives_map ]) or u'---' }#亲属通话次数
     }
 
@@ -664,7 +669,7 @@ def init_sp_record_info(basedata):
         {
             '1007':u'通讯录匹配',
             '1006':u'号码',
-            '1005':u'通话时间',
+            '1005':u'通话时间(s)',
             '1004':u'通话次数',
             '1003':u'归属地',
             '1002':u'被叫次数',
@@ -707,7 +712,7 @@ def init_sp_record_info(basedata):
         {
             '1005':u'月份',
             '1004':u'主叫时间',
-            '1003':u'被叫时长',
+            '1003':u'被叫时长(s)',
             '1002':u'短息数量',
             '1001':u'话费消费',
         }
