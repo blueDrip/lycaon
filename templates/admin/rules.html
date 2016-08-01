@@ -47,12 +47,12 @@
                             <table class = 'zebra'>
                                 <thead>
                                 <tr>
-                                      <th width="10%">特征</th>
+                                      <th width="15%">特征</th>
                                       <th width="15%">数据一致性检验</th>
                                       <th width="25%">策略集合</th>
                                       <th width="15%">特征值</th>
                                       <th width="20%">得分</th>
-                                      <th width="15%">来源</th>
+                                      <th width="10%">来源</th>
                                 </tr>
                                 </thead>
                                 {% for name in tp.rulelist%}
@@ -63,7 +63,11 @@
                                        {% for v in name.rules %}
                                         <tr class = "{% cycle 'a1' 'aa' %}">
                                               {% if forloop.first %}
-                                               <td rowspan="{{ name.rules | length }}" class = 't3'>{{ name.name }}<br/>得分:{{ name.score }}分</td>
+                                               <td rowspan="{{ name.rules | length }}" class = 't3'>
+                                                     {{ name.name }}<br/>得分:{{ name.score }}分
+                                                     <br/>
+                                                     {{name.token}}
+                                               </td>
                                                <td rowspan="{{ name.rules | length }}" class = 't3'>
                                                     {% for k,v in name.remark.items%}
                                                          <font color='black'>{{k}}</font> : <font color='red'>{{v}}</font><br/>
