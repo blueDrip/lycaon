@@ -389,6 +389,7 @@ class DetailRule(Document):
     value = StringField(default='')
     remark = DictField()#防欺诈
     created_time = DateTimeField()
+    token=StringField()
 
 class topResult(Document):
     user_id = StringField(default = str)
