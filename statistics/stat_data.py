@@ -593,8 +593,8 @@ def init_sp_record_info(basedata):
     calls_info = [ c.call_time for c in sp_calls ]
     calls_info.sort()
     basic_info={
-        '1007':{ u'运营商实名认证' : u'---' },#运营商实名认证
-        '1006':{ u'运营商实名与美信生活实名是否一致' : u'---' },#运营商实名与自有实名是否一致
+        '1007':{ u'运营商实名认证' : binfo and binfo.real_name or u'---' },#运营商实名认证
+        '1006':{ u'运营商实名与美信生活实名是否一致' : '运营商:%s,美信:%s'%(binfo and binfo.real_name or '-',basedata and basedata.username or '-') },#运营商实名与自有实名是否一致
         '1005':{ u'入网时间' : binfo and binfo.phone_using_time or u'---' },#入网时间
         '1004':{ u'地址' : binfo and binfo.address or u'---' },#地址
         '1003':{ u'网龄' : binfo and binfo.netage or u'---' }, #网龄
