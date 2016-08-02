@@ -20,6 +20,7 @@ from rules.ext_api import EXT_API
 from api.sys import apache
 from rules.check_log import rules_log
 from rules.util.utils import get_tb_info
+from rules.ext_api import EXT_API
 import binascii
 import json
 import logging
@@ -30,7 +31,7 @@ logger = logging.getLogger('django.api')
 logger.setLevel(logging.INFO)
 other = logging.getLogger('django.others')
 other.setLevel(logging.INFO)
-
+ext_api = EXT_API()
 def index(request):
     '''    
     b=BaseRule()
@@ -116,7 +117,10 @@ def save_event(request):
     token=request.GET['token']
     try:
         other.info("Save_to_Mongo"+'  '+token)
-        rs = desplay_detail_data(token)
+        start=time.clock()
+        rs = desplay_detail_data(token,exapi=ext_api)
+        end=time.clock()
+        other.info("cal time is :===============> "+str(end-start))
         if rs==-1:
             return HttpResponse('{"code":1,msg:"数据正在抓取中"}')
         elif rs==1:
