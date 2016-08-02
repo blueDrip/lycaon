@@ -196,16 +196,14 @@ def cal_by_message(msg):
     return cal(minfo=rmap)
 
 '''算分和展示分开'''
-def desplay_detail_data(msg):
+def desplay_detail_data(msg,exapi=None):
 
     rmap=get_token(msg)
     #is_author = rmap['idcard'] and rmap['sp'] and rmap['ucl'] and (rmap['jd'] or rmap['tb'])
     #if not is_author:
     #    return -1
-    ext_api = EXT_API()
+    ext_api = exapi or EXT_API()
     user_id = rmap['user_id']
-
-
 
     bd=BaseData(map_info=rmap,ext=ext_api)
     #保存或更新
