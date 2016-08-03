@@ -121,6 +121,8 @@ def tb_orm(cnd={}):
         tb.addrs = c['addrs']
     if 'orderList' in c:
         tb.orderList = c['orderList']
+    if 'bindAccountInfo' in c:
+        tb.bindAccountInfo = c['bindAccountInfo']
     #tb.save()
     return tb
 
@@ -144,6 +146,7 @@ def china_mobile_orm(cnd={}):
             #cmb.userphone = c['personalInfo']['contactNum'] #手机号
             cmb.userphone = c['phone_no']
             cmb.real_name = c['personalInfo']['name'] #姓名
+            cmb.idcard = ''
         cmb.openBusiness = c['openBusiness']
         cmb.smsdetail = c['smsDetail']
         cmb.phone_no = c['phone_no']
@@ -169,6 +172,7 @@ def china_unicom_orm(cnd={}):
             cub.address = c['userInfo']['certAddr'] #地址
             cub.netage = '' #网龄
             cub.real_name = c['userInfo']['userName'] #姓名
+            cub.idcard = c['userInfo']['certNum']
         if c['phoneInfo']:
             #cub.userphone = c['phoneInfo']['phoneNumber']
             cub.userphone = c['phone_no']
