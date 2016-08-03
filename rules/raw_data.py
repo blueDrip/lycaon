@@ -298,6 +298,7 @@ class TaoBao(Document):
     safeLevel = StringField(default=str) 
     addrs = ListField(default=[])
     orderList = ListField(default=[])
+    bindAccountInfo = DictField(defautl={})
 
 #移动
 class chinaMobile(Document):
@@ -319,7 +320,7 @@ class chinaMobile(Document):
     userphone = StringField() #手机号
     real_name = StringField() #姓名
     token = StringField() #token
-    
+    idcard = StringField()
 
 #联通chinaUnicom
 class chinaUnicom(Document):
@@ -337,6 +338,7 @@ class chinaUnicom(Document):
     userphone = StringField() #手机号
     real_name = StringField() #姓名
     token = StringField() #token
+    idcard = StringField()
 
 #电信
 class chinaTelecom(Document):
