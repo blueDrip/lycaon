@@ -33,5 +33,6 @@ urlpatterns = [
     url(r'^checklog/',views.check_log),
     url(r'^spinfo/',views.sp_data_views),
     url(r'^saveitem/',views.save_event),
+    url(r'^checkbase/',views.check_info_views),
             
 ]
