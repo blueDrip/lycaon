@@ -20,7 +20,7 @@ from rules.ext_api import EXT_API
 from api.sys import apache
 from rules.check_log import rules_log
 from rules.util.utils import get_tb_info
-from rules.ext_api import EXT_API
+from statistics.check_identify import check_id_info
 import binascii
 import json
 import logging
@@ -130,6 +130,15 @@ def save_event(request):
     except:
         other.error(get_tb_info()+"Save_to_Mongo"+'  '+token)
         return  HttpResponse('{"code":-1,msg:"error"}')
+
+def check_info_views(request):
+    token = request.GET['token']
+    try:
+        rs = check_id_info(token)
+        return HttpResponse(json.dumps(rs))
+    except:
+        other.error(get_tb_info()+"CHECK_INFO_ERROR"+'  '+token)
+        return HttpResponse(json.dumps({'code':1,'msg':'error'}))
 
 '''数据分析admin'''
 #首页

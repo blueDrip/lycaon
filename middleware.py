@@ -19,7 +19,8 @@ class QtsAuthenticationMiddleware(object):
         #    return render(request,'admin/login.html')       
         base_logger.info(request.session.keys())
         '''不拦截首页访问和登陆过程'''
-        if '/apix/score/' in request.path or '/apix/spinfo/' in request.path or '/apix/saveitem/' in request.path:
+        not_auth_list=['/apix/score/','/apix/spinfo/','/apix/saveitem/','/apix/checkbase/']
+        if request.path in not_auth_list:
             return None
         if 'user' not in request.session and  request.path not in  ['/apix/login/','/apix/login_auth/']:
             return HttpResponseRedirect('/apix/login/')
