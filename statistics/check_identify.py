@@ -51,23 +51,23 @@ def check_id_info(rmap=None):
     ################
     mulsub=lambda x,i,j,s:x[:i] + ''.join(map( lambda it:it.replace(it,s),x[i:j] )) + x[j:]
     
-    jd_judge_standard = mulsub(username,0,len(username)-1,'*')+'|'+mulsub(idcard,3,-4,'*')   
+    jd_judge_standard = mulsub(username,0,len(username)-1,'*')+'|'+mulsub(idcard,2,-4,'*')
     tb_judge_standard = mulsub(username,1,len(username),'*')+'|'+mulsub(idcard,1,-1,'*')
-    sp_unicom_judge_standard = mulsub(username,0,0,'*')+'|'+mulsub(idcard,4,-4,'*')
+    sp_unicom_judge_standard = mulsub(username,0,0,'*')+'|'+idcard[:4]+'****'+idcard[-4:]
     #移动当前是x或*
-    sp_mobile_judge_standard_1 = mulsub(username,1,1,'*')
-    sp_mobile_judge_stardard_2 = mulsub(username,0,0,'x')
+    sp_mobile_judge_standard_1 = mulsub(username,1,-1,'*')
+    sp_mobile_judge_stardard_2 = mulsub(username,0,len(username)-1,'x')
 
-    jd_account_id = jd.indentify_verified['detail']
-    tb_account_id = tb.bindAccountInfo['identity'].replace('已认证','').replace(' ','')
+    jd_account_id = jd and jd.indentify_verified['detail'] or '-'
+    tb_account_id = tb and tb.bindAccountInfo['identity'].replace('已认证','').replace(' ','') or '-'
     sp_account_id = sp and (sp.idcard and sp.real_name+'|'+sp.idcard or sp.real_name) or '-'
-    #联通
-    sp_rs='-'
-    if sp and sp.idcard:
-        sp_rs = len(sp_account_id)>=15 and sp_account_id == sp_unicom_judge_standard or '-'
-    elif sp and not sp.idcard:
-        sp_rs = sp_account_id == sp_unicom_judge_standard
 
+    #print 'jd----->',jd_account_id,'s---->',jd_judge_standard
+    #print 'tb----->',tb_account_id,'s----->',tb_judge_standard
+    #print 'sp----->',sp_account_id,'s------>',sp_unicom_judge_standard,'s1-->',sp_mobile_judge_standard_1,'s2-->',sp_mobile_judge_stardard_2
+
+    #联通或移动
+    sp_rs = sp_account_id==sp_unicom_judge_standard or sp_account_id==sp_mobile_judge_standard_1 or sp_account_id==sp_mobile_judge_stardard_2 or '-'
 
     return {
             'love_life':{
@@ -77,17 +77,17 @@ def check_id_info(rmap=None):
             },
             'jd_check':{
                 'idcard' : jd_account_id,
-                'phone' : jd.phone_verifyied['detail'],
+                'phone' : jd and jd.phone_verifyied['detail'] or '-',
                 'result' : len(jd_account_id)>=15 and (jd_account_id == jd_judge_standard) or '-'
             },
             'tb_check':{
                 'idcard' : tb_account_id,
-                'phone' : tb.bindAccountInfo['bindMobile'],
+                'phone' : tb and tb.bindAccountInfo['bindMobile'] or '-',
                 'result' : len(tb_account_id)>=15 and (tb_account_id==tb_judge_standard) or '-'
             },
             'sp_check':{
                 'idcard' : sp_account_id,
-                'phone' : sp and '-' or sp.phone_no,
+                'phone' : sp and sp.phone_no or '-',
                 'result' : sp_rs
             },
             'ucl_check':{
