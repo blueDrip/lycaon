@@ -31,7 +31,7 @@ logger = logging.getLogger('django.api')
 logger.setLevel(logging.INFO)
 other = logging.getLogger('django.others')
 other.setLevel(logging.INFO)
-from rules.A import api
+from rules.B import api
 #ext_api = EXT_API()
 def index(request):
     '''    
