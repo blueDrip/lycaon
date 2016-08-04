@@ -4,7 +4,6 @@ import sys
 import os
 reload(sys)
 
-sys.setdefaultencoding('utf8')
 homedir = os.getcwd()
 sys.path.append(homedir)
 
@@ -98,7 +97,7 @@ class EXT_API():
             try:
                 ##print 'xxx',line
                 if len(line)>0:
-                    line = line.encode("utf-8")
+                    line = line.decode("utf-8")
                     wl  = line.strip().split(',')
                     self.sense_badword_list.append(wl)
             except:
