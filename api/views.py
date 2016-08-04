@@ -16,7 +16,7 @@ from api.models import adminAccount,privaliage,role,privaliage_role,user_role
 from sole_models.statistics.china_mobile import get_cb_infos
 from sole_models.statistics.china_union import get_um_info
 from sole_models.sole_orm import china_unicom_orm_desplay,china_mobile_orm_desplay
-from rules.ext_api import EXT_API
+#from rules.ext_api import EXT_API
 from api.sys import apache
 from rules.check_log import rules_log
 from rules.util.utils import get_tb_info
@@ -31,7 +31,8 @@ logger = logging.getLogger('django.api')
 logger.setLevel(logging.INFO)
 other = logging.getLogger('django.others')
 other.setLevel(logging.INFO)
-ext_api = EXT_API()
+from rules.A import api
+#ext_api = EXT_API()
 def index(request):
     '''    
     b=BaseRule()
@@ -118,7 +119,7 @@ def save_event(request):
     try:
         other.info("Save_to_Mongo"+'  '+token)
         start=time.clock()
-        rs = desplay_detail_data(token,exapi=ext_api)
+        rs = desplay_detail_data(token,exapi=api)
         end=time.clock()
         other.info("cal time is :===============> "+str(end-start))
         if rs==-1:
