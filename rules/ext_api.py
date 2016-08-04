@@ -43,7 +43,10 @@ def judge(identifice):
     key='c9323635da814c6eeba0814fecfaf7be';
     url='http://apis.juhe.cn/idcard/index?key='+key+'&cardno='+identifice;
     try:
-        idinfo=crawl_timeout(url,10,3);
+
+        f=urllib.urlopen(url)
+        idinfo = f.read()
+
         idstr=json.JSONDecoder().decode(idinfo);
         #print idstr
         rs=idstr['result']['area'].encode("utf-8");
