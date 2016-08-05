@@ -204,6 +204,7 @@ def phonebook_orm(cnd={}):
         pb.phone = c['phone']
         pb.linkmen = c['linkmen']
         pb.device_id = c['device_id']
+        pb.host_phone = 'host_phone' in c and c['host_phone'] or ''
         return pb
     return None
 def is_expire(rs=None):

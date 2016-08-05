@@ -147,18 +147,21 @@ class BaseData(object):
 
             '''授权sp数据的用户手机号'''
             sp_phone_info = self.sp and self.ext_api.get_phone_location(self.sp.userphone) or {'supplier':'none'}
+            self.phone_type = '---'
             if '移动' in sp_phone_info['supplier']:
                 print '移动'
                 self.init_sp_calldetail()
                 self.init_sp_smsdetail()
                 self.init_sp_netdetail()
                 self.init_sp_recharege()
+                self.phone_type = '移动'
             elif '联通' in sp_phone_info['supplier']:
                 print '联通'
                 self.init_sp_unicom_calldetail()
                 self.init_sp_unicom_smsdetail()
                 self.init_sp_unicom_netdetail()
                 self.init_sp_unicom_recharege()
+                self.phone_type = '联通'
             elif '电信' in sp_phone_info['supplier']:
                 pass
             else:
