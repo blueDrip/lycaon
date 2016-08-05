@@ -357,6 +357,7 @@ class phonebook(Document):
     user_id = StringField(default=str)
     name = StringField(default=str)
     phone = StringField(default=str)
+    host_phone = StringField(default=str)
     linkmen = DictField(default=str) 
     device_id=StringField(default=str)
 

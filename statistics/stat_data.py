@@ -465,6 +465,30 @@ def init_contact_info(basedata):
     clen=len(contact_list) or 1
     upl=basedata and basedata.user_plocation or ''
     hl=basedata and basedata.home_location or ''
+    ucl=basedata and basedata.ucl or None
+    reg_phone = basedata and basedata.user_phone or '---'
+
+    home_phone_info=[
+        {
+            '1002':u'申请人身份地区',
+            '1001':u'注册手机归属地'
+        },
+        {
+            '1002':hl or '---',
+            '1001':upl or '---'
+        }
+    ]
+    phone_info=[
+        {
+            '1002':u'注册手机号',
+            '1001':u'通讯录授权本机号'
+        },
+        {
+            '1002':ucl and ucl.host_phone,
+            '1001':reg_phone
+        }
+    ]
+    
     lcmap={}
     for c in contact_list:
         city=c.phone_location.split('-')[0]
@@ -557,7 +581,9 @@ def init_contact_info(basedata):
                 clist_none.append(c)
         clist.extend( clist_none )
     info = {
-        u'part_contatcs':same_with_pl_info,#通讯录
+        u'hp_info' : home_phone_info,
+        u'phone_info' : phone_info,
+        u'part_contatcs' : same_with_pl_info,#通讯录
         u'relatives' : relative_info,#亲属
         u'view_contacts' : clist or contact_info #通讯录总览
     }
@@ -593,6 +619,8 @@ def init_sp_record_info(basedata):
     calls_info = [ c.call_time for c in sp_calls ]
     calls_info.sort()
     basic_info={
+        '1009':{ u'手机号码' : binfo and binfo.phone_no or u'---'},
+        '1008':{ u'运营商类型' : basedata and basedata.phone_type or '---' },
         '1007':{ u'运营商实名认证' : binfo and binfo.real_name or u'---' },#运营商实名认证
         '1006':{ u'运营商实名与美信生活实名是否一致' : '运营商:%s,美信:%s'%(binfo and binfo.real_name or '-',basedata and basedata.username or '-') },#运营商实名与自有实名是否一致
         '1005':{ u'入网时间' : binfo and binfo.phone_using_time or u'---' },#入网时间
