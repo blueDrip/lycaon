@@ -236,7 +236,30 @@ table {
     {% endfor%}
 
     <tr><td><h2>通讯录</h2></td></tr>
+
+
+
     <tr><td><h3>联系人归属地占比</h3></td></tr>
+
+
+    {% for it in rs.contact_info.hp_info %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor%}
+
+
+    {% for it in rs.contact_info.phone_info %}
+        <tr>
+            {% for k,v in it.items%}
+                <td>{{ v }}</td>
+            {% endfor%}
+        </tr>
+    {% endfor%}
+
+
     {% for it in rs.contact_info.part_contatcs %}
         <tr>
             {% for k,v in it.items%}
